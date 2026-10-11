@@ -692,6 +692,23 @@ html_template = """<!DOCTYPE html>
       color: var(--text-main);
     }
 
+    .signal-meter-bg {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+
+    .signal-meter-fill {
+      height: 100%;
+      background: var(--yellow-primary);
+      border-radius: 999px;
+      width: 0%;
+      transition: width 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
     /* Account Chips Grid */
     .user-chips-grid {
       display: flex;
@@ -705,6 +722,17 @@ html_template = """<!DOCTYPE html>
       border-radius: 9px;
     }
 
+    @keyframes chipEntrance {
+      0% {
+        opacity: 0;
+        transform: translateY(6px) scale(0.92);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
     .chip-account {
       font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
@@ -716,7 +744,8 @@ html_template = """<!DOCTYPE html>
       border: 1px solid var(--border-subtle);
       color: var(--yellow-primary);
       cursor: pointer;
-      transition: all 0.12s ease;
+      transition: background 0.12s ease, border-color 0.12s ease;
+      animation: chipEntrance 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
     .chip-account:hover {
@@ -1150,15 +1179,15 @@ html_template = """<!DOCTYPE html>
     <div class="header-stats">
       <div class="stat-pill">
         <span>USR:</span>
-        <span class="stat-val" id="stat-users">1,000</span>
+        <span class="stat-val" id="stat-users">0</span>
       </div>
       <div class="stat-pill">
         <span>TXS:</span>
-        <span class="stat-val" id="stat-txs">13,680</span>
+        <span class="stat-val" id="stat-txs">0</span>
       </div>
       <div class="stat-pill">
         <span>RINGS:</span>
-        <span class="stat-val" id="stat-rings" style="color: var(--yellow-primary);">10</span>
+        <span class="stat-val" id="stat-rings" style="color: var(--yellow-primary);">0</span>
       </div>
     </div>
 
@@ -1958,33 +1987,33 @@ html_template = """<!DOCTYPE html>
       const v = Math.abs(typeof variationIndex === "number" ? Math.round(variationIndex) : 0) % 3;
 
       const apexCoords = [
-        [-40, -210],
-        [-15, -220],
-        [-35, -205]
+        [-30, -165],
+        [-15, -170],
+        [-25, -160]
       ][v];
 
       const satSlotsVariants = [
-        [[-265, -240], [-310, 175], [305, -140], [315, 205]],
-        [[-280, -225], [-295, 195], [320, -125], [295, 220]],
-        [[-250, -255], [-325, 160], [290, -155], [330, 190]]
+        [[-215, -155], [-225, 135], [225, -110], [235, 155]],
+        [[-225, -150], [-215, 145], [235, -100], [225, 165]],
+        [[-205, -165], [-235, 125], [215, -120], [245, 145]]
       ][v];
 
       const anchorUserSlotsVariants = [
-        [[-135, -100], [-155, 65], [135, -30], [140, 105]],
-        [[-145, -90],  [-140, 80], [145, -20], [130, 115]],
-        [[-125, -110], [-165, 50], [125, -40], [150, 95]]
+        [[-105, -75], [-115, 50], [105, -20], [110, 80]],
+        [[-115, -70], [-105, 60], [115, -15], [100, 90]],
+        [[-95, -85],  [-125, 40], [95, -30],  [120, 75]]
       ][v];
 
       const interiorUserSlotsVariants = [
-        [[-10, -50], [-75, -20], [45, 25], [-20, 85], [0, 15], [-40, 30], [20, -10], [-30, -30]],
-        [[15, -45], [-60, -35], [35, 40], [-35, 75], [-10, 20], [-25, 35], [30, -15], [-15, -25]],
-        [[-30, -55], [-80, -5], [55, 15], [-10, 90], [10, 10], [-50, 25], [15, -5], [-40, -35]]
+        [[-10, -35], [-55, -15], [35, 20], [-15, 60], [0, 10], [-30, 20], [15, -10], [-20, -20]],
+        [[10, -35],  [-45, -25], [25, 30], [-25, 55], [-10, 15], [-20, 25], [20, -10], [-10, -20]],
+        [[-20, -40], [-60, -5],  [40, 10], [-10, 65], [10, 10],  [-35, 20], [10, -5],  [-30, -25]]
       ][v];
 
       const merchSlotsVariants = [
-        [[45, -190], [-115, 195], [-35, 250], [40, 210], [110, 230], [-80, 260]],
-        [[55, -180], [-105, 205], [-20, 255], [50, 200], [120, 220], [-70, 265]],
-        [[35, -200], [-125, 185], [-45, 245], [30, 220], [100, 240], [-90, 255]]
+        [[35, -135], [-85, 140], [-25, 180], [30, 150], [85, 165], [-60, 185]],
+        [[45, -130], [-75, 150], [-15, 185], [40, 145], [95, 160], [-50, 190]],
+        [[25, -140], [-95, 135], [-35, 175], [20, 160], [75, 170], [-70, 180]]
       ][v];
 
       const positions = {};
@@ -2078,6 +2107,24 @@ html_template = """<!DOCTYPE html>
       return positions;
     }
 
+    function fitGraphToScreen(animated = true) {
+      if (!network) return;
+      network.fit({
+        animation: animated ? { duration: 320, easingFunction: "easeInOutQuad" } : false
+      });
+      setTimeout(() => {
+        if (!network) return;
+        const currentScale = network.getScale();
+        const currentView = network.getViewPosition();
+        // Zoom out to 82% scale and offset slightly down by 14px so apex node is comfortably below the top toolbar
+        network.moveTo({
+          position: { x: currentView.x, y: currentView.y - 14 },
+          scale: currentScale * 0.82,
+          animation: animated ? { duration: 250, easingFunction: "easeInOutQuad" } : false
+        });
+      }, animated ? 340 : 10);
+    }
+
     function animateTractionMorph(startPositions, targetPositions, onComplete, duration = 650) {
       if (morphRafId) cancelAnimationFrame(morphRafId);
       const startTime = performance.now();
@@ -2130,13 +2177,71 @@ html_template = """<!DOCTYPE html>
           if (currentNodesDataSet) currentNodesDataSet.update(finalUpdates);
           setup3DCoordinates(targetPositions);
           if (network) {
-            network.fit({ animation: { duration: 300, easingFunction: "easeInOutQuad" } });
+            fitGraphToScreen(true);
           }
           if (onComplete) onComplete();
         }
       }
 
       morphRafId = requestAnimationFrame(step);
+    }
+
+    const activeAnimators = new Map();
+
+    function animateNumericValue(element, targetVal, options = {}) {
+      if (!element) return;
+      const {
+        duration = 650,
+        decimals = 0,
+        prefix = "",
+        suffix = "",
+        formatComma = false,
+        startVal = null
+      } = options;
+
+      if (activeAnimators.has(element)) {
+        cancelAnimationFrame(activeAnimators.get(element));
+        activeAnimators.delete(element);
+      }
+
+      let from = startVal;
+      if (from === null) {
+        const text = element.innerText.replace(/[^0-9.-]/g, "");
+        from = parseFloat(text);
+        if (isNaN(from)) from = 0;
+      }
+
+      const to = typeof targetVal === "number" ? targetVal : (parseFloat(targetVal) || 0);
+      if (from === to && element.innerText.trim() !== "") {
+        element.innerText = prefix + (formatComma ? Math.round(to).toLocaleString() : to.toFixed(decimals)) + suffix;
+        return;
+      }
+
+      const startTime = performance.now();
+
+      function tick(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const current = from + (to - from) * ease;
+
+        const formatted = formatComma 
+          ? Math.round(current).toLocaleString() 
+          : current.toFixed(decimals);
+
+        element.innerText = `${prefix}${formatted}${suffix}`;
+
+        if (progress < 1) {
+          const rafId = requestAnimationFrame(tick);
+          activeAnimators.set(element, rafId);
+        } else {
+          activeAnimators.delete(element);
+          element.innerText = prefix + (formatComma ? Math.round(to).toLocaleString() : to.toFixed(decimals)) + suffix;
+        }
+      }
+
+      const rafId = requestAnimationFrame(tick);
+      activeAnimators.set(element, rafId);
     }
 
     async function fetchRings() {
@@ -2172,16 +2277,37 @@ html_template = """<!DOCTYPE html>
         const data = await res.json();
         allRings = data.rings || [];
 
+        let targetUsers = 1000;
+        let targetTxs = 13680;
         if (data.metadata) {
-          document.getElementById("stat-users").innerText = data.metadata.num_users?.toLocaleString() || "1,000";
-          document.getElementById("stat-txs").innerText = data.metadata.total_transactions?.toLocaleString() || "13,680";
+          targetUsers = data.metadata.num_users || 1000;
+          targetTxs = data.metadata.total_transactions || 13680;
         }
+        animateNumericValue(document.getElementById("stat-users"), targetUsers, {
+          duration: 750,
+          formatComma: true
+        });
+        animateNumericValue(document.getElementById("stat-txs"), targetTxs, {
+          duration: 850,
+          formatComma: true
+        });
+
         dot.classList.remove("offline");
         label.innerText = "LIVE API";
         showToast("Connected to DarkNode GNN backend");
       } catch (err) {
         console.warn("Backend unavailable, using cached model dossier:", err);
         allRings = FALLBACK_RINGS;
+
+        animateNumericValue(document.getElementById("stat-users"), 1000, {
+          duration: 750,
+          formatComma: true
+        });
+        animateNumericValue(document.getElementById("stat-txs"), 13680, {
+          duration: 850,
+          formatComma: true
+        });
+
         dot.classList.add("offline");
         label.innerText = "CACHED GNN";
       } finally {
@@ -2204,7 +2330,10 @@ html_template = """<!DOCTYPE html>
         }
       }
 
-      document.getElementById("stat-rings").innerText = allRings.length;
+      animateNumericValue(document.getElementById("stat-rings"), allRings.length, {
+        duration: 600,
+        decimals: 0
+      });
       document.getElementById("rings-count-badge").innerText = `${allRings.length} total`;
 
       const crit = allRings.filter(r => r.score >= 0.75).length;
@@ -2314,28 +2443,55 @@ html_template = """<!DOCTYPE html>
       document.getElementById("inspector-badge").innerText = `RANK #${ring.rank || index + 1}`;
       document.getElementById("threat-rank-pill").innerText = `RANK #${ring.rank || index + 1}`;
 
-      // Instant Threat Risk Score
-      document.getElementById("threat-score-num").innerText = `${(ring.score * 100).toFixed(1)}%`;
+      // Threat Risk Score Digit Rolling (SS1)
+      animateNumericValue(document.getElementById("threat-score-num"), ring.score * 100, {
+        duration: 650,
+        decimals: 1,
+        suffix: "%"
+      });
 
-      document.getElementById("sig-device").innerText = `${ring.shared_device_pct}%`;
-      document.getElementById("sig-ip").innerText = `${ring.shared_ip_pairs} pairs`;
-      document.getElementById("sig-vel").innerText = `${ring.transaction_velocity} tx/hr`;
-      document.getElementById("sig-gnn").innerText = ring.avg_model_score.toFixed(3);
-      document.getElementById("sig-fresh").innerText = `${ring.fresh_account_count} accounts`;
-      document.getElementById("members-count").innerText = ring.member_count;
+      // Logical Evidence Signal Roll-ups (SS2)
+      animateNumericValue(document.getElementById("sig-device"), ring.shared_device_pct, {
+        duration: 650,
+        decimals: 0,
+        suffix: "%"
+      });
+      animateNumericValue(document.getElementById("sig-ip"), ring.shared_ip_pairs, {
+        duration: 650,
+        decimals: 0,
+        suffix: " pairs"
+      });
+      animateNumericValue(document.getElementById("sig-vel"), ring.transaction_velocity, {
+        duration: 650,
+        decimals: 1,
+        suffix: " tx/hr"
+      });
+      animateNumericValue(document.getElementById("sig-gnn"), ring.avg_model_score, {
+        duration: 650,
+        decimals: 3
+      });
+      animateNumericValue(document.getElementById("sig-fresh"), ring.fresh_account_count, {
+        duration: 650,
+        decimals: 0,
+        suffix: " accounts"
+      });
+      animateNumericValue(document.getElementById("members-count"), ring.member_count, {
+        duration: 500,
+        decimals: 0
+      });
 
-      // Direct, clean meter bar updates
+      // Logical Signal Meter Bar Smooth Fills (SS2)
       const mDev = document.getElementById("meter-device");
       const mIp = document.getElementById("meter-ip");
       const mVel = document.getElementById("meter-vel");
       const mGnn = document.getElementById("meter-gnn");
       const mFresh = document.getElementById("meter-fresh");
 
-      if (mDev) mDev.style.width = `${Math.min(100, ring.shared_device_pct)}%`;
-      if (mIp) mIp.style.width = `${Math.min(100, (ring.shared_ip_pairs / 28) * 100)}%`;
-      if (mVel) mVel.style.width = `${Math.min(100, (ring.transaction_velocity / 45) * 100)}%`;
-      if (mGnn) mGnn.style.width = `${Math.min(100, ring.avg_model_score * 100)}%`;
-      if (mFresh) mFresh.style.width = `${Math.min(100, (ring.fresh_account_count / ring.member_count) * 100)}%`;
+      if (mDev) { mDev.style.width = "0%"; requestAnimationFrame(() => { mDev.style.width = `${Math.min(100, ring.shared_device_pct)}%`; }); }
+      if (mIp) { mIp.style.width = "0%"; requestAnimationFrame(() => { mIp.style.width = `${Math.min(100, (ring.shared_ip_pairs / 28) * 100)}%`; }); }
+      if (mVel) { mVel.style.width = "0%"; requestAnimationFrame(() => { mVel.style.width = `${Math.min(100, (ring.transaction_velocity / 45) * 100)}%`; }); }
+      if (mGnn) { mGnn.style.width = "0%"; requestAnimationFrame(() => { mGnn.style.width = `${Math.min(100, ring.avg_model_score * 100)}%`; }); }
+      if (mFresh) { mFresh.style.width = "0%"; requestAnimationFrame(() => { mFresh.style.width = `${Math.min(100, (ring.fresh_account_count / ring.member_count) * 100)}%`; }); }
 
       // Reset freeze button
       const freezeBtn = document.getElementById("freeze-btn");
@@ -2343,10 +2499,10 @@ html_template = """<!DOCTYPE html>
       freezeBtn.disabled = false;
       freezeBtn.style.opacity = "1";
 
-      // Render Account Chips instantly
+      // Sequential Staggered Account Chips Entrance (SS3)
       const chipsBox = document.getElementById("members-chips");
-      chipsBox.innerHTML = ring.members.map(m => `
-        <span class="chip-account" onclick="focusOnNode('user_${m}')">User ${m}</span>
+      chipsBox.innerHTML = ring.members.map((m, idx) => `
+        <span class="chip-account" style="animation-delay: ${idx * 45}ms;" onclick="focusOnNode('user_${m}')">User ${m}</span>
       `).join("");
 
       closeNodeInspector();
@@ -2480,12 +2636,12 @@ html_template = """<!DOCTYPE html>
 
         initCanvasRotationListeners();
 
-        network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+        fitGraphToScreen(false);
         setup3DCoordinates(initialPositions);
 
         if (physicsState) {
           network.once("stabilizationIterationsDone", function() {
-            network.fit({ animation: { duration: 250, easingFunction: "easeInOutQuad" } });
+            fitGraphToScreen(true);
             setup3DCoordinates(network.getPositions());
           });
         } else {
@@ -2689,7 +2845,7 @@ html_template = """<!DOCTYPE html>
 
     function resetGraphView() {
       resetGlobeView();
-      if (network) network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+      fitGraphToScreen(true);
     }
 
     function zoomIn() {
@@ -2910,7 +3066,7 @@ Action Recommendation: Coordinated mule syndicate detected. Initiate credential 
     window.addEventListener("resize", () => {
       if (network) {
         network.redraw();
-        network.fit();
+        fitGraphToScreen(false);
       }
     });
 
