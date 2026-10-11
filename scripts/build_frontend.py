@@ -25,15 +25,15 @@ html_template = """<!DOCTYPE html>
   <title>DarkNode — Fraud Syndicate Graph Intelligence</title>
   <!-- Vis-network CDN -->
   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-  <!-- Ultra-sharp Professional Fonts: Inter & JetBrains Mono -->
+  <!-- Ultra-sharp Professional Fonts: Inter with Tabular Figures -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
     :root {
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      --font-mono: 'JetBrains Mono', 'Segoe UI Mono', 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+      --font-mono: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
 
       /* Dark Grey Theme */
       --bg-base: #0f1013;
@@ -133,9 +133,10 @@ html_template = """<!DOCTYPE html>
     }
 
     .badge-pill {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-sans);
+      font-variant-numeric: tabular-nums;
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 700;
       padding: 2px 8px;
       border-radius: 6px;
       background: var(--bg-card);
@@ -163,7 +164,8 @@ html_template = """<!DOCTYPE html>
     }
 
     .stat-val {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-sans);
+      font-variant-numeric: tabular-nums;
       font-weight: 700;
       color: var(--text-main);
     }
@@ -189,7 +191,7 @@ html_template = """<!DOCTYPE html>
       background: transparent;
       border: none;
       color: var(--text-main);
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-sans);
       font-size: 11px;
       width: 160px;
       outline: none;
@@ -209,9 +211,9 @@ html_template = """<!DOCTYPE html>
     }
 
     .status-text {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-sans);
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--text-muted);
       letter-spacing: 0.04em;
     }
@@ -382,7 +384,8 @@ html_template = """<!DOCTYPE html>
     }
 
     .ring-risk-tag {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-sans);
+      font-variant-numeric: tabular-nums;
       font-size: 10px;
       font-weight: 700;
       padding: 2px 6px;
@@ -553,8 +556,9 @@ html_template = """<!DOCTYPE html>
     }
 
     .hero-score-val {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 30px;
+      font-family: var(--font-sans);
+      font-variant-numeric: tabular-nums;
+      font-size: 32px;
       font-weight: 800;
       line-height: 1;
       color: var(--yellow-primary);
@@ -570,7 +574,8 @@ html_template = """<!DOCTYPE html>
     }
 
     .hero-rank-badge {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-sans);
+      font-variant-numeric: tabular-nums;
       font-size: 10px;
       font-weight: 700;
       padding: 3px 8px;
@@ -610,7 +615,7 @@ html_template = """<!DOCTYPE html>
     }
 
     .signal-prefix-tag {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-sans);
       font-size: 9px;
       font-weight: 700;
       padding: 1px 4px;
@@ -628,7 +633,8 @@ html_template = """<!DOCTYPE html>
     }
 
     .signal-metric-val {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-sans);
+      font-variant-numeric: tabular-nums;
       font-weight: 700;
       color: var(--text-main);
     }
@@ -647,7 +653,8 @@ html_template = """<!DOCTYPE html>
     }
 
     .chip-account {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-sans);
+      font-variant-numeric: tabular-nums;
       font-size: 10px;
       font-weight: 600;
       padding: 3px 8px;
@@ -842,9 +849,9 @@ html_template = """<!DOCTYPE html>
     }
 
     .shortcut-badge {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-sans);
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 700;
       background: var(--bg-input);
       border: 1px solid var(--border-strong);
       padding: 2px 6px;
@@ -900,7 +907,7 @@ html_template = """<!DOCTYPE html>
     }
 
     .node-inspector-title {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-sans);
       font-size: 12px;
       font-weight: 700;
       color: var(--text-main);
@@ -949,7 +956,8 @@ html_template = """<!DOCTYPE html>
     }
 
     .inspect-val {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-sans);
+      font-variant-numeric: tabular-nums;
       font-weight: 700;
       color: var(--text-main);
     }
@@ -996,21 +1004,24 @@ html_template = """<!DOCTYPE html>
     }
 
     .bench-score-dim {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-sans);
+      font-variant-numeric: tabular-nums;
       font-size: 18px;
       font-weight: 700;
       color: var(--text-muted);
     }
 
     .bench-score-bright {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-sans);
+      font-variant-numeric: tabular-nums;
       font-size: 22px;
       font-weight: 800;
       color: var(--yellow-primary);
     }
 
     .bench-delta-tag {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-sans);
+      font-variant-numeric: tabular-nums;
       font-size: 10px;
       font-weight: 700;
       padding: 2px 7px;
@@ -1060,7 +1071,7 @@ html_template = """<!DOCTYPE html>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#111215" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><line x1="12" y1="9" x2="19" y2="6.5"/><line x1="12" y1="15" x2="5" y2="17.5"/></svg>
       </div>
       <div class="brand-title">
-        DarkNode
+        Dark<span class="kicker">Node</span>
         <span class="badge-pill">GNN-MPNN</span>
       </div>
     </div>
@@ -1306,7 +1317,7 @@ html_template = """<!DOCTYPE html>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#111215" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><line x1="12" y1="9" x2="19" y2="6.5"/><line x1="12" y1="15" x2="5" y2="17.5"/></svg>
           </div>
           <div class="modal-title">
-            DarkNode Operator Guide & Architecture
+            Dark<span style="color: var(--yellow-primary);">Node</span> Operator Guide & Architecture
           </div>
         </div>
         <button class="modal-close-btn" onclick="closeGuideModal()">
@@ -1442,7 +1453,7 @@ html_template = """<!DOCTYPE html>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#111215" stroke-width="2.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
           </div>
           <div class="modal-title">
-            DarkNode Empirical Benchmark — GNN vs Bank Rules
+            Dark<span style="color: var(--yellow-primary);">Node</span> Empirical Benchmark — GNN vs Bank Rules
           </div>
         </div>
         <button class="modal-close-btn" onclick="closeBenchmarkModal()">
@@ -1821,7 +1832,7 @@ html_template = """<!DOCTYPE html>
         ctx.setTransform(1, 0, 0, 1, 0, 0);
 
         const positions = network.getPositions();
-        ctx.font = "600 11px 'JetBrains Mono', monospace";
+        ctx.font = "600 11px 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
