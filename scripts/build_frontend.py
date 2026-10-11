@@ -162,22 +162,6 @@ html_template = """<!DOCTYPE html>
       justify-content: center;
     }
 
-    @keyframes statPulse {
-      0% {
-        transform: scale(1);
-        border-color: var(--border-subtle);
-      }
-      50% {
-        transform: scale(1.05);
-        border-color: var(--yellow-primary);
-        box-shadow: 0 0 12px rgba(250, 204, 21, 0.35);
-      }
-      100% {
-        transform: scale(1);
-        border-color: var(--border-subtle);
-      }
-    }
-
     .stat-pill {
       display: flex;
       align-items: center;
@@ -189,10 +173,6 @@ html_template = """<!DOCTYPE html>
       font-size: 11px;
       color: var(--text-muted);
       transition: all 0.2s ease;
-    }
-
-    .stat-pill.pulse {
-      animation: statPulse 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .stat-val {
@@ -517,60 +497,6 @@ html_template = """<!DOCTYPE html>
       height: 100% !important;
     }
 
-    /* GNN Scanning Wave Effect for Ring Transitions */
-    .canvas-scan-beam {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, transparent, rgba(250, 204, 21, 0.9), rgba(56, 189, 248, 0.9), transparent);
-      box-shadow: 0 0 15px rgba(250, 204, 21, 0.6), 0 0 30px rgba(56, 189, 248, 0.4);
-      pointer-events: none;
-      z-index: 12;
-      opacity: 0;
-    }
-
-    .canvas-scan-beam.scanning {
-      animation: scanBeamSweep 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
-    @keyframes scanBeamSweep {
-      0% { top: 0%; opacity: 0; }
-      20% { opacity: 0.95; }
-      80% { opacity: 0.95; }
-      100% { top: 100%; opacity: 0; }
-    }
-
-    /* HUD Subgraph Extracted Badge */
-    .gnn-hud-badge {
-      position: absolute;
-      top: 56px;
-      left: 14px;
-      background: rgba(17, 18, 22, 0.92);
-      backdrop-filter: blur(8px);
-      border: 1px solid var(--yellow-border);
-      border-radius: 6px;
-      padding: 4px 10px;
-      font-size: 10.5px;
-      font-weight: 700;
-      color: var(--yellow-primary);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      z-index: 15;
-      box-shadow: var(--shadow-card);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease, transform 0.25s ease;
-      transform: translateY(-4px);
-    }
-
-    .gnn-hud-badge.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
     /* Floating Graph Bar */
     .canvas-bar {
       position: absolute;
@@ -669,18 +595,6 @@ html_template = """<!DOCTYPE html>
       gap: 14px;
     }
 
-    @keyframes heroScorePulse {
-      0% {
-        box-shadow: 0 0 0 rgba(250, 204, 21, 0);
-      }
-      50% {
-        box-shadow: 0 0 16px rgba(250, 204, 21, 0.35);
-      }
-      100% {
-        box-shadow: 0 0 0 rgba(250, 204, 21, 0);
-      }
-    }
-
     /* Hero Risk Box */
     .hero-risk-box {
       background: var(--bg-card);
@@ -692,10 +606,6 @@ html_template = """<!DOCTYPE html>
       align-items: center;
       justify-content: space-between;
       transition: all 0.2s ease;
-    }
-
-    .hero-risk-box.pulse {
-      animation: heroScorePulse 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .hero-score-val {
@@ -795,17 +705,6 @@ html_template = """<!DOCTYPE html>
       border-radius: 9px;
     }
 
-    @keyframes chipEntrance {
-      from {
-        opacity: 0;
-        transform: scale(0.92);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
     .chip-account {
       font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
@@ -818,7 +717,6 @@ html_template = """<!DOCTYPE html>
       color: var(--yellow-primary);
       cursor: pointer;
       transition: all 0.12s ease;
-      animation: chipEntrance 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
     .chip-account:hover {
@@ -1347,8 +1245,6 @@ html_template = """<!DOCTYPE html>
 
       <!-- Graph Canvas Container (Guaranteed non-collapsing) -->
       <div class="canvas-outer">
-        <div class="canvas-scan-beam" id="scan-beam"></div>
-        <div class="gnn-hud-badge" id="gnn-scan-hud"></div>
         <div id="network-canvas"></div>
       </div>
 
@@ -1748,18 +1644,25 @@ html_template = """<!DOCTYPE html>
     let currentTierFilter = 'all';
     let inspectedNodeId = null;
 
-    // 3D Globe Trackball Rotation State (Manual Cursor-Only Rotation)
+    // =========================================================================
+    // BUTTERY-SMOOTH 3D GLOBE TRACKBALL (60-120 FPS ZERO LAG)
+    // =========================================================================
     let currentNodesDataSet = null;
     let baseNodes3D = {}; // { id: { x0: number, y0: number, z0: number, origSize: number } }
     let currentGraphCentroid = { x: 0, y: 0 };
     let currentYaw = 0; // Horizontal rotation around Y-axis (radians)
     let currentPitch = 0; // Vertical rotation around X-axis (radians)
+    let targetYaw = 0;
+    let targetPitch = 0;
     let globeModeActive = false;
     let isGlobeDragging = false;
     let dragStartX = 0;
     let dragStartY = 0;
     let dragStartYaw = 0;
     let dragStartPitch = 0;
+    let globeRafPending = false;
+    let analysisFaceAngle = 0;
+    let morphRafId = null;
 
     function calculateCentroid(positions) {
       let sumX = 0, sumY = 0, count = 0;
@@ -1778,6 +1681,8 @@ html_template = """<!DOCTYPE html>
       currentGraphCentroid = calculateCentroid(positions);
       currentYaw = 0;
       currentPitch = 0;
+      targetYaw = 0;
+      targetPitch = 0;
       updateGlobeIndicator();
 
       const ids = Object.keys(positions);
@@ -1812,47 +1717,50 @@ html_template = """<!DOCTYPE html>
       });
     }
 
-    function projectAndApplyGlobeRotation() {
-      if (!currentNodesDataSet || Object.keys(baseNodes3D).length === 0) return;
+    function renderGlobeFrame() {
+      globeRafPending = false;
+      if (!network || !network.body || !network.body.nodes) return;
+
+      // Smooth interpolation towards target yaw/pitch for fluid 60-120 FPS
+      currentYaw += (targetYaw - currentYaw) * 0.7;
+      currentPitch += (targetPitch - currentPitch) * 0.7;
 
       const cosYaw = Math.cos(currentYaw);
       const sinYaw = Math.sin(currentYaw);
       const cosPitch = Math.cos(currentPitch);
       const sinPitch = Math.sin(currentPitch);
-
-      // Camera focal distance for realistic perspective
       const fov = 750;
-      const updates = [];
 
       for (const id in baseNodes3D) {
-        const node = baseNodes3D[id];
-        // 1. Rotate around Y-axis (Yaw - horizontal spin)
-        const x1 = node.x0 * cosYaw + node.z0 * sinYaw;
-        const z1 = -node.x0 * sinYaw + node.z0 * cosYaw;
+        const node3D = baseNodes3D[id];
+        const visNode = network.body.nodes[id];
+        if (!visNode) continue;
 
-        // 2. Rotate around X-axis (Pitch - vertical tilt)
-        const y2 = node.y0 * cosPitch - z1 * sinPitch;
-        const z2 = node.y0 * sinPitch + z1 * cosPitch;
+        // 1. Rotate Yaw (Y-axis)
+        const x1 = node3D.x0 * cosYaw + node3D.z0 * sinYaw;
+        const z1 = -node3D.x0 * sinYaw + node3D.z0 * cosYaw;
+
+        // 2. Rotate Pitch (X-axis)
+        const y2 = node3D.y0 * cosPitch - z1 * sinPitch;
+        const z2 = node3D.y0 * sinPitch + z1 * cosPitch;
 
         // 3. Perspective projection
-        // Nodes closer (positive z2) scale up, nodes farther (negative z2) scale down
-        const perspectiveScale = fov / (fov + z2);
-        const screenX = currentGraphCentroid.x + x1 * perspectiveScale;
-        const screenY = currentGraphCentroid.y + y2 * perspectiveScale;
-
-        // Projected size (foreground nodes are larger and background nodes recede)
-        const projectedSize = Math.max(10, Math.min(34, Math.round(node.origSize * perspectiveScale)));
-
-        updates.push({
-          id: id,
-          x: screenX,
-          y: screenY,
-          size: projectedSize
-        });
+        const scale = fov / (fov + z2);
+        visNode.x = currentGraphCentroid.x + x1 * scale;
+        visNode.y = currentGraphCentroid.y + y2 * scale;
+        if (visNode.options) {
+          visNode.options.size = Math.max(10, Math.min(34, Math.round(node3D.origSize * scale)));
+        }
       }
 
-      currentNodesDataSet.update(updates);
-      updateGlobeIndicator();
+      network.redraw();
+
+      if (isGlobeDragging || Math.abs(currentYaw - targetYaw) > 0.0005 || Math.abs(currentPitch - targetPitch) > 0.0005) {
+        globeRafPending = true;
+        requestAnimationFrame(renderGlobeFrame);
+      } else {
+        updateGlobeIndicator();
+      }
     }
 
     function toggleGlobeMode() {
@@ -1869,21 +1777,50 @@ html_template = """<!DOCTYPE html>
       }
 
       if (network) {
-        network.setOptions({
-          interaction: {
-            dragView: !globeModeActive,
-            dragNodes: !globeModeActive
-          }
-        });
+        if (globeModeActive) {
+          network.setOptions({
+            physics: { enabled: false },
+            interaction: { dragView: false, dragNodes: false }
+          });
+          network.stopSimulation();
+        } else {
+          network.setOptions({
+            physics: { enabled: physicsState },
+            interaction: { dragView: true, dragNodes: true }
+          });
+        }
       }
 
-      showToast(`3D Globe Mode ${globeModeActive ? 'Enabled — Drag cursor horizontally or vertically to spin the model' : 'Disabled'}`);
+      showToast(`3D Globe Mode ${globeModeActive ? 'Enabled — Drag cursor horizontally or vertically to spin smoothly' : 'Disabled'}`);
     }
 
     function resetGlobeView() {
+      targetYaw = 0;
+      targetPitch = 0;
       currentYaw = 0;
       currentPitch = 0;
-      projectAndApplyGlobeRotation();
+      if (network && network.body && network.body.nodes) {
+        for (const id in baseNodes3D) {
+          const node3D = baseNodes3D[id];
+          const visNode = network.body.nodes[id];
+          if (visNode) {
+            visNode.x = currentGraphCentroid.x + node3D.x0;
+            visNode.y = currentGraphCentroid.y + node3D.y0;
+            if (visNode.options) visNode.options.size = node3D.origSize;
+          }
+        }
+        network.redraw();
+      }
+      if (currentNodesDataSet) {
+        const finalUpdates = Object.keys(baseNodes3D).map(id => ({
+          id,
+          x: currentGraphCentroid.x + baseNodes3D[id].x0,
+          y: currentGraphCentroid.y + baseNodes3D[id].y0,
+          size: baseNodes3D[id].origSize
+        }));
+        currentNodesDataSet.update(finalUpdates);
+      }
+      updateGlobeIndicator();
       if (network) {
         network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
       }
@@ -1911,14 +1848,12 @@ html_template = """<!DOCTYPE html>
       container.dataset.rotListenersAttached = "true";
 
       container.addEventListener("contextmenu", (e) => {
-        // Prevent default context menu so right-click can be used for rotation
         if (globeModeActive || e.altKey || e.shiftKey) {
           e.preventDefault();
         }
       });
 
       container.addEventListener("mousedown", (e) => {
-        // Rotate if globe mode is active, or if holding Alt / right mouse button
         const isTrigger = globeModeActive || e.altKey || e.button === 2;
         if (!isTrigger || !network) return;
 
@@ -1927,9 +1862,15 @@ html_template = """<!DOCTYPE html>
         dragStartY = e.clientY;
         dragStartYaw = currentYaw;
         dragStartPitch = currentPitch;
+        targetYaw = currentYaw;
+        targetPitch = currentPitch;
         container.style.cursor = "grabbing";
 
-        network.setOptions({ interaction: { dragView: false, dragNodes: false } });
+        network.setOptions({
+          physics: { enabled: false },
+          interaction: { dragView: false, dragNodes: false }
+        });
+        network.stopSimulation();
 
         e.preventDefault();
         e.stopPropagation();
@@ -1941,15 +1882,16 @@ html_template = """<!DOCTYPE html>
         const deltaX = e.clientX - dragStartX;
         const deltaY = e.clientY - dragStartY;
 
-        // Sensitivity: 0.007 radians per pixel
-        currentYaw = dragStartYaw + deltaX * 0.007;
+        targetYaw = dragStartYaw + deltaX * 0.007;
 
-        // Pitch is clamped to prevent upside-down gimbal flipping (-75deg to +75deg)
         const maxPitch = (75 * Math.PI) / 180;
         const rawPitch = dragStartPitch - deltaY * 0.007;
-        currentPitch = Math.max(-maxPitch, Math.min(maxPitch, rawPitch));
+        targetPitch = Math.max(-maxPitch, Math.min(maxPitch, rawPitch));
 
-        projectAndApplyGlobeRotation();
+        if (!globeRafPending) {
+          globeRafPending = true;
+          requestAnimationFrame(renderGlobeFrame);
+        }
       });
 
       window.addEventListener("mouseup", (e) => {
@@ -1967,61 +1909,131 @@ html_template = """<!DOCTYPE html>
             }
           });
         }
+        if (currentNodesDataSet && network && network.body && network.body.nodes) {
+          const finalUpdates = [];
+          for (const id in baseNodes3D) {
+            const visNode = network.body.nodes[id];
+            if (visNode) finalUpdates.push({ id, x: visNode.x, y: visNode.y });
+          }
+          if (finalUpdates.length > 0) currentNodesDataSet.update(finalUpdates);
+        }
+        updateGlobeIndicator();
       });
     }
 
-    // Logical GNN Scanning Animation Trigger
-    function triggerScanAnimation(ringId, memberCount, devicePct) {
-      const beam = document.getElementById("scan-beam");
-      const hud = document.getElementById("gnn-scan-hud");
-
-      if (beam) {
-        beam.classList.remove("scanning");
-        void beam.offsetWidth;
-        beam.classList.add("scanning");
+    // =========================================================================
+    // MODEL TRACTION & SMOOTH FACE TRANSITION (NO DIRECT JUMP)
+    // =========================================================================
+    function computeTargetLayout(graphData, callback) {
+      let offscreen = document.getElementById("offscreen-canvas");
+      if (!offscreen) {
+        offscreen = document.createElement("div");
+        offscreen.id = "offscreen-canvas";
+        offscreen.style.cssText = "position:absolute;left:-9999px;top:-9999px;width:800px;height:600px;visibility:hidden;pointer-events:none;";
+        document.body.appendChild(offscreen);
       }
 
-      if (hud) {
-        hud.innerHTML = `
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          <span>GNN Subgraph Inferred • Ring #${ringId} (${memberCount} USR • ${devicePct}% DEV)</span>
-        `;
-        hud.classList.add("visible");
-        clearTimeout(hud._hideTimeout);
-        hud._hideTimeout = setTimeout(() => {
-          hud.classList.remove("visible");
-        }, 1600);
+      const visibleNodes = graphData.nodes.filter(n => activeFilters[n.group] !== false);
+      const visibleIds = new Set(visibleNodes.map(n => n.id));
+      const visibleEdges = (graphData.edges || []).filter(e => visibleIds.has(e.from) && visibleIds.has(e.to));
+
+      const tempNodes = new vis.DataSet(visibleNodes.map(n => ({ id: n.id })));
+      const tempEdges = new vis.DataSet(visibleEdges.map(e => ({ from: e.from, to: e.to })));
+
+      const tempOptions = {
+        physics: {
+          enabled: true,
+          solver: "forceAtlas2Based",
+          forceAtlas2Based: {
+            gravitationalConstant: -420,
+            centralGravity: 0.003,
+            springLength: currentSpringLength,
+            springConstant: 0.035,
+            damping: 0.45,
+            avoidOverlap: 1.0
+          },
+          stabilization: {
+            enabled: true,
+            iterations: 120,
+            updateInterval: 25
+          }
+        }
+      };
+
+      let completed = false;
+      const tempNet = new vis.Network(offscreen, { nodes: tempNodes, edges: tempEdges }, tempOptions);
+
+      function finalize() {
+        if (completed) return;
+        completed = true;
+        const positions = tempNet.getPositions();
+        tempNet.destroy();
+        callback(positions);
       }
+
+      tempNet.once("stabilizationIterationsDone", finalize);
+      setTimeout(finalize, 180); // Safety fallback
     }
 
-    let scoreAnimTimer = null;
-    function animateScoreCounter(targetScore, duration = 450) {
-      const el = document.getElementById("threat-score-num");
-      const box = document.querySelector(".hero-risk-box");
-      if (box) {
-        box.classList.remove("pulse");
-        void box.offsetWidth;
-        box.classList.add("pulse");
-      }
-      if (!el) return;
-      if (scoreAnimTimer) cancelAnimationFrame(scoreAnimTimer);
-
-      const start = 0;
+    function animateTractionMorph(startPositions, targetPositions, onComplete, duration = 650) {
+      if (morphRafId) cancelAnimationFrame(morphRafId);
       const startTime = performance.now();
-      function tick(now) {
-        const elapsed = now - startTime;
-        const progress = Math.min(1, elapsed / duration);
-        const ease = 1 - (1 - progress) * (1 - progress);
-        const current = (start + (targetScore - start) * ease).toFixed(1);
-        el.innerText = `${current}%`;
-        if (progress < 1) {
-          scoreAnimTimer = requestAnimationFrame(tick);
-        } else {
-          el.innerText = `${targetScore.toFixed(1)}%`;
-          scoreAnimTimer = null;
+      const nodeIds = Object.keys(targetPositions);
+
+      if (network) {
+        network.setOptions({ physics: { enabled: false } });
+        network.stopSimulation();
+      }
+
+      let sumX = 0, sumY = 0, cCount = 0;
+      for (const id in startPositions) {
+        if (startPositions[id]) {
+          sumX += startPositions[id].x;
+          sumY += startPositions[id].y;
+          cCount++;
         }
       }
-      scoreAnimTimer = requestAnimationFrame(tick);
+      const fallbackX = cCount > 0 ? sumX / cCount : 0;
+      const fallbackY = cCount > 0 ? sumY / cCount : 0;
+
+      function step(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        // Elastic spring traction ease-out
+        const ease = 1 - Math.pow(1 - progress, 3);
+
+        for (const id of nodeIds) {
+          const visNode = network && network.body && network.body.nodes ? network.body.nodes[id] : null;
+          if (!visNode) continue;
+
+          const s = startPositions[id] || { x: fallbackX, y: fallbackY };
+          const t = targetPositions[id];
+
+          visNode.x = s.x + (t.x - s.x) * ease;
+          visNode.y = s.y + (t.y - s.y) * ease;
+        }
+
+        if (network) network.redraw();
+
+        if (progress < 1) {
+          morphRafId = requestAnimationFrame(step);
+        } else {
+          morphRafId = null;
+          const finalUpdates = nodeIds.map(id => ({
+            id: id,
+            x: targetPositions[id].x,
+            y: targetPositions[id].y
+          }));
+          if (currentNodesDataSet) currentNodesDataSet.update(finalUpdates);
+          setup3DCoordinates(targetPositions);
+          if (network) {
+            network.fit({ animation: { duration: 300, easingFunction: "easeInOutQuad" } });
+          }
+          if (onComplete) onComplete();
+        }
+      }
+
+      morphRafId = requestAnimationFrame(step);
     }
 
     async function fetchRings() {
@@ -2087,13 +2099,6 @@ html_template = """<!DOCTYPE html>
         if (analyzeText) {
           analyzeText.innerText = "Run Analysis";
         }
-
-        // Trigger telemetry pulse on stat pills
-        document.querySelectorAll(".stat-pill").forEach(p => {
-          p.classList.remove("pulse");
-          void p.offsetWidth;
-          p.classList.add("pulse");
-        });
       }
 
       document.getElementById("stat-rings").innerText = allRings.length;
@@ -2110,7 +2115,7 @@ html_template = """<!DOCTYPE html>
 
       renderRingsList(allRings);
       if (allRings.length > 0) {
-        selectRing(0);
+        selectRing(activeIndex, true);
       }
     }
 
@@ -2192,13 +2197,10 @@ html_template = """<!DOCTYPE html>
       renderRingsList(filtered);
     }
 
-    function selectRing(index) {
+    function selectRing(index, isAnalysisTriggered = false) {
       activeIndex = index;
       const ring = allRings[index];
       if (!ring) return;
-
-      // Trigger GNN subgraph scanning wave + HUD indicator
-      triggerScanAnimation(ring.ring_id, ring.member_count, ring.shared_device_pct);
 
       // Update Active States
       const cards = document.querySelectorAll(".ring-card-item");
@@ -2209,8 +2211,8 @@ html_template = """<!DOCTYPE html>
       document.getElementById("inspector-badge").innerText = `RANK #${ring.rank || index + 1}`;
       document.getElementById("threat-rank-pill").innerText = `RANK #${ring.rank || index + 1}`;
 
-      // Smooth count-up animation for Threat Risk Score
-      animateScoreCounter(ring.score * 100);
+      // Instant Threat Risk Score
+      document.getElementById("threat-score-num").innerText = `${(ring.score * 100).toFixed(1)}%`;
 
       document.getElementById("sig-device").innerText = `${ring.shared_device_pct}%`;
       document.getElementById("sig-ip").innerText = `${ring.shared_ip_pairs} pairs`;
@@ -2219,34 +2221,18 @@ html_template = """<!DOCTYPE html>
       document.getElementById("sig-fresh").innerText = `${ring.fresh_account_count} accounts`;
       document.getElementById("members-count").innerText = ring.member_count;
 
-      // Update Visual Signal Meter Bars with smooth sweep
+      // Direct, clean meter bar updates
       const mDev = document.getElementById("meter-device");
       const mIp = document.getElementById("meter-ip");
       const mVel = document.getElementById("meter-vel");
       const mGnn = document.getElementById("meter-gnn");
       const mFresh = document.getElementById("meter-fresh");
 
-      const wDev = `${Math.min(100, ring.shared_device_pct)}%`;
-      const wIp = `${Math.min(100, (ring.shared_ip_pairs / 28) * 100)}%`;
-      const wVel = `${Math.min(100, (ring.transaction_velocity / 45) * 100)}%`;
-      const wGnn = `${Math.min(100, ring.avg_model_score * 100)}%`;
-      const wFresh = `${Math.min(100, (ring.fresh_account_count / ring.member_count) * 100)}%`;
-
-      if (mDev) mDev.style.width = "0%";
-      if (mIp) mIp.style.width = "0%";
-      if (mVel) mVel.style.width = "0%";
-      if (mGnn) mGnn.style.width = "0%";
-      if (mFresh) mFresh.style.width = "0%";
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (mDev) mDev.style.width = wDev;
-          if (mIp) mIp.style.width = wIp;
-          if (mVel) mVel.style.width = wVel;
-          if (mGnn) mGnn.style.width = wGnn;
-          if (mFresh) mFresh.style.width = wFresh;
-        });
-      });
+      if (mDev) mDev.style.width = `${Math.min(100, ring.shared_device_pct)}%`;
+      if (mIp) mIp.style.width = `${Math.min(100, (ring.shared_ip_pairs / 28) * 100)}%`;
+      if (mVel) mVel.style.width = `${Math.min(100, (ring.transaction_velocity / 45) * 100)}%`;
+      if (mGnn) mGnn.style.width = `${Math.min(100, ring.avg_model_score * 100)}%`;
+      if (mFresh) mFresh.style.width = `${Math.min(100, (ring.fresh_account_count / ring.member_count) * 100)}%`;
 
       // Reset freeze button
       const freezeBtn = document.getElementById("freeze-btn");
@@ -2254,18 +2240,18 @@ html_template = """<!DOCTYPE html>
       freezeBtn.disabled = false;
       freezeBtn.style.opacity = "1";
 
-      // Render Account Chips with staggered entrance
+      // Render Account Chips instantly
       const chipsBox = document.getElementById("members-chips");
-      chipsBox.innerHTML = ring.members.map((m, idx) => `
-        <span class="chip-account" style="animation-delay: ${idx * 25}ms;" onclick="focusOnNode('user_${m}')">User ${m}</span>
+      chipsBox.innerHTML = ring.members.map(m => `
+        <span class="chip-account" onclick="focusOnNode('user_${m}')">User ${m}</span>
       `).join("");
 
       closeNodeInspector();
-      // Render Graph
-      renderGraph(ring.graph);
+      // Render Graph with smooth model traction morph
+      renderGraph(ring.graph, isAnalysisTriggered);
     }
 
-    function renderGraph(graphData) {
+    function renderGraph(graphData, isAnalysisTriggered = false) {
       const container = document.getElementById("network-canvas");
       if (!container || !graphData || !graphData.nodes) return;
 
@@ -2377,85 +2363,162 @@ html_template = """<!DOCTYPE html>
         }
       };
 
-      if (network) network.destroy();
-      currentNodesDataSet = nodes;
-      network = new vis.Network(container, data, options);
+      // FIRST LOAD: Initialize network instance
+      if (!network) {
+        currentNodesDataSet = nodes;
+        network = new vis.Network(container, data, options);
 
-      initCanvasRotationListeners();
+        initCanvasRotationListeners();
 
-      // Once layout stabilizes, lock into static view so zooming is 100% calm and smooth
-      network.once("stabilizationIterationsDone", function() {
-        network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
-        network.stopSimulation();
-        setup3DCoordinates(network.getPositions());
-      });
-
-      // Update 3D base positions if user drags an individual node in standard mode
-      network.on("dragEnd", function(params) {
-        if (params.nodes && params.nodes.length > 0 && !isGlobeDragging && !globeModeActive) {
+        // Once layout stabilizes, lock into static view so zooming is 100% calm and smooth
+        network.once("stabilizationIterationsDone", function() {
+          network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+          network.stopSimulation();
+          network.setOptions({ physics: { enabled: false } });
           setup3DCoordinates(network.getPositions());
-        }
-      });
+        });
 
-      // =========================================================================
-      // CONSTANT SCREEN TEXT SIZE & VISIBILITY AT ALL ZOOM LEVELS
-      // =========================================================================
-      // Rendered directly in native 1:1 screen pixel coordinates via afterDrawing.
-      // Text size stays precisely 11px on screen whether zoomed in or zoomed out!
-      network.on("afterDrawing", function(ctx) {
-        ctx.save();
-        // Reset canvas matrix to 1:1 screen device pixels
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        // Update 3D base positions if user drags an individual node in standard mode
+        network.on("dragEnd", function(params) {
+          if (params.nodes && params.nodes.length > 0 && !isGlobeDragging && !globeModeActive) {
+            setup3DCoordinates(network.getPositions());
+          }
+        });
 
-        const positions = network.getPositions();
-        ctx.font = "600 11px 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
+        // =========================================================================
+        // CONSTANT SCREEN TEXT SIZE & VISIBILITY AT ALL ZOOM LEVELS
+        // =========================================================================
+        network.on("afterDrawing", function(ctx) {
+          ctx.save();
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-        for (const node of currentVisibleNodes) {
-          const pos = positions[node.id];
-          if (!pos) continue;
-          const domPos = network.canvasToDOM({ x: pos.x, y: pos.y });
+          const positions = network.getPositions();
+          ctx.font = "600 11px 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
 
-          // Skip drawing if outside viewport
-          if (domPos.x < -60 || domPos.x > container.clientWidth + 60 ||
-              domPos.y < -60 || domPos.y > container.clientHeight + 60) {
-            continue;
+          for (const node of currentVisibleNodes) {
+            const pos = positions[node.id];
+            if (!pos) continue;
+            const domPos = network.canvasToDOM({ x: pos.x, y: pos.y });
+
+            // Skip drawing if outside viewport
+            if (domPos.x < -60 || domPos.x > container.clientWidth + 60 ||
+                domPos.y < -60 || domPos.y > container.clientHeight + 60) {
+              continue;
+            }
+
+            const labelText = node.label;
+            const yOffset = (node.group === "device" ? 22 : 18);
+            const textX = domPos.x;
+            const textY = domPos.y + yOffset;
+
+            const textWidth = ctx.measureText(labelText).width;
+            ctx.fillStyle = "rgba(17, 18, 22, 0.92)";
+            ctx.beginPath();
+            ctx.roundRect(textX - textWidth / 2 - 5, textY - 8, textWidth + 10, 16, 4);
+            ctx.fill();
+
+            ctx.strokeStyle = node.group === "user" ? "rgba(250, 204, 21, 0.4)" : (node.group === "device" ? "rgba(56, 189, 248, 0.4)" : "rgba(52, 211, 153, 0.4)");
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+
+            ctx.fillStyle = node.group === "user" ? "#facc15" : (node.group === "device" ? "#38bdf8" : "#34d399");
+            ctx.fillText(labelText, textX, textY);
           }
 
-          const labelText = node.label;
-          const yOffset = (node.group === "device" ? 22 : 18);
-          const textX = domPos.x;
-          const textY = domPos.y + yOffset;
+          ctx.restore();
+        });
 
-          // Crisp dark background pill for high contrast
-          const textWidth = ctx.measureText(labelText).width;
-          ctx.fillStyle = "rgba(17, 18, 22, 0.92)";
-          ctx.beginPath();
-          ctx.roundRect(textX - textWidth / 2 - 5, textY - 8, textWidth + 10, 16, 4);
-          ctx.fill();
+        // Click node to open deep inspector
+        network.on("click", function(params) {
+          if (globeModeActive) return;
+          if (params.nodes.length > 0) {
+            showNodeInspector(params.nodes[0]);
+          } else {
+            closeNodeInspector();
+          }
+        });
 
-          // Subtle entity outline border
-          ctx.strokeStyle = node.group === "user" ? "rgba(250, 204, 21, 0.4)" : (node.group === "device" ? "rgba(56, 189, 248, 0.4)" : "rgba(52, 211, 153, 0.4)");
-          ctx.lineWidth = 0.8;
-          ctx.stroke();
+        return;
+      }
 
-          // Text fill color
-          ctx.fillStyle = node.group === "user" ? "#facc15" : (node.group === "device" ? "#38bdf8" : "#34d399");
-          ctx.fillText(labelText, textX, textY);
+      // SUBSEQUENT RENDERS / RUN ANALYSIS:
+      // Smooth model traction face-morphing (NO DIRECT JUMP)
+      const oldPositions = network.getPositions();
+      const oldCentroid = calculateCentroid(oldPositions);
+
+      computeTargetLayout(graphData, function(targetPositions) {
+        // If analysis was re-run on the model, rotate/relax target face (like SS1 to SS2)
+        if (isAnalysisTriggered) {
+          analysisFaceAngle = (analysisFaceAngle + Math.PI * 0.42) % (Math.PI * 2);
+        }
+        if (analysisFaceAngle !== 0) {
+          const tc = calculateCentroid(targetPositions);
+          const cos = Math.cos(analysisFaceAngle);
+          const sin = Math.sin(analysisFaceAngle);
+          for (const id in targetPositions) {
+            const p = targetPositions[id];
+            const dx = p.x - tc.x;
+            const dy = p.y - tc.y;
+            targetPositions[id] = {
+              x: tc.x + dx * cos - dy * sin,
+              y: tc.y + dx * sin + dy * cos
+            };
+          }
         }
 
-        ctx.restore();
-      });
+        // Initialize node coordinates at current on-screen positions so they don't jump
+        const positionedNodes = visibleNodes.map(n => {
+          const p = oldPositions[n.id] || {
+            x: oldCentroid.x + (Math.random() - 0.5) * 50,
+            y: oldCentroid.y + (Math.random() - 0.5) * 50
+          };
+          let color = "#facc15";
+          let shape = "dot";
+          let size = 20;
 
-      // Click node to open deep inspector
-      network.on("click", function(params) {
-        if (globeModeActive) return;
-        if (params.nodes.length > 0) {
-          showNodeInspector(params.nodes[0]);
-        } else {
-          closeNodeInspector();
-        }
+          if (n.group === "user") {
+            color = "#facc15";
+            shape = "dot";
+            size = 20;
+          } else if (n.group === "device") {
+            color = "#38bdf8";
+            shape = "diamond";
+            size = 22;
+          } else if (n.group === "merchant") {
+            color = "#34d399";
+            shape = "triangle";
+            size = 18;
+          }
+
+          return {
+            id: n.id,
+            label: " ",
+            actualLabel: n.label,
+            group: n.group,
+            color: {
+              background: color,
+              border: "#ffffff",
+              highlight: { background: "#ffffff", border: color }
+            },
+            borderWidth: 2,
+            shape: shape,
+            size: size,
+            shadow: { enabled: true, color: "rgba(0, 0, 0, 0.6)", size: 6, x: 0, y: 3 },
+            x: p.x,
+            y: p.y
+          };
+        });
+
+        const newNodesDataSet = new vis.DataSet(positionedNodes);
+        currentNodesDataSet = newNodesDataSet;
+        network.setData({ nodes: newNodesDataSet, edges: edges });
+
+        // Launch smooth traction morph transition between faces
+        animateTractionMorph(oldPositions, targetPositions, function() {
+          setup3DCoordinates(targetPositions);
+        }, 650);
       });
     }
 
