@@ -60,25 +60,30 @@ Traditional rule-based engines (e.g., flagging accounts with burst activity or s
   | FASTAPI BACKEND (api/main.py)      |   | INTERACTIVE WEB UI (web/index.html)|
   |  - POST /analyze                   |   |  - Force-Directed Vis-Network      |
   |  - GET /health (Render Uptime)     |   |  - Ring Rank Sidebar & Evidence    |
-  +------------------------------------+   |  - One-Click Account Freeze Action |
+  +------------------------------------+   |  - Account Freeze Simulation (Demo)|
                                            +------------------------------------+
 ```
 
 ---
 
-## Baseline Comparison Note
+## Baseline Comparison Note & Metric Analysis
 
-To quantify the value of the Graph Neural Network against conventional heuristics, DarkNode includes a benchmark suite (`src/ring/baseline.py`) evaluated against the same holdout validation split:
+To evaluate model performance, DarkNode includes a rule-based heuristic baseline (`src/ring/baseline.py`) evaluated against the same holdout validation split:
 
-| Metric | Rule-Based Baseline | DarkNode Heterogeneous GNN | Performance Lift |
-| :--- | :---: | :---: | :---: |
-| **Accuracy** | 84.0% | **99.5%** | **+15.5%** |
-| **ROC-AUC** | 1.000 | **1.000** | Ground truth separation |
-| **Average Precision** | 1.000 | **1.000** | High-rank fidelity |
-| **Precision** | 41.9% | **95.0%** | **+53.1% (Massive reduction in False Positives)** |
-| **F1-Score** | 0.591 | **0.974** | **+38.3%** |
+| Metric | Rule-Based Heuristic | DarkNode Heterogeneous GNN | Performance Analysis |
+| :--- | :---: | :---: | :--- |
+| **Accuracy** | 84.0% | **99.5%** | **+15.5% overall accuracy gain** |
+| **ROC-AUC** | 1.000 | **1.000** | Saturated on synthetic signals (see note below) |
+| **Average Precision** | 1.000 | **1.000** | Saturated on synthetic signals (see note below) |
+| **Precision** | 41.9% | **95.0%** | **+53.1% lift (58% drop in false alarms)** |
+| **F1-Score** | 0.591 | **0.974** | **+38.3% lift in balanced detection** |
 
-> **Key Takeaway**: Simple rules flag many benign users who happen to connect from shared Wi-Fi networks or public terminals. The Heterogeneous MPNN captures multi-hop contextual interactions, eliminating over 50% of false alarms.
+### Why ROC-AUC and AP Don't Tell the Full Story
+On synthetic benchmark datasets with clean demarcations, ranked discrimination metrics like **ROC-AUC** and **Average Precision (AP)** both saturate near `1.000` because extreme burst velocity pushes true fraudsters into the top ranking deciles for both approaches.
+
+The **critical operational gap** is revealed in **Precision (41.9% vs. 95.0%)** and **F1-Score (0.591 vs. 0.974)**:
+- **Heuristic Failure**: Simple thresholds (sharing a device with 3+ users or exceeding 5 tx/hr) flag legitimate users in public Wi-Fi hotspots, shared family devices, or during promotional shopping bursts—producing a **58.1% false-positive rate** that would overwhelm fraud operations.
+- **GNN Advantage**: The Heterogeneous MPNN synthesizes multi-hop neighborhood context (e.g. *who* else uses the device, *which* merchant cohort is targeted, and *how* the temporal network evolves), effectively filtering out benign shared devices while preserving 95%+ precision.
 
 ---
 
@@ -86,14 +91,19 @@ To quantify the value of the Graph Neural Network against conventional heuristic
 
 ### 1. Installation
 
-```powershell
+```bash
 # Clone repository
 git clone https://github.com/adittt18/DarkNode.git
 cd DarkNode
 
-# Create and activate virtual environment
+# Create virtual environment
 python -m venv .venv
+
+# Activate virtual environment
+# Windows (PowerShell):
 .\.venv\Scripts\Activate.ps1
+# Linux / macOS:
+source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
@@ -115,7 +125,7 @@ python -m pytest
 
 ### 4. Train Model & Benchmark
 
-Train the Heterogeneous GraphSAGE MPNN detector and benchmark against the baseline:
+Train the Heterogeneous GraphSAGE MPNN detector and benchmark against the heuristic baseline:
 
 ```powershell
 python -m src.training.train data\synthetic_fraud_graph.pt --epochs 20 --output data\fraud_model.pt
@@ -126,13 +136,13 @@ python -m src.training.train data\synthetic_fraud_graph.pt --epochs 20 --output 
 ```powershell
 uvicorn api.main:app --reload --port 8000
 ```
-- Interactive API Docs: `http://localhost:8000/docs`
+- Interactive API Documentation: `http://localhost:8000/docs`
 - Health check: `http://localhost:8000/health`
 - Run inference & extract rings: `POST http://localhost:8000/analyze`
 
 ### 6. Launch Web Dashboard
 
-Simply open `web/index.html` directly in any web browser, or serve it via python:
+Simply open `web/index.html` directly in any web browser, or serve it locally:
 ```powershell
 python -m http.server 3000 --directory web
 ```
@@ -143,25 +153,50 @@ Navigate to `http://localhost:3000` to inspect the live force-directed fraud rin
 ## Deployment Instructions
 
 ### Backend (Render)
-1. Fork or push the repository to GitHub.
-2. In [Render Dashboard](https://dashboard.render.com/), create a new **Web Service**.
-3. Configure the service:
+1. In [Render Dashboard](https://dashboard.render.com/), create a new **Web Service** linked to your repository.
+2. Configuration:
    - **Environment**: Python 3
    - **Root Directory**: `.`
    - **Build Command**: `pip install -r api/requirements.txt`
    - **Start Command**: `uvicorn api.main:app --host 0.0.0.0 --port $PORT`
-4. The health endpoint `GET /health` can be used for zero-downtime health checks.
+3. **Resource Optimization Note**:
+   - `api/requirements.txt` is pre-configured with CPU-only PyTorch (`--extra-index-url https://download.pytorch.org/whl/cpu`) to keep the build image under Render's free tier slug and 512 MB memory threshold.
+   - For low-memory instances, set environment variable `WEB_CONCURRENCY=1`.
+4. The health endpoint `GET /health` is configured for zero-downtime uptime monitoring.
 
 ### Frontend (Vercel)
 1. Go to [Vercel](https://vercel.com/) and click **Add New Project**.
 2. Select your repository.
 3. Set **Root Directory** to `web`.
 4. Leave build settings empty (Pure HTML/JS static deployment).
-5. Deploy! Open the deployed URL and enter your Render API endpoint in the header input to stream live graph data.
+5. Deploy! In the live dashboard, enter your Render API endpoint in the top header to stream live graph data.
 
 ---
 
-## Dataset & Extensibility
+## Dataset Scope & Real-World Adaptation
 
-- **Default (Synthetic)**: By default, `src/data_processing/generate_synthetic_graph.py` generates deterministic, scalable fraud graph networks containing user, device, merchant nodes, burst timestamps, and ground-truth ring memberships.
-- **Real-World Benchmarks**: To adapt DarkNode to benchmarks such as **IBM AML** or **Elliptic Bitcoin Dataset**, simply map transaction entities to the canonical schema defined in [`src/schema.py`](file:///c:/Users/Aditya%20Sasamal/OneDrive/Desktop/SIH26166/src/schema.py). The GNN message-passing convolutions and community extraction modules automatically adapt to any arbitrary topology.
+- **Default Benchmark (Synthetic)**: By default, `src/data_processing/generate_synthetic_graph.py` generates deterministic, scalable fraud networks containing user, device, merchant nodes, burst timestamps, and ground-truth ring memberships.
+- **Real-World AML Data Limitations**: Public anti-money-laundering datasets like **Elliptic (Bitcoin)** or **IBM AML** primarily capture transaction flows (address-to-address or entity-to-entity) and **lack physical device or IP telemetry**. 
+- **Adapting to Real Environments**: DarkNode is intentionally architected for production banking and fintech environments where rich telemetry (device fingerprints, browser hashes, IP subnets, merchant gateways) is available. For pure transaction datasets without device data, the schema can be projected into bipartite user-merchant or account-account flow subgraphs, though the system demonstrates maximum defensive lift when multi-entity relationships are present.
+
+---
+
+## Interactive UI Features
+
+- **Force-Directed Graph**: Powered by `vis-network` with smooth physics stabilization and node clustering.
+- **Evidence Inspector**: Breakdowns of shared device %, shared IP pairs, burst velocity, GNN fraud confidence, and rapid accounts.
+- **Node-Level Focus**: Click individual user accounts to zoom and isolate their neighborhood graph.
+- **Account Freeze Simulation (Demo)**: A simulated mitigation action designed for hackathon walkthroughs to demonstrate operational compliance workflows.
+- **JSON Export**: One-click download of structured ring payloads for compliance auditing.
+
+---
+
+## Acknowledgements & Attribution
+
+This project builds upon the foundational research and graph schema designs from **Apate** by **Oishik Guha**, expanded here into the **DarkNode** platform with community ring extraction, heuristic benchmarking, a lightweight FastAPI backend, and an interactive intelligence interface.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
