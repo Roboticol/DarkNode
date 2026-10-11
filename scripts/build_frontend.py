@@ -150,6 +150,34 @@ html_template = """<!DOCTYPE html>
       gap: 10px;
     }
 
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .spin-icon {
+      animation: spin 0.85s linear infinite;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @keyframes statPulse {
+      0% {
+        transform: scale(1);
+        border-color: var(--border-subtle);
+      }
+      50% {
+        transform: scale(1.05);
+        border-color: var(--yellow-primary);
+        box-shadow: 0 0 12px rgba(250, 204, 21, 0.35);
+      }
+      100% {
+        transform: scale(1);
+        border-color: var(--border-subtle);
+      }
+    }
+
     .stat-pill {
       display: flex;
       align-items: center;
@@ -160,6 +188,11 @@ html_template = """<!DOCTYPE html>
       border-radius: 7px;
       font-size: 11px;
       color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+
+    .stat-pill.pulse {
+      animation: statPulse 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .stat-val {
@@ -374,6 +407,17 @@ html_template = """<!DOCTYPE html>
       gap: 6px;
     }
 
+    @keyframes cardSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     /* Ring Card Item */
     .ring-card-item {
       background: var(--bg-card);
@@ -386,6 +430,7 @@ html_template = """<!DOCTYPE html>
       flex-direction: column;
       gap: 6px;
       position: relative;
+      animation: cardSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
     .ring-card-item:hover {
@@ -582,6 +627,18 @@ html_template = """<!DOCTYPE html>
       gap: 14px;
     }
 
+    @keyframes heroScorePulse {
+      0% {
+        box-shadow: 0 0 0 rgba(250, 204, 21, 0);
+      }
+      50% {
+        box-shadow: 0 0 16px rgba(250, 204, 21, 0.35);
+      }
+      100% {
+        box-shadow: 0 0 0 rgba(250, 204, 21, 0);
+      }
+    }
+
     /* Hero Risk Box */
     .hero-risk-box {
       background: var(--bg-card);
@@ -592,6 +649,11 @@ html_template = """<!DOCTYPE html>
       display: flex;
       align-items: center;
       justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+
+    .hero-risk-box.pulse {
+      animation: heroScorePulse 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .hero-score-val {
@@ -691,6 +753,17 @@ html_template = """<!DOCTYPE html>
       border-radius: 9px;
     }
 
+    @keyframes chipEntrance {
+      from {
+        opacity: 0;
+        transform: scale(0.92);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
     .chip-account {
       font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
@@ -703,6 +776,7 @@ html_template = """<!DOCTYPE html>
       color: var(--yellow-primary);
       cursor: pointer;
       transition: all 0.12s ease;
+      animation: chipEntrance 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
     .chip-account:hover {
@@ -711,6 +785,16 @@ html_template = """<!DOCTYPE html>
     }
 
     /* Toast Alert */
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateY(0) scale(1); }
+      to { opacity: 0; transform: translateY(10px) scale(0.96); }
+    }
+
     .toast-popup {
       position: fixed;
       bottom: 24px;
@@ -726,6 +810,15 @@ html_template = """<!DOCTYPE html>
       gap: 10px;
       z-index: 1000;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .toast-popup.visible {
+      display: flex;
+      animation: toastIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .toast-popup.closing {
+      animation: toastOut 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     .toast-dot-glow {
@@ -910,7 +1003,7 @@ html_template = """<!DOCTYPE html>
       height: 100%;
       background: var(--yellow-primary);
       border-radius: 2px;
-      transition: width 0.35s ease;
+      transition: width 0.65s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     /* Floating Node Inspector */
@@ -1085,6 +1178,7 @@ html_template = """<!DOCTYPE html>
       height: 100%;
       background: #64748b;
       border-radius: 3px;
+      transition: width 0.75s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .bench-bar-gnn {
@@ -1095,6 +1189,7 @@ html_template = """<!DOCTYPE html>
       background: var(--yellow-primary);
       border-radius: 3px;
       box-shadow: 0 0 8px rgba(250, 204, 21, 0.5);
+      transition: width 0.75s cubic-bezier(0.16, 1, 0.3, 1);
     }
   </style>
 </head>
@@ -1145,9 +1240,9 @@ html_template = """<!DOCTYPE html>
         User Guide
       </button>
 
-      <button class="btn btn-yellow" onclick="fetchRings()">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        Run Analysis
+      <button class="btn btn-yellow" id="analyze-btn" onclick="fetchRings()" title="Trigger Full Graph Neural Network Inference Analysis">
+        <span id="analyze-icon"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
+        <span id="analyze-text">Run Analysis</span>
       </button>
     </div>
   </header>
@@ -1520,8 +1615,8 @@ html_template = """<!DOCTYPE html>
               </div>
             </div>
             <div class="bench-progress-box">
-              <div class="bench-bar-base" style="width: 41.9%;"></div>
-              <div class="bench-bar-gnn" style="width: 95.0%;"></div>
+              <div class="bench-bar-base" style="width: 41.9%;" data-width="41.9%"></div>
+              <div class="bench-bar-gnn" style="width: 95.0%;" data-width="95.0%"></div>
             </div>
           </div>
 
@@ -1539,8 +1634,8 @@ html_template = """<!DOCTYPE html>
               </div>
             </div>
             <div class="bench-progress-box">
-              <div class="bench-bar-base" style="width: 58.1%; background: #ef4444;"></div>
-              <div class="bench-bar-gnn" style="width: 5.0%; background: #34d399;"></div>
+              <div class="bench-bar-base" style="width: 58.1%; background: #ef4444;" data-width="58.1%"></div>
+              <div class="bench-bar-gnn" style="width: 5.0%; background: #34d399;" data-width="5.0%"></div>
             </div>
           </div>
 
@@ -1558,8 +1653,8 @@ html_template = """<!DOCTYPE html>
               </div>
             </div>
             <div class="bench-progress-box">
-              <div class="bench-bar-base" style="width: 59.1%;"></div>
-              <div class="bench-bar-gnn" style="width: 97.4%;"></div>
+              <div class="bench-bar-base" style="width: 59.1%;" data-width="59.1%"></div>
+              <div class="bench-bar-gnn" style="width: 97.4%;" data-width="97.4%"></div>
             </div>
           </div>
 
@@ -1597,10 +1692,57 @@ html_template = """<!DOCTYPE html>
     let currentTierFilter = 'all';
     let inspectedNodeId = null;
 
+    let scoreAnimTimer = null;
+    function animateScoreCounter(targetScore, duration = 450) {
+      const el = document.getElementById("threat-score-num");
+      const box = document.querySelector(".hero-risk-box");
+      if (box) {
+        box.classList.remove("pulse");
+        void box.offsetWidth;
+        box.classList.add("pulse");
+      }
+      if (!el) return;
+      if (scoreAnimTimer) cancelAnimationFrame(scoreAnimTimer);
+
+      const start = 0;
+      const startTime = performance.now();
+      function tick(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        const ease = 1 - (1 - progress) * (1 - progress);
+        const current = (start + (targetScore - start) * ease).toFixed(1);
+        el.innerText = `${current}%`;
+        if (progress < 1) {
+          scoreAnimTimer = requestAnimationFrame(tick);
+        } else {
+          el.innerText = `${targetScore.toFixed(1)}%`;
+          scoreAnimTimer = null;
+        }
+      }
+      scoreAnimTimer = requestAnimationFrame(tick);
+    }
+
     async function fetchRings() {
       const url = document.getElementById("api-url").value.trim().replace(/\/$/, "");
       const dot = document.getElementById("status-dot");
       const label = document.getElementById("status-label");
+      const analyzeBtn = document.getElementById("analyze-btn");
+      const analyzeIcon = document.getElementById("analyze-icon");
+      const analyzeText = document.getElementById("analyze-text");
+
+      // Enter analysis processing state
+      if (analyzeBtn) {
+        analyzeBtn.disabled = true;
+        analyzeBtn.style.opacity = "0.85";
+      }
+      if (analyzeIcon) {
+        analyzeIcon.innerHTML = `<svg class="spin-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>`;
+      }
+      if (analyzeText) {
+        analyzeText.innerText = "Analyzing GNN...";
+      }
+
+      const reqStartTime = Date.now();
 
       try {
         const res = await fetch(`${url}/analyze`, {
@@ -1625,6 +1767,31 @@ html_template = """<!DOCTYPE html>
         allRings = FALLBACK_RINGS;
         dot.classList.add("offline");
         label.innerText = "CACHED GNN";
+      } finally {
+        // Guarantee at least 320ms so feedback feels tactile and deliberate
+        const elapsed = Date.now() - reqStartTime;
+        if (elapsed < 320) {
+          await new Promise(r => setTimeout(r, 320 - elapsed));
+        }
+
+        // Restore button state
+        if (analyzeBtn) {
+          analyzeBtn.disabled = false;
+          analyzeBtn.style.opacity = "1";
+        }
+        if (analyzeIcon) {
+          analyzeIcon.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
+        }
+        if (analyzeText) {
+          analyzeText.innerText = "Run Analysis";
+        }
+
+        // Trigger telemetry pulse on stat pills
+        document.querySelectorAll(".stat-pill").forEach(p => {
+          p.classList.remove("pulse");
+          void p.offsetWidth;
+          p.classList.add("pulse");
+        });
       }
 
       document.getElementById("stat-rings").innerText = allRings.length;
@@ -1681,6 +1848,7 @@ html_template = """<!DOCTYPE html>
       rings.forEach((ring, index) => {
         const card = document.createElement("div");
         card.className = `ring-card-item ${index === activeIndex ? 'active' : ''}`;
+        card.style.animationDelay = `${index * 40}ms`;
         card.onclick = () => selectRing(index);
 
         card.innerHTML = `
@@ -1735,8 +1903,10 @@ html_template = """<!DOCTYPE html>
       // Update Inspector Panel
       document.getElementById("inspector-heading").innerText = `Syndicate #${ring.ring_id}`;
       document.getElementById("inspector-badge").innerText = `RANK #${ring.rank || index + 1}`;
-      document.getElementById("threat-score-num").innerText = `${(ring.score * 100).toFixed(1)}%`;
       document.getElementById("threat-rank-pill").innerText = `RANK #${ring.rank || index + 1}`;
+
+      // Smooth count-up animation for Threat Risk Score
+      animateScoreCounter(ring.score * 100);
 
       document.getElementById("sig-device").innerText = `${ring.shared_device_pct}%`;
       document.getElementById("sig-ip").innerText = `${ring.shared_ip_pairs} pairs`;
@@ -1745,17 +1915,34 @@ html_template = """<!DOCTYPE html>
       document.getElementById("sig-fresh").innerText = `${ring.fresh_account_count} accounts`;
       document.getElementById("members-count").innerText = ring.member_count;
 
-      // Update Visual Signal Meter Bars
+      // Update Visual Signal Meter Bars with smooth sweep
       const mDev = document.getElementById("meter-device");
       const mIp = document.getElementById("meter-ip");
       const mVel = document.getElementById("meter-vel");
       const mGnn = document.getElementById("meter-gnn");
       const mFresh = document.getElementById("meter-fresh");
-      if (mDev) mDev.style.width = `${Math.min(100, ring.shared_device_pct)}%`;
-      if (mIp) mIp.style.width = `${Math.min(100, (ring.shared_ip_pairs / 28) * 100)}%`;
-      if (mVel) mVel.style.width = `${Math.min(100, (ring.transaction_velocity / 45) * 100)}%`;
-      if (mGnn) mGnn.style.width = `${Math.min(100, ring.avg_model_score * 100)}%`;
-      if (mFresh) mFresh.style.width = `${Math.min(100, (ring.fresh_account_count / ring.member_count) * 100)}%`;
+
+      const wDev = `${Math.min(100, ring.shared_device_pct)}%`;
+      const wIp = `${Math.min(100, (ring.shared_ip_pairs / 28) * 100)}%`;
+      const wVel = `${Math.min(100, (ring.transaction_velocity / 45) * 100)}%`;
+      const wGnn = `${Math.min(100, ring.avg_model_score * 100)}%`;
+      const wFresh = `${Math.min(100, (ring.fresh_account_count / ring.member_count) * 100)}%`;
+
+      if (mDev) mDev.style.width = "0%";
+      if (mIp) mIp.style.width = "0%";
+      if (mVel) mVel.style.width = "0%";
+      if (mGnn) mGnn.style.width = "0%";
+      if (mFresh) mFresh.style.width = "0%";
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (mDev) mDev.style.width = wDev;
+          if (mIp) mIp.style.width = wIp;
+          if (mVel) mVel.style.width = wVel;
+          if (mGnn) mGnn.style.width = wGnn;
+          if (mFresh) mFresh.style.width = wFresh;
+        });
+      });
 
       // Reset freeze button
       const freezeBtn = document.getElementById("freeze-btn");
@@ -1763,10 +1950,10 @@ html_template = """<!DOCTYPE html>
       freezeBtn.disabled = false;
       freezeBtn.style.opacity = "1";
 
-      // Render Account Chips
+      // Render Account Chips with staggered entrance
       const chipsBox = document.getElementById("members-chips");
-      chipsBox.innerHTML = ring.members.map(m => `
-        <span class="chip-account" onclick="focusOnNode('user_${m}')">User ${m}</span>
+      chipsBox.innerHTML = ring.members.map((m, idx) => `
+        <span class="chip-account" style="animation-delay: ${idx * 25}ms;" onclick="focusOnNode('user_${m}')">User ${m}</span>
       `).join("");
 
       closeNodeInspector();
@@ -2151,7 +2338,21 @@ Action Recommendation: Coordinated mule syndicate detected. Initiate credential 
 
     function openBenchmarkModal() {
       const modal = document.getElementById("benchmark-modal");
-      if (modal) modal.classList.add("open");
+      if (modal) {
+        modal.classList.add("open");
+        // Animate benchmark comparison bars from 0% to target data-width
+        const bars = modal.querySelectorAll(".bench-bar-base, .bench-bar-gnn");
+        bars.forEach(bar => {
+          const target = bar.getAttribute("data-width") || bar.style.width;
+          if (!bar.getAttribute("data-width")) bar.setAttribute("data-width", target);
+          bar.style.width = "0%";
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              bar.style.width = target;
+            });
+          });
+        });
+      }
     }
 
     function closeBenchmarkModal(e) {
@@ -2179,11 +2380,20 @@ Action Recommendation: Coordinated mule syndicate detected. Initiate credential 
       }
     });
 
+    let toastTimer = null;
     function showToast(text) {
       const toast = document.getElementById("toast");
+      if (!toast) return;
       document.getElementById("toast-text").innerText = text;
-      toast.style.display = "flex";
-      setTimeout(() => { toast.style.display = "none"; }, 3500);
+      toast.classList.remove("closing");
+      toast.classList.add("visible");
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.add("closing");
+        setTimeout(() => {
+          toast.classList.remove("visible", "closing");
+        }, 180);
+      }, 3200);
     }
 
     window.addEventListener("resize", () => {
