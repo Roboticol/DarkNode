@@ -1664,7 +1664,7 @@ html_template = """<!DOCTYPE html>
     let allRings = [];
     let activeIndex = 0;
     let physicsState = true;
-    let currentSpringLength = 260;
+    let currentSpringLength = 125;
     let activeFilters = { user: true, device: true, merchant: true };
     let currentVisibleNodes = [];
 
@@ -1961,8 +1961,8 @@ html_template = """<!DOCTYPE html>
     // - Outflow Merchant Basin along the bottom arc
     // Generates harmonious dynamic perspective variations on every Run Analysis!
     // =========================================================================
-    function computeModelLayout(graphData, variationIndex = 0, springLength = 260) {
-      const scale = springLength / 260;
+    function computeModelLayout(graphData, variationIndex = 0, springLength = 125) {
+      const scale = springLength / 125;
 
       const visibleNodes = (graphData.nodes || []).filter(n => activeFilters[n.group] !== false);
       const visibleIds = new Set(visibleNodes.map(n => n.id));
@@ -1987,33 +1987,33 @@ html_template = """<!DOCTYPE html>
       const v = Math.abs(typeof variationIndex === "number" ? Math.round(variationIndex) : 0) % 3;
 
       const apexCoords = [
-        [-30, -165],
-        [-15, -170],
-        [-25, -160]
+        [-10, -220],
+        [10, -225],
+        [0, -215]
       ][v];
 
       const satSlotsVariants = [
-        [[-215, -155], [-225, 135], [225, -110], [235, 155]],
-        [[-225, -150], [-215, 145], [235, -100], [225, 165]],
-        [[-205, -165], [-235, 125], [215, -120], [245, 145]]
+        [[-305, -190], [-320, 195], [310, -145], [320, 205]],
+        [[-320, -180], [-305, 210], [325, -135], [305, 220]],
+        [[-290, -205], [-330, 180], [295, -160], [330, 190]]
       ][v];
 
       const anchorUserSlotsVariants = [
-        [[-105, -75], [-115, 50], [105, -20], [110, 80]],
-        [[-115, -70], [-105, 60], [115, -15], [100, 90]],
-        [[-95, -85],  [-125, 40], [95, -30],  [120, 75]]
+        [[-165, -105], [-180, 85], [165, -45], [175, 115]],
+        [[-175, -95],  [-165, 95], [175, -35], [165, 125]],
+        [[-155, -115], [-190, 75], [155, -55], [185, 105]]
       ][v];
 
       const interiorUserSlotsVariants = [
-        [[-10, -35], [-55, -15], [35, 20], [-15, 60], [0, 10], [-30, 20], [15, -10], [-20, -20]],
-        [[10, -35],  [-45, -25], [25, 30], [-25, 55], [-10, 15], [-20, 25], [20, -10], [-10, -20]],
-        [[-20, -40], [-60, -5],  [40, 10], [-10, 65], [10, 10],  [-35, 20], [10, -5],  [-30, -25]]
+        [[-10, -115], [-95, -65], [-105, 50], [-25, 110], [35, 30], [85, 80], [95, -40], [-25, -15]],
+        [[15, -110], [-85, -75], [-115, 35], [-10, 115], [25, 25], [95, 70], [85, -50], [-15, -20]],
+        [[-30, -120], [-105, -55], [-95, 65], [-35, 105], [45, 35], [75, 90], [105, -30], [-35, -5]]
       ][v];
 
       const merchSlotsVariants = [
-        [[35, -135], [-85, 140], [-25, 180], [30, 150], [85, 165], [-60, 185]],
-        [[45, -130], [-75, 150], [-15, 185], [40, 145], [95, 160], [-50, 190]],
-        [[25, -140], [-95, 135], [-35, 175], [20, 160], [75, 170], [-70, 180]]
+        [[65, -195], [-105, 205], [-15, 245], [85, 220], [135, 235], [-75, 255]],
+        [[75, -190], [-95, 215], [0, 250], [95, 210], [145, 225], [-65, 260]],
+        [[55, -200], [-115, 195], [-25, 240], [75, 230], [125, 245], [-85, 250]]
       ][v];
 
       const positions = {};
@@ -2079,9 +2079,9 @@ html_template = """<!DOCTYPE html>
         };
       });
 
-      // 6. Collision Resolution Pass (Guarantee >= 52px clearance)
+      // 6. Collision Resolution Pass (Guarantee >= 68px clearance)
       const keys = Object.keys(positions);
-      const minDistance = 52.0;
+      const minDistance = 68.0;
       for (let iter = 0; iter < 15; iter++) {
         for (let i = 0; i < keys.length; i++) {
           for (let j = i + 1; j < keys.length; j++) {
@@ -2110,19 +2110,18 @@ html_template = """<!DOCTYPE html>
     function fitGraphToScreen(animated = true) {
       if (!network) return;
       network.fit({
-        animation: animated ? { duration: 320, easingFunction: "easeInOutQuad" } : false
+        animation: animated ? { duration: 300, easingFunction: "easeInOutQuad" } : false
       });
       setTimeout(() => {
         if (!network) return;
         const currentScale = network.getScale();
         const currentView = network.getViewPosition();
-        // Zoom out to 82% scale and offset slightly down by 14px so apex node is comfortably below the top toolbar
         network.moveTo({
-          position: { x: currentView.x, y: currentView.y - 14 },
-          scale: currentScale * 0.82,
-          animation: animated ? { duration: 250, easingFunction: "easeInOutQuad" } : false
+          position: { x: currentView.x, y: currentView.y - 8 },
+          scale: currentScale * 0.90,
+          animation: animated ? { duration: 200, easingFunction: "easeInOutQuad" } : false
         });
-      }, animated ? 340 : 10);
+      }, animated ? 320 : 10);
     }
 
     function animateTractionMorph(startPositions, targetPositions, onComplete, duration = 650) {
@@ -2604,18 +2603,20 @@ html_template = """<!DOCTYPE html>
           enabled: physicsState,
           solver: "forceAtlas2Based",
           forceAtlas2Based: {
-            gravitationalConstant: -420,
-            centralGravity: 0.003,
+            gravitationalConstant: -110,
+            centralGravity: 0.015,
             springLength: currentSpringLength,
-            springConstant: 0.035,
-            damping: 0.45,
-            avoidOverlap: 1.0
+            springConstant: 0.045,
+            damping: 0.65,
+            avoidOverlap: 0.2
           },
           stabilization: {
             enabled: true,
-            iterations: 120,
+            iterations: 80,
             updateInterval: 25
-          }
+          },
+          maxVelocity: 30,
+          minVelocity: 0.75
         },
         interaction: {
           hover: true,
@@ -2643,39 +2644,52 @@ html_template = """<!DOCTYPE html>
           network.once("stabilizationIterationsDone", function() {
             fitGraphToScreen(true);
             setup3DCoordinates(network.getPositions());
+            network.stopSimulation();
           });
         } else {
           network.stopSimulation();
           network.setOptions({ physics: { enabled: false } });
         }
 
+        network.on("stabilized", function() {
+          network.stopSimulation();
+        });
+
         // Update 3D base positions if user drags an individual node in standard mode
         network.on("dragEnd", function(params) {
           if (params.nodes && params.nodes.length > 0 && !isGlobeDragging && !globeModeActive) {
             setup3DCoordinates(network.getPositions());
+            if (physicsState) {
+              setTimeout(() => { if (network) network.stopSimulation(); }, 1200);
+            }
           }
         });
 
         // =========================================================================
-        // CONSTANT SCREEN TEXT SIZE & VISIBILITY AT ALL ZOOM LEVELS
+        // CONSTANT SCREEN TEXT SIZE & VISIBILITY (OPTIMIZED ZERO-LAG PIPELINE)
         // =========================================================================
+        const labelWidthMap = {};
         network.on("afterDrawing", function(ctx) {
           ctx.save();
           ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-          const positions = network.getPositions();
           ctx.font = "600 11px 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
 
+          const cWidth = container.clientWidth;
+          const cHeight = container.clientHeight;
+          const bodyNodes = network && network.body && network.body.nodes ? network.body.nodes : null;
+          if (!bodyNodes) { ctx.restore(); return; }
+
           for (const node of currentVisibleNodes) {
-            const pos = positions[node.id];
-            if (!pos) continue;
-            const domPos = network.canvasToDOM({ x: pos.x, y: pos.y });
+            const bNode = bodyNodes[node.id];
+            if (!bNode) continue;
+            const domPos = network.canvasToDOM({ x: bNode.x, y: bNode.y });
 
             // Skip drawing if outside viewport
-            if (domPos.x < -60 || domPos.x > container.clientWidth + 60 ||
-                domPos.y < -60 || domPos.y > container.clientHeight + 60) {
+            if (domPos.x < -60 || domPos.x > cWidth + 60 ||
+                domPos.y < -60 || domPos.y > cHeight + 60) {
               continue;
             }
 
@@ -2684,7 +2698,12 @@ html_template = """<!DOCTYPE html>
             const textX = domPos.x;
             const textY = domPos.y + yOffset;
 
-            const textWidth = ctx.measureText(labelText).width;
+            let textWidth = labelWidthMap[labelText];
+            if (textWidth === undefined) {
+              textWidth = Math.round(ctx.measureText(labelText).width);
+              labelWidthMap[labelText] = textWidth;
+            }
+
             ctx.fillStyle = "rgba(17, 18, 22, 0.92)";
             ctx.beginPath();
             ctx.roundRect(textX - textWidth / 2 - 5, textY - 8, textWidth + 10, 16, 4);
@@ -2867,11 +2886,11 @@ html_template = """<!DOCTYPE html>
     }
 
     function spreadGraph() {
-      currentSpringLength = (currentSpringLength === 260) ? 380 : 260;
+      currentSpringLength = (currentSpringLength === 125) ? 175 : 125;
       const btn = document.getElementById("spread-btn");
       const label = document.getElementById("spread-label");
-      label.innerText = currentSpringLength === 380 ? "Spread: Wide" : "Spread Out";
-      btn.classList.toggle("active", currentSpringLength === 380);
+      label.innerText = currentSpringLength === 175 ? "Spread: Wide" : "Spread Out";
+      btn.classList.toggle("active", currentSpringLength === 175);
 
       const currentRing = allRings[activeIndex];
       if (!currentRing || !network) return;
@@ -2886,10 +2905,11 @@ html_template = """<!DOCTYPE html>
               enabled: true,
               forceAtlas2Based: {
                 springLength: currentSpringLength,
-                gravitationalConstant: currentSpringLength === 380 ? -620 : -420
+                gravitationalConstant: currentSpringLength === 175 ? -160 : -110
               }
             }
           });
+          network.startSimulation();
         } else {
           network.stopSimulation();
           network.setOptions({ physics: { enabled: false } });
@@ -2910,13 +2930,15 @@ html_template = """<!DOCTYPE html>
               enabled: true,
               solver: "forceAtlas2Based",
               forceAtlas2Based: {
-                gravitationalConstant: -420,
-                centralGravity: 0.003,
+                gravitationalConstant: -110,
+                centralGravity: 0.015,
                 springLength: currentSpringLength,
-                springConstant: 0.035,
-                damping: 0.45,
-                avoidOverlap: 1.0
-              }
+                springConstant: 0.045,
+                damping: 0.65,
+                avoidOverlap: 0.2
+              },
+              maxVelocity: 30,
+              minVelocity: 0.75
             }
           });
           network.startSimulation();
