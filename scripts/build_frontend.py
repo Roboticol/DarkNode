@@ -186,62 +186,6 @@ html_template = """<!DOCTYPE html>
       box-shadow: var(--shadow-glow);
     }
 
-    @keyframes defectiveNeonFlicker {
-      0%, 72% {
-        color: #facc15;
-        text-shadow: 0 0 8px rgba(250, 204, 21, 0.9), 0 0 18px rgba(250, 204, 21, 0.55), 0 0 28px rgba(250, 204, 21, 0.25);
-        opacity: 1;
-      }
-      73% {
-        /* 1st blackout dropout: defective tube power cut */
-        color: rgba(250, 204, 21, 0.2);
-        text-shadow: none;
-        opacity: 0.22;
-      }
-      75% {
-        /* Partial restrike */
-        color: #fde047;
-        text-shadow: 0 0 5px rgba(250, 204, 21, 0.6);
-        opacity: 0.75;
-      }
-      77% {
-        /* 2nd blackout dropout */
-        color: rgba(250, 204, 21, 0.12);
-        text-shadow: none;
-        opacity: 0.15;
-      }
-      80% {
-        /* High-voltage arc surge / spark */
-        color: #ffffff;
-        text-shadow: 0 0 12px #fde047, 0 0 24px #facc15, 0 0 36px #facc15;
-        opacity: 1;
-      }
-      83% {
-        /* Filament sag / dip */
-        color: #ca8a04;
-        text-shadow: 0 0 4px rgba(202, 138, 4, 0.5);
-        opacity: 0.55;
-      }
-      86% {
-        /* Restrike glow */
-        color: #fde047;
-        text-shadow: 0 0 10px rgba(250, 204, 21, 0.9), 0 0 20px rgba(250, 204, 21, 0.5);
-        opacity: 0.95;
-      }
-      88% {
-        /* Brief micro-stutter */
-        color: rgba(250, 204, 21, 0.35);
-        text-shadow: none;
-        opacity: 0.38;
-      }
-      90%, 100% {
-        /* Steady full neon illumination */
-        color: #facc15;
-        text-shadow: 0 0 8px rgba(250, 204, 21, 0.9), 0 0 18px rgba(250, 204, 21, 0.55), 0 0 28px rgba(250, 204, 21, 0.25);
-        opacity: 1;
-      }
-    }
-
     .brand-title {
       font-size: 17px;
       font-weight: 800;
@@ -252,10 +196,7 @@ html_template = """<!DOCTYPE html>
     }
 
     .brand-title span.kicker {
-      display: inline-block;
       color: var(--yellow-primary);
-      text-shadow: 0 0 8px rgba(250, 204, 21, 0.9), 0 0 18px rgba(250, 204, 21, 0.55);
-      animation: defectiveNeonFlicker 3.8s infinite ease-in-out;
     }
 
     .badge-pill {
@@ -1363,7 +1304,15 @@ html_template = """<!DOCTYPE html>
         </button>
         <button class="canvas-pill-btn" id="physics-toggle" onclick="togglePhysics()">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          <span id="physics-label">Physics: Off</span>
+          <span id="physics-label">Physics: On</span>
+        </button>
+        <span style="color: var(--border-subtle);">|</span>
+        <button class="canvas-pill-btn" id="globe-mode-btn" onclick="toggleGlobeMode()" title="Rotate model manually like a 3D globe using cursor (click + drag horizontally or vertically)">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <span id="globe-mode-label">3D Globe: Off</span>
+        </button>
+        <button class="canvas-pill-btn" id="reset-globe-btn" onclick="resetGlobeView()" title="Reset 3D Globe orientation to default view" style="display: none;">
+          Reset Globe
         </button>
         <span style="color: var(--border-subtle);">|</span>
         <button class="canvas-pill-btn active" id="filter-user" onclick="toggleFilter('user')">Users</button>
@@ -1625,6 +1574,10 @@ html_template = """<!DOCTYPE html>
               <span>Spread Out / Decluster</span>
               <div>Click <span class="shortcut-badge">Spread Out</span> on top canvas bar for open layout</div>
             </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
+              <span>3D Globe Rotation</span>
+              <div>Click <span class="shortcut-badge">3D Globe: On</span> or hold <span class="shortcut-badge">Shift / Alt / Right-Click</span> and drag cursor horizontally/vertically</div>
+            </div>
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0;">
               <span>Entity Filters</span>
               <div>Toggle <span class="shortcut-badge">Users</span>, <span class="shortcut-badge">Devices</span>, or <span class="shortcut-badge">Merchants</span> to isolate subgraphs</div>
@@ -1756,49 +1709,270 @@ html_template = """<!DOCTYPE html>
 
   <script>
     let network = null;
-    // Real fallback dataset extracted from trained GNN model
-    const FALLBACK_RINGS = __FALLBACK_JSON__;
-    let allRings = FALLBACK_RINGS;
+    let allRings = [];
     let activeIndex = 0;
-    let physicsState = false;
+    let physicsState = true;
     let currentSpringLength = 160;
     let activeFilters = { user: true, device: true, merchant: true };
     let currentVisibleNodes = [];
+
+    // Real fallback dataset extracted from trained GNN model
+    const FALLBACK_RINGS = __FALLBACK_JSON__;
     let currentTierFilter = 'all';
     let inspectedNodeId = null;
 
     // =========================================================================
-    // DYNAMIC VIEWPORT FRAMING (100% PERFECT FIT ACROSS ALL SCREENS)
+    // BUTTERY-SMOOTH 3D GLOBE TRACKBALL (60-120 FPS ZERO LAG)
     // =========================================================================
     let currentNodesDataSet = null;
+    let baseNodes3D = {}; // { id: { x0: number, y0: number, z0: number, origSize: number } }
+    let currentGraphCentroid = { x: 0, y: 0 };
+    let currentYaw = 0; // Horizontal rotation around Y-axis (radians)
+    let currentPitch = 0; // Vertical rotation around X-axis (radians)
+    let targetYaw = 0;
+    let targetPitch = 0;
+    let globeModeActive = false;
+    let isGlobeDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let dragStartYaw = 0;
+    let dragStartPitch = 0;
+    let globeRafPending = false;
     let analysisFaceAngle = 0;
     let morphRafId = null;
 
     function fitGraphView(animate = true) {
       if (!network) return;
-      const container = document.getElementById("network-canvas");
-      const cw = (container && container.clientWidth) ? container.clientWidth : 800;
-      const ch = (container && container.clientHeight) ? container.clientHeight : 500;
-
-      // Model bounding box from SS3 canonical positions with full labels and margins:
-      // Width ~ 680, Height ~ 660
-      const availW = Math.max(200, cw - 180);
-      const availH = Math.max(200, ch - 180);
-
-      // Scale to fit comfortably with generous dark borders around model (SS2 perfect fit)
-      const fitScale = Math.min(availW / 680, availH / 660);
-      const targetScale = Math.max(0.38, Math.min(0.48, fitScale));
-
       network.moveTo({
-        position: { x: 14.3, y: 18.2 },
-        scale: targetScale,
-        animation: animate ? { duration: 240, easingFunction: "easeInOutQuad" } : false
+        position: { x: 0, y: 0 },
+        scale: 0.60,
+        animation: animate ? { duration: 280, easingFunction: "easeInOutQuad" } : false
       });
     }
 
-    window.addEventListener("resize", () => {
-      if (network) fitGraphView(false);
-    });
+    const GLOBE_SPHERE_RADIUS = 340.0;
+
+    function setup3DCoordinates(positions) {
+      baseNodes3D = {};
+      currentYaw = 0;
+      currentPitch = 0;
+      targetYaw = 0;
+      targetPitch = 0;
+      updateGlobeIndicator();
+
+      const R = GLOBE_SPHERE_RADIUS;
+      for (const id in positions) {
+        const p = positions[id];
+        const x2D = p.x;
+        const y2D = p.y;
+        const r2D = Math.hypot(x2D, y2D);
+
+        // Map onto sphere surface: X^2 + Y^2 + Z^2 = R^2
+        const k = Math.min(1.0, (R * 0.95) / Math.max(1.0, r2D));
+        const X0 = x2D * k;
+        const Y0 = y2D * k;
+        const Z0 = Math.sqrt(Math.max(0, R * R - X0 * X0 - Y0 * Y0));
+
+        const existingNode = currentNodesDataSet ? currentNodesDataSet.get(id) : null;
+        const origSize = existingNode && existingNode.size ? existingNode.size : (id.startsWith("user") ? 20 : (id.startsWith("dev") ? 22 : 18));
+
+        baseNodes3D[id] = {
+          x0: X0,
+          y0: Y0,
+          z0: Z0,
+          orig2DX: x2D,
+          orig2DY: y2D,
+          origSize: origSize,
+          lastZ: Z0
+        };
+      }
+    }
+
+    function renderGlobeFrame() {
+      globeRafPending = false;
+      if (!network || !network.body || !network.body.nodes || !globeModeActive) return;
+
+      currentYaw += (targetYaw - currentYaw) * 0.18;
+      currentPitch += (targetPitch - currentPitch) * 0.18;
+
+      const cosY = Math.cos(currentYaw);
+      const sinY = Math.sin(currentYaw);
+      const cosP = Math.cos(currentPitch);
+      const sinP = Math.sin(currentPitch);
+      const fov = 850;
+
+      for (const id in baseNodes3D) {
+        const b = baseNodes3D[id];
+        const visNode = network.body.nodes[id];
+        if (!visNode) continue;
+
+        // 1. Rotate around Y (Yaw)
+        const x1 = b.x0 * cosY + b.z0 * sinY;
+        const z1 = -b.x0 * sinY + b.z0 * cosY;
+
+        // 2. Rotate around X (Pitch)
+        const y2 = b.y0 * cosP - z1 * sinP;
+        const z2 = b.y0 * sinP + z1 * cosP;
+
+        // 3. Perspective projection
+        const persp = fov / (fov - z2);
+        visNode.x = x1 * persp;
+        visNode.y = y2 * persp;
+        b.lastZ = z2;
+
+        if (visNode.options) {
+          visNode.options.size = Math.round(b.origSize * Math.max(0.68, Math.min(1.36, persp)));
+        }
+      }
+
+      network.redraw();
+
+      if (isGlobeDragging || Math.abs(currentYaw - targetYaw) > 0.0003 || Math.abs(currentPitch - targetPitch) > 0.0003) {
+        globeRafPending = true;
+        requestAnimationFrame(renderGlobeFrame);
+      } else {
+        updateGlobeIndicator();
+      }
+    }
+
+    function toggleGlobeMode() {
+      globeModeActive = !globeModeActive;
+      const btn = document.getElementById("globe-mode-btn");
+      const label = document.getElementById("globe-mode-label");
+      const canvasContainer = document.getElementById("network-canvas");
+
+      if (btn) btn.classList.toggle("active", globeModeActive);
+      if (label) label.innerText = `3D Globe: ${globeModeActive ? 'On' : 'Off'}`;
+
+      if (canvasContainer) {
+        canvasContainer.style.cursor = globeModeActive ? "grab" : "";
+      }
+
+      if (network) {
+        if (globeModeActive) {
+          targetYaw = 0;
+          targetPitch = 0;
+          currentYaw = 0;
+          currentPitch = 0;
+          network.setOptions({
+            physics: { enabled: false },
+            interaction: { dragView: false, dragNodes: false }
+          });
+          network.stopSimulation();
+          network.moveTo({
+            position: { x: 0, y: 0 },
+            scale: 0.60,
+            animation: { duration: 250, easingFunction: "easeInOutQuad" }
+          });
+          globeRafPending = true;
+          requestAnimationFrame(renderGlobeFrame);
+          showToast("3D Globe Active — Drag horizontally or vertically to rotate sphere in 3D");
+        } else {
+          // RESTORE EXACT 2D SS3 POSITIONS CLEANLY
+          if (network.body && network.body.nodes) {
+            for (const id in baseNodes3D) {
+              const b = baseNodes3D[id];
+              const visNode = network.body.nodes[id];
+              if (visNode) {
+                visNode.x = b.orig2DX;
+                visNode.y = b.orig2DY;
+                if (visNode.options) visNode.options.size = b.origSize;
+              }
+            }
+            network.redraw();
+          }
+          network.setOptions({
+            physics: { enabled: physicsState },
+            interaction: { dragView: true, dragNodes: true }
+          });
+          fitGraphView(true);
+          updateGlobeIndicator();
+          showToast("3D Globe Disabled — Model locked to 2D SS3 layout");
+        }
+      }
+    }
+
+    function resetGlobeView() {
+      targetYaw = 0;
+      targetPitch = 0;
+      if (globeModeActive) {
+        if (!globeRafPending) {
+          globeRafPending = true;
+          requestAnimationFrame(renderGlobeFrame);
+        }
+      } else {
+        fitGraphView(true);
+      }
+      showToast("Reset 3D Globe orientation to front-facing view");
+    }
+
+    function updateGlobeIndicator() {
+      const resetBtn = document.getElementById("reset-globe-btn");
+      if (!resetBtn) return;
+      const yawDeg = Math.round((currentYaw * 180 / Math.PI) % 360);
+      const pitchDeg = Math.round((currentPitch * 180 / Math.PI) % 360);
+      const isRotated = Math.abs(yawDeg) > 1 || Math.abs(pitchDeg) > 1;
+
+      if (isRotated && globeModeActive) {
+        resetBtn.style.display = "inline-flex";
+        resetBtn.innerText = `Reset 3D (${yawDeg}°, ${pitchDeg}°)`;
+      } else {
+        resetBtn.style.display = "none";
+      }
+    }
+
+    function initCanvasRotationListeners() {
+      const container = document.getElementById("network-canvas");
+      if (!container || container.dataset.rotListenersAttached) return;
+      container.dataset.rotListenersAttached = "true";
+
+      container.addEventListener("contextmenu", (e) => {
+        if (globeModeActive) {
+          e.preventDefault();
+        }
+      });
+
+      container.addEventListener("mousedown", (e) => {
+        if (!globeModeActive || !network) return;
+
+        isGlobeDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        dragStartYaw = currentYaw;
+        dragStartPitch = currentPitch;
+        container.style.cursor = "grabbing";
+
+        e.preventDefault();
+      });
+
+      window.addEventListener("mousemove", (e) => {
+        if (!isGlobeDragging) return;
+
+        const deltaX = e.clientX - dragStartX;
+        const deltaY = e.clientY - dragStartY;
+
+        targetYaw = dragStartYaw + deltaX * 0.007;
+
+        const maxPitch = (70 * Math.PI) / 180;
+        const rawPitch = dragStartPitch - deltaY * 0.007;
+        targetPitch = Math.max(-maxPitch, Math.min(maxPitch, rawPitch));
+
+        if (!globeRafPending) {
+          globeRafPending = true;
+          requestAnimationFrame(renderGlobeFrame);
+        }
+      });
+
+      window.addEventListener("mouseup", (e) => {
+        if (!isGlobeDragging) return;
+        isGlobeDragging = false;
+        const c = document.getElementById("network-canvas");
+        if (c) {
+          c.style.cursor = globeModeActive ? "grab" : "";
+        }
+        updateGlobeIndicator();
+      });
+    }
 
     // =========================================================================
     // REAL MODEL TOPOLOGICAL LAYOUT COMPUTATION (SS3 EXACT CANONICAL)
@@ -1953,6 +2127,7 @@ html_template = """<!DOCTYPE html>
             y: targetPositions[id].y
           }));
           if (currentNodesDataSet) currentNodesDataSet.update(finalUpdates);
+          setup3DCoordinates(targetPositions);
           if (network) {
             fitGraphView();
           }
@@ -1964,8 +2139,7 @@ html_template = """<!DOCTYPE html>
     }
 
     async function fetchRings() {
-      const urlInput = document.getElementById("api-url");
-      const url = urlInput ? urlInput.value.trim().replace(/\/$/, "") : "http://localhost:8000";
+      const url = document.getElementById("api-url").value.trim().replace(/\/$/, "");
       const dot = document.getElementById("status-dot");
       const label = document.getElementById("status-label");
       const analyzeBtn = document.getElementById("analyze-btn");
@@ -1984,44 +2158,39 @@ html_template = """<!DOCTYPE html>
         analyzeText.innerText = "Analyzing GNN...";
       }
 
-      // Trigger high-voltage discovery radar pulse wave across all nodes
-      analysisPulseStartTime = performance.now();
-
       const reqStartTime = Date.now();
-      let liveSuccess = false;
 
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3500);
         const res = await fetch(`${url}/analyze`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ top_k: 10, threshold: 0.5 }),
-          signal: controller.signal
+          body: JSON.stringify({ top_k: 10, threshold: 0.5 })
         });
-        clearTimeout(timeoutId);
 
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        if (data && data.rings && data.rings.length > 0) {
-          allRings = data.rings;
-          if (data.metadata) {
-            const elU = document.getElementById("stat-users");
-            const elT = document.getElementById("stat-txs");
-            if (elU) elU.innerText = data.metadata.num_users?.toLocaleString() || "1,000";
-            if (elT) elT.innerText = data.metadata.total_transactions?.toLocaleString() || "13,680";
-          }
-          liveSuccess = true;
+        allRings = data.rings || [];
+
+        if (data.metadata) {
+          document.getElementById("stat-users").innerText = data.metadata.num_users?.toLocaleString() || "1,000";
+          document.getElementById("stat-txs").innerText = data.metadata.total_transactions?.toLocaleString() || "13,680";
         }
+        dot.classList.remove("offline");
+        label.innerText = "LIVE API";
+        showToast("Connected to DarkNode GNN backend");
       } catch (err) {
-        console.warn("Backend API unavailable or restricted, executing cached GNN model analysis:", err);
+        console.warn("Backend unavailable, using cached model dossier:", err);
         allRings = FALLBACK_RINGS;
+        dot.classList.add("offline");
+        label.innerText = "CACHED GNN";
       } finally {
+        // Guarantee at least 320ms so feedback feels tactile and deliberate
         const elapsed = Date.now() - reqStartTime;
-        if (elapsed < 350) {
-          await new Promise(r => setTimeout(r, 350 - elapsed));
+        if (elapsed < 320) {
+          await new Promise(r => setTimeout(r, 320 - elapsed));
         }
 
+        // Restore button state
         if (analyzeBtn) {
           analyzeBtn.disabled = false;
           analyzeBtn.style.opacity = "1";
@@ -2032,22 +2201,10 @@ html_template = """<!DOCTYPE html>
         if (analyzeText) {
           analyzeText.innerText = "Run Analysis";
         }
-
-        if (liveSuccess) {
-          if (dot) dot.classList.remove("offline");
-          if (label) label.innerText = "LIVE API";
-          showToast("✓ GNN Model Analysis Complete — 10 High-Risk Mule Syndicates Identified");
-        } else {
-          if (dot) dot.classList.remove("offline");
-          if (label) label.innerText = "GNN READY";
-          showToast("✓ GNN Model Analysis Complete — 10 Syndicates Identified");
-        }
       }
 
-      const statRings = document.getElementById("stat-rings");
-      const ringsBadge = document.getElementById("rings-count-badge");
-      if (statRings) statRings.innerText = allRings.length;
-      if (ringsBadge) ringsBadge.innerText = `${allRings.length} total`;
+      document.getElementById("stat-rings").innerText = allRings.length;
+      document.getElementById("rings-count-badge").innerText = `${allRings.length} total`;
 
       const crit = allRings.filter(r => r.score >= 0.75).length;
       const elev = allRings.length - crit;
@@ -2142,23 +2299,6 @@ html_template = """<!DOCTYPE html>
       renderRingsList(filtered);
     }
 
-    function animateOdometer(el, targetNum, duration = 380) {
-      if (!el) return;
-      const startTime = performance.now();
-      function tick(now) {
-        const p = Math.min(1, (now - startTime) / duration);
-        const ease = 1 - Math.pow(1 - p, 3);
-        const cur = (targetNum * ease).toFixed(1);
-        el.innerText = `${cur}%`;
-        if (p < 1) {
-          requestAnimationFrame(tick);
-        } else {
-          el.innerText = `${targetNum.toFixed(1)}%`;
-        }
-      }
-      requestAnimationFrame(tick);
-    }
-
     function selectRing(index, isAnalysisTriggered = false) {
       activeIndex = index;
       const ring = allRings[index];
@@ -2173,13 +2313,8 @@ html_template = """<!DOCTYPE html>
       document.getElementById("inspector-badge").innerText = `RANK #${ring.rank || index + 1}`;
       document.getElementById("threat-rank-pill").innerText = `RANK #${ring.rank || index + 1}`;
 
-      // Threat Risk Score (with active odometer roll on analysis)
-      const scoreEl = document.getElementById("threat-score-num");
-      if (isAnalysisTriggered && scoreEl) {
-        animateOdometer(scoreEl, ring.score * 100);
-      } else if (scoreEl) {
-        scoreEl.innerText = `${(ring.score * 100).toFixed(1)}%`;
-      }
+      // Instant Threat Risk Score
+      document.getElementById("threat-score-num").innerText = `${(ring.score * 100).toFixed(1)}%`;
 
       document.getElementById("sig-device").innerText = `${ring.shared_device_pct}%`;
       document.getElementById("sig-ip").innerText = `${ring.shared_ip_pairs} pairs`;
@@ -2306,17 +2441,17 @@ html_template = """<!DOCTYPE html>
 
       const data = { nodes, edges };
 
-      // Physics configuration (disabled by default to guarantee zero drift & zero CPU load)
+      // Physics configuration (settles calmly into clear syndicate topology)
       const options = {
         physics: {
-          enabled: false,
+          enabled: physicsState,
           solver: "forceAtlas2Based",
           forceAtlas2Based: {
-            gravitationalConstant: -180,
-            centralGravity: 0.01,
+            gravitationalConstant: -350,
+            centralGravity: 0.003,
             springLength: currentSpringLength,
-            springConstant: 0.015,
-            damping: 0.8,
+            springConstant: 0.008,
+            damping: 0.75,
             avoidOverlap: 0.8
           },
           stabilization: {
@@ -2329,8 +2464,8 @@ html_template = """<!DOCTYPE html>
           hover: true,
           tooltipDelay: 80,
           zoomView: true,
-          dragView: true,
-          dragNodes: true,
+          dragView: !globeModeActive,
+          dragNodes: !globeModeActive,
           zoomSpeed: 0.16, // Normal, smooth, professional mouse wheel zoom speed
           navigationButtons: false,
           keyboard: false
@@ -2342,30 +2477,44 @@ html_template = """<!DOCTYPE html>
         currentNodesDataSet = nodes;
         network = new vis.Network(container, data, options);
 
-        network.stopSimulation();
-        network.setOptions({ physics: { enabled: false } });
+        initCanvasRotationListeners();
+
         fitGraphView(false);
+        setup3DCoordinates(initialPositions);
+
+        if (!physicsState) {
+          network.stopSimulation();
+          network.setOptions({ physics: { enabled: false } });
+        } else {
+          setTimeout(() => {
+            if (network && physicsState) network.stopSimulation();
+          }, 400);
+        }
 
         network.on("stabilized", function() {
           if (network) network.stopSimulation();
         });
 
         network.on("dragStart", function(params) {
-          if (params.nodes && params.nodes.length > 0 && physicsState) {
+          if (params.nodes && params.nodes.length > 0 && physicsState && !globeModeActive) {
             network.startSimulation();
           }
         });
 
+        // Update 3D base positions and stop simulation after drag
         network.on("dragEnd", function(params) {
-          if (physicsState) {
+          if (physicsState && !globeModeActive) {
             setTimeout(() => {
               if (network && physicsState) network.stopSimulation();
             }, 600);
           }
+          if (params.nodes && params.nodes.length > 0 && !isGlobeDragging && !globeModeActive) {
+            setup3DCoordinates(network.getPositions());
+          }
         });
 
         // =========================================================================
-        // HIGH-PERFORMANCE CRISP CONSTANT LABELS (ZERO LAG, CLEAN RENDERING)
+        // CONSTANT SCREEN TEXT SIZE & 3D CYBER GLOBE WIREFRAME (GPU ACCELERATED)
         // =========================================================================
         const labelWidthCache = {};
         network.on("afterDrawing", function(ctx) {
@@ -2373,6 +2522,59 @@ html_template = """<!DOCTYPE html>
           ctx.save();
           ctx.setTransform(1, 0, 0, 1, 0, 0);
 
+          // 1. Draw 3D Holographic Cyber Globe Wireframe when Globe Mode is Active
+          if (globeModeActive) {
+            const centerDOM = network.canvasToDOM({ x: 0, y: 0 });
+            const cx = centerDOM.x;
+            const cy = centerDOM.y;
+            const screenR = GLOBE_SPHERE_RADIUS * network.getScale();
+
+            if (screenR > 15) {
+              // Globe ambient glow
+              const grad = ctx.createRadialGradient(cx, cy, screenR * 0.1, cx, cy, screenR * 1.06);
+              grad.addColorStop(0, "rgba(56, 189, 248, 0.03)");
+              grad.addColorStop(0.85, "rgba(56, 189, 248, 0.08)");
+              grad.addColorStop(1, "rgba(56, 189, 248, 0.0)");
+              ctx.fillStyle = grad;
+              ctx.beginPath();
+              ctx.arc(cx, cy, screenR * 1.06, 0, Math.PI * 2);
+              ctx.fill();
+
+              // Outer boundary rim
+              ctx.strokeStyle = "rgba(56, 189, 248, 0.28)";
+              ctx.lineWidth = 1.3;
+              ctx.beginPath();
+              ctx.arc(cx, cy, screenR, 0, Math.PI * 2);
+              ctx.stroke();
+
+              // 3D Equator & Latitude rings
+              ctx.strokeStyle = "rgba(56, 189, 248, 0.20)";
+              ctx.lineWidth = 1.0;
+              ctx.setLineDash([5, 5]);
+
+              // Equator
+              const eqMinor = Math.max(1, screenR * Math.abs(Math.sin(currentPitch)));
+              ctx.beginPath();
+              ctx.ellipse(cx, cy, screenR, eqMinor, 0, 0, Math.PI * 2);
+              ctx.stroke();
+
+              // Meridian 1
+              const merMinor = Math.max(1, screenR * Math.abs(Math.cos(currentYaw)));
+              ctx.beginPath();
+              ctx.ellipse(cx, cy, merMinor, screenR, 0, 0, Math.PI * 2);
+              ctx.stroke();
+
+              // Meridian 2 (orthogonal)
+              const merMinor2 = Math.max(1, screenR * Math.abs(Math.sin(currentYaw)));
+              ctx.beginPath();
+              ctx.ellipse(cx, cy, merMinor2, screenR, 0, 0, Math.PI * 2);
+              ctx.stroke();
+
+              ctx.setLineDash([]);
+            }
+          }
+
+          // 2. High-performance Constant Screen Labels with Depth Cueing
           ctx.font = "600 11px 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
@@ -2382,10 +2584,15 @@ html_template = """<!DOCTYPE html>
             if (!visNode) continue;
             const domPos = network.canvasToDOM({ x: visNode.x, y: visNode.y });
 
+            // Skip drawing if outside viewport
             if (domPos.x < -60 || domPos.x > container.clientWidth + 60 ||
                 domPos.y < -60 || domPos.y > container.clientHeight + 60) {
               continue;
             }
+
+            // Depth cueing in 3D globe mode (back-face dimming)
+            const isBackFace = globeModeActive && baseNodes3D[node.id] && baseNodes3D[node.id].lastZ < -15;
+            ctx.globalAlpha = isBackFace ? 0.28 : 1.0;
 
             const labelText = node.label;
             const yOffset = (node.group === "device" ? 22 : 18);
@@ -2419,6 +2626,7 @@ html_template = """<!DOCTYPE html>
 
         // Click node to open deep inspector
         network.on("click", function(params) {
+          if (globeModeActive) return;
           if (params.nodes.length > 0) {
             showNodeInspector(params.nodes[0]);
           } else {
@@ -2434,15 +2642,7 @@ html_template = """<!DOCTYPE html>
       analysisFaceAngle = 0;
       const targetPositions = computeModelLayout(graphData, 0, currentSpringLength);
       const oldPositions = network.getPositions();
-      let sumX = 0, sumY = 0, ptCount = 0;
-      for (const k in oldPositions) {
-        if (oldPositions[k]) {
-          sumX += oldPositions[k].x;
-          sumY += oldPositions[k].y;
-          ptCount++;
-        }
-      }
-      const oldCentroid = ptCount > 0 ? { x: sumX / ptCount, y: sumY / ptCount } : { x: 14.3, y: 18.2 };
+      const oldCentroid = calculateCentroid(oldPositions);
 
       // Initialize node coordinates at current on-screen positions so they don't jump
       const positionedNodes = visibleNodes.map(n => {
@@ -2493,6 +2693,7 @@ html_template = """<!DOCTYPE html>
 
       // Launch smooth traction morph transition to exact SS3 layout
       animateTractionMorph(oldPositions, targetPositions, function() {
+        setup3DCoordinates(targetPositions);
         fitGraphView(true); // Guarantees SS2 perfect fit after Run Analysis
         if (physicsState) {
           network.setOptions({ physics: { enabled: true } });
@@ -2569,7 +2770,8 @@ html_template = """<!DOCTYPE html>
     }
 
     function resetGraphView() {
-      if (network) fitGraphView(true);
+      resetGlobeView();
+      if (network) fitGraphView();
     }
 
     function zoomIn() {
@@ -2603,6 +2805,7 @@ html_template = """<!DOCTYPE html>
       const oldPositions = network.getPositions();
       const targetPositions = computeModelLayout(currentRing.graph, 0, currentSpringLength);
       animateTractionMorph(oldPositions, targetPositions, function() {
+        setup3DCoordinates(targetPositions);
         if (physicsState) {
           network.setOptions({
             physics: {
@@ -2641,11 +2844,11 @@ html_template = """<!DOCTYPE html>
               enabled: true,
               solver: "forceAtlas2Based",
               forceAtlas2Based: {
-                gravitationalConstant: -180,
-                centralGravity: 0.01,
+                gravitationalConstant: -350,
+                centralGravity: 0.003,
                 springLength: currentSpringLength,
-                springConstant: 0.015,
-                damping: 0.8,
+                springConstant: 0.008,
+                damping: 0.75,
                 avoidOverlap: 0.8
               },
               minVelocity: 0.75,
@@ -2660,14 +2863,6 @@ html_template = """<!DOCTYPE html>
         } else {
           network.stopSimulation();
           network.setOptions({ physics: { enabled: false } });
-          const currentRing = allRings[activeIndex];
-          if (currentRing) {
-            const oldPositions = network.getPositions();
-            const targetPositions = computeModelLayout(currentRing.graph, 0, currentSpringLength);
-            animateTractionMorph(oldPositions, targetPositions, () => {
-              fitGraphView(true);
-            }, 350);
-          }
           showToast("Physics: Off (Model Layout Locked)");
         }
       }
@@ -2814,19 +3009,9 @@ Action Recommendation: Coordinated mule syndicate detected. Initiate credential 
       }
     });
 
-    function initApp() {
-      if (allRings && allRings.length > 0) {
-        renderRingsList(allRings);
-        selectRing(0);
-      }
+    window.addEventListener("DOMContentLoaded", () => {
       fetchRings();
-    }
-
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", initApp);
-    } else {
-      initApp();
-    }
+    });
   </script>
 </body>
 </html>
