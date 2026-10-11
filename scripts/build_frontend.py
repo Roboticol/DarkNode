@@ -20,6 +20,32 @@ with open(fallback_path, "r", encoding="utf-8") as f:
     fallback_data = f.read()
 
 fallback_rings = json.loads(fallback_data)
+
+# Canonical SS3 layout coordinates (guarantees perfect SS3 model across all rings)
+SS3_CANONICAL = {
+    'user_6': {'x': 0.0, 'y': 0.0},
+    'user_5': {'x': 40.6, 'y': -135.7},
+    'user_7': {'x': 122.3, 'y': -59.9},
+    'user_0': {'x': 191.0, 'y': 38.7},
+    'user_1': {'x': 85.7, 'y': 98.5},
+    'user_2': {'x': -70.5, 'y': 187.2},
+    'user_3': {'x': -94.5, 'y': 88.5},
+    'user_4': {'x': -121.6, 'y': -42.7},
+    'merchant_2': {'x': -28.2, 'y': -229.0},
+    'merchant_0': {'x': 265.3, 'y': -56.3},
+    'merchant_1': {'x': 14.4, 'y': 261.1},
+    'merchant_3': {'x': -236.6, 'y': 17.0},
+    'device_331': {'x': -114.6, 'y': -165.0},
+    'device_154': {'x': 191.2, 'y': -197.0},
+    'device_799': {'x': 234.9, 'y': 156.5},
+    'device_74': {'x': 125.9, 'y': 265.5},
+    'device_666': {'x': -222.1, 'y': 246.5}
+}
+
+user_slot_order = ['user_6', 'user_5', 'user_7', 'user_0', 'user_1', 'user_2', 'user_3', 'user_4']
+merch_slot_order = ['merchant_2', 'merchant_0', 'merchant_1', 'merchant_3']
+dev_slot_order = ['device_331', 'device_154', 'device_799', 'device_74', 'device_666']
+
 organic_layouts = {}
 for idx, r in enumerate(fallback_rings):
     nodes = r['graph']['nodes']
@@ -30,46 +56,30 @@ for idx, r in enumerate(fallback_rings):
 
     positions = {}
 
-    # 1. Central Mule Hub placed at (0, 0)
-    center_idx = 6 if len(user_nodes) > 6 else 0
-    positions[user_nodes[center_idx]['id']] = {'x': 0.0, 'y': 0.0}
+    for i, u in enumerate(user_nodes):
+        if u['id'] in SS3_CANONICAL:
+            positions[u['id']] = SS3_CANONICAL[u['id']]
+        else:
+            slot_key = user_slot_order[i % len(user_slot_order)]
+            positions[u['id']] = SS3_CANONICAL[slot_key]
 
-    # 2. Outer Core Users (7 nodes) distributed in spacious ring
-    other_users = [u for i, u in enumerate(user_nodes) if i != center_idx]
-    nU = len(other_users)
-    for i, u in enumerate(other_users):
-        ang = 2 * math.pi * i / max(1, nU) - math.pi / 2
-        positions[u['id']] = {
-            'x': round(135 * math.cos(ang), 1),
-            'y': round(120 * math.sin(ang), 1)
-        }
-
-    # 3. Merchants (4 nodes) in perimeter diamond
-    merch_angles = [-math.pi / 2 - 0.1, -math.pi / 6, math.pi / 2, 5 * math.pi / 6]
     for i, m in enumerate(merch_nodes):
-        ang = merch_angles[i % len(merch_angles)]
-        positions[m['id']] = {
-            'x': round(195 * math.cos(ang), 1),
-            'y': round(185 * math.sin(ang), 1)
-        }
+        if m['id'] in SS3_CANONICAL:
+            positions[m['id']] = SS3_CANONICAL[m['id']]
+        else:
+            slot_key = merch_slot_order[i % len(merch_slot_order)]
+            positions[m['id']] = SS3_CANONICAL[slot_key]
 
-    # 4. Hardware Devices (5 nodes) in 5-pointed perimeter star
-    dev_angles = [-math.pi / 2 + 0.25, -math.pi / 6 - 0.15, math.pi / 4, 3 * math.pi / 4, -5 * math.pi / 6 + 0.1]
     for i, d in enumerate(dev_nodes):
-        ang = dev_angles[i % len(dev_angles)]
-        positions[d['id']] = {
-            'x': round(265 * math.cos(ang), 1),
-            'y': round(245 * math.sin(ang), 1)
-        }
+        if d['id'] in SS3_CANONICAL:
+            positions[d['id']] = SS3_CANONICAL[d['id']]
+        else:
+            slot_key = dev_slot_order[i % len(dev_slot_order)]
+            positions[d['id']] = SS3_CANONICAL[slot_key]
 
-    # 5. Auxiliary nodes
-    nO = len(other_nodes)
     for i, o in enumerate(other_nodes):
-        ang = 2 * math.pi * i / max(1, nO)
-        positions[o['id']] = {
-            'x': round(210 * math.cos(ang), 1),
-            'y': round(210 * math.sin(ang), 1)
-        }
+        ang = 2 * math.pi * i / max(1, len(other_nodes))
+        positions[o['id']] = {'x': round(220 * math.cos(ang), 1), 'y': round(220 * math.sin(ang), 1)}
 
     organic_layouts[idx] = positions
 
@@ -1733,103 +1743,91 @@ html_template = """<!DOCTYPE html>
 
     function fitGraphView(animate = true) {
       if (!network) return;
-      network.fit({
-        animation: animate ? { duration: 300, easingFunction: "easeInOutQuad" } : false
+      network.moveTo({
+        position: { x: 0, y: 0 },
+        scale: 0.60,
+        animation: animate ? { duration: 280, easingFunction: "easeInOutQuad" } : false
       });
     }
 
-    function calculateCentroid(positions) {
-      let sumX = 0, sumY = 0, count = 0;
-      for (const id in positions) {
-        if (positions[id]) {
-          sumX += positions[id].x;
-          sumY += positions[id].y;
-          count++;
-        }
-      }
-      return count > 0 ? { x: sumX / count, y: sumY / count } : { x: 0, y: 0 };
-    }
+    const GLOBE_SPHERE_RADIUS = 340.0;
 
     function setup3DCoordinates(positions) {
       baseNodes3D = {};
-      currentGraphCentroid = calculateCentroid(positions);
       currentYaw = 0;
       currentPitch = 0;
       targetYaw = 0;
       targetPitch = 0;
       updateGlobeIndicator();
 
-      const ids = Object.keys(positions);
-      if (ids.length === 0) return;
-
-      // Find max radius from centroid
-      let maxDist = 0;
-      for (const id of ids) {
+      const R = GLOBE_SPHERE_RADIUS;
+      for (const id in positions) {
         const p = positions[id];
-        const dist = Math.hypot(p.x - currentGraphCentroid.x, p.y - currentGraphCentroid.y);
-        if (dist > maxDist) maxDist = dist;
-      }
-      const globeRadius = Math.max(160, maxDist * 1.05);
+        const x2D = p.x;
+        const y2D = p.y;
+        const r2D = Math.hypot(x2D, y2D);
 
-      // Deterministically map each node into 3D spherical shell coordinates
-      ids.forEach((id, idx) => {
-        const p = positions[id];
-        const x0 = p.x - currentGraphCentroid.x;
-        const y0 = p.y - currentGraphCentroid.y;
-        const r2D = Math.hypot(x0, y0);
+        // Map onto sphere surface: X^2 + Y^2 + Z^2 = R^2
+        const k = Math.min(1.0, (R * 0.95) / Math.max(1.0, r2D));
+        const X0 = x2D * k;
+        const Y0 = y2D * k;
+        const Z0 = Math.sqrt(Math.max(0, R * R - X0 * X0 - Y0 * Y0));
 
-        // Spherical depth: alternate front/back hemispheres so nodes form a rich 3D constellation
-        const hemisphere = (idx % 2 === 0) ? 1 : -1;
-        const sphereCap = Math.sqrt(Math.max(0, globeRadius * globeRadius - r2D * r2D));
-        const z0 = hemisphere * Math.min(sphereCap * 0.85, 180 + (idx % 3) * 25);
-
-        // Get original visual size if defined
         const existingNode = currentNodesDataSet ? currentNodesDataSet.get(id) : null;
         const origSize = existingNode && existingNode.size ? existingNode.size : (id.startsWith("user") ? 20 : (id.startsWith("dev") ? 22 : 18));
 
-        baseNodes3D[id] = { x0, y0, z0, origSize };
-      });
+        baseNodes3D[id] = {
+          x0: X0,
+          y0: Y0,
+          z0: Z0,
+          orig2DX: x2D,
+          orig2DY: y2D,
+          origSize: origSize,
+          lastZ: Z0
+        };
+      }
     }
 
     function renderGlobeFrame() {
       globeRafPending = false;
-      if (!network || !network.body || !network.body.nodes) return;
+      if (!network || !network.body || !network.body.nodes || !globeModeActive) return;
 
-      // Snappy and fluid interpolation towards target yaw/pitch (60-120 FPS)
-      currentYaw += (targetYaw - currentYaw) * 0.85;
-      currentPitch += (targetPitch - currentPitch) * 0.85;
+      currentYaw += (targetYaw - currentYaw) * 0.18;
+      currentPitch += (targetPitch - currentPitch) * 0.18;
 
-      const cosYaw = Math.cos(currentYaw);
-      const sinYaw = Math.sin(currentYaw);
-      const cosPitch = Math.cos(currentPitch);
-      const sinPitch = Math.sin(currentPitch);
-      const fov = 750;
+      const cosY = Math.cos(currentYaw);
+      const sinY = Math.sin(currentYaw);
+      const cosP = Math.cos(currentPitch);
+      const sinP = Math.sin(currentPitch);
+      const fov = 850;
 
       for (const id in baseNodes3D) {
-        const node3D = baseNodes3D[id];
+        const b = baseNodes3D[id];
         const visNode = network.body.nodes[id];
         if (!visNode) continue;
 
-        // 1. Rotate Yaw (Y-axis)
-        const x1 = node3D.x0 * cosYaw + node3D.z0 * sinYaw;
-        const z1 = -node3D.x0 * sinYaw + node3D.z0 * cosYaw;
+        // 1. Rotate around Y (Yaw)
+        const x1 = b.x0 * cosY + b.z0 * sinY;
+        const z1 = -b.x0 * sinY + b.z0 * cosY;
 
-        // 2. Rotate Pitch (X-axis)
-        const y2 = node3D.y0 * cosPitch - z1 * sinPitch;
-        const z2 = node3D.y0 * sinPitch + z1 * cosPitch;
+        // 2. Rotate around X (Pitch)
+        const y2 = b.y0 * cosP - z1 * sinP;
+        const z2 = b.y0 * sinP + z1 * cosP;
 
         // 3. Perspective projection
-        const scale = fov / (fov + z2);
-        visNode.x = currentGraphCentroid.x + x1 * scale;
-        visNode.y = currentGraphCentroid.y + y2 * scale;
+        const persp = fov / (fov - z2);
+        visNode.x = x1 * persp;
+        visNode.y = y2 * persp;
+        b.lastZ = z2;
+
         if (visNode.options) {
-          visNode.options.size = Math.max(10, Math.min(34, Math.round(node3D.origSize * scale)));
+          visNode.options.size = Math.round(b.origSize * Math.max(0.68, Math.min(1.36, persp)));
         }
       }
 
       network.redraw();
 
-      if (isGlobeDragging || Math.abs(currentYaw - targetYaw) > 0.0005 || Math.abs(currentPitch - targetPitch) > 0.0005) {
+      if (isGlobeDragging || Math.abs(currentYaw - targetYaw) > 0.0003 || Math.abs(currentPitch - targetPitch) > 0.0003) {
         globeRafPending = true;
         requestAnimationFrame(renderGlobeFrame);
       } else {
@@ -1852,53 +1850,60 @@ html_template = """<!DOCTYPE html>
 
       if (network) {
         if (globeModeActive) {
+          targetYaw = 0;
+          targetPitch = 0;
+          currentYaw = 0;
+          currentPitch = 0;
           network.setOptions({
             physics: { enabled: false },
             interaction: { dragView: false, dragNodes: false }
           });
           network.stopSimulation();
+          network.moveTo({
+            position: { x: 0, y: 0 },
+            scale: 0.60,
+            animation: { duration: 250, easingFunction: "easeInOutQuad" }
+          });
+          globeRafPending = true;
+          requestAnimationFrame(renderGlobeFrame);
+          showToast("3D Globe Active — Drag horizontally or vertically to rotate sphere in 3D");
         } else {
+          // RESTORE EXACT 2D SS3 POSITIONS CLEANLY
+          if (network.body && network.body.nodes) {
+            for (const id in baseNodes3D) {
+              const b = baseNodes3D[id];
+              const visNode = network.body.nodes[id];
+              if (visNode) {
+                visNode.x = b.orig2DX;
+                visNode.y = b.orig2DY;
+                if (visNode.options) visNode.options.size = b.origSize;
+              }
+            }
+            network.redraw();
+          }
           network.setOptions({
             physics: { enabled: physicsState },
             interaction: { dragView: true, dragNodes: true }
           });
+          fitGraphView(true);
+          updateGlobeIndicator();
+          showToast("3D Globe Disabled — Model locked to 2D SS3 layout");
         }
       }
-
-      showToast(`3D Globe Mode ${globeModeActive ? 'Enabled — Drag cursor horizontally or vertically to spin smoothly' : 'Disabled'}`);
     }
 
     function resetGlobeView() {
       targetYaw = 0;
       targetPitch = 0;
-      currentYaw = 0;
-      currentPitch = 0;
-      if (network && network.body && network.body.nodes) {
-        for (const id in baseNodes3D) {
-          const node3D = baseNodes3D[id];
-          const visNode = network.body.nodes[id];
-          if (visNode) {
-            visNode.x = currentGraphCentroid.x + node3D.x0;
-            visNode.y = currentGraphCentroid.y + node3D.y0;
-            if (visNode.options) visNode.options.size = node3D.origSize;
-          }
+      if (globeModeActive) {
+        if (!globeRafPending) {
+          globeRafPending = true;
+          requestAnimationFrame(renderGlobeFrame);
         }
-        network.redraw();
+      } else {
+        fitGraphView(true);
       }
-      if (currentNodesDataSet) {
-        const finalUpdates = Object.keys(baseNodes3D).map(id => ({
-          id,
-          x: currentGraphCentroid.x + baseNodes3D[id].x0,
-          y: currentGraphCentroid.y + baseNodes3D[id].y0,
-          size: baseNodes3D[id].origSize
-        }));
-        currentNodesDataSet.update(finalUpdates);
-      }
-      updateGlobeIndicator();
-      if (network) {
-        fitGraphView();
-      }
-      showToast("Reset 3D Globe orientation to default view");
+      showToast("Reset 3D Globe orientation to front-facing view");
     }
 
     function updateGlobeIndicator() {
@@ -1908,7 +1913,7 @@ html_template = """<!DOCTYPE html>
       const pitchDeg = Math.round((currentPitch * 180 / Math.PI) % 360);
       const isRotated = Math.abs(yawDeg) > 1 || Math.abs(pitchDeg) > 1;
 
-      if (isRotated) {
+      if (isRotated && globeModeActive) {
         resetBtn.style.display = "inline-flex";
         resetBtn.innerText = `Reset 3D (${yawDeg}°, ${pitchDeg}°)`;
       } else {
@@ -1935,8 +1940,6 @@ html_template = """<!DOCTYPE html>
         dragStartY = e.clientY;
         dragStartYaw = currentYaw;
         dragStartPitch = currentPitch;
-        targetYaw = currentYaw;
-        targetPitch = currentPitch;
         container.style.cursor = "grabbing";
 
         e.preventDefault();
@@ -1950,7 +1953,7 @@ html_template = """<!DOCTYPE html>
 
         targetYaw = dragStartYaw + deltaX * 0.007;
 
-        const maxPitch = (75 * Math.PI) / 180;
+        const maxPitch = (70 * Math.PI) / 180;
         const rawPitch = dragStartPitch - deltaY * 0.007;
         targetPitch = Math.max(-maxPitch, Math.min(maxPitch, rawPitch));
 
@@ -1972,11 +1975,30 @@ html_template = """<!DOCTYPE html>
     }
 
     // =========================================================================
-    // REAL MODEL TOPOLOGICAL LAYOUT COMPUTATION
-    // 100% Organic Syndicate Topology (Identical across Physics: On and Physics: Off)
-    // Precomputed force equilibrium + Dynamic Organic Solver
+    // REAL MODEL TOPOLOGICAL LAYOUT COMPUTATION (SS3 EXACT CANONICAL)
+    // 100% Organic Syndicate Topology across all modes (Physics: On, Physics: Off)
     // =========================================================================
     const PRECOMPUTED_ORGANIC_LAYOUTS = __ORGANIC_LAYOUTS_JSON__;
+
+    const SS3_CANONICAL_POSITIONS = {
+      'user_6': { x: 0.0, y: 0.0 },
+      'user_5': { x: 40.6, y: -135.7 },
+      'user_7': { x: 122.3, y: -59.9 },
+      'user_0': { x: 191.0, y: 38.7 },
+      'user_1': { x: 85.7, y: 98.5 },
+      'user_2': { x: -70.5, y: 187.2 },
+      'user_3': { x: -94.5, y: 88.5 },
+      'user_4': { x: -121.6, y: -42.7 },
+      'merchant_2': { x: -28.2, y: -229.0 },
+      'merchant_0': { x: 265.3, y: -56.3 },
+      'merchant_1': { x: 14.4, y: 261.1 },
+      'merchant_3': { x: -236.6, y: 17.0 },
+      'device_331': { x: -114.6, y: -165.0 },
+      'device_154': { x: 191.2, y: -197.0 },
+      'device_799': { x: 234.9, y: 156.5 },
+      'device_74': { x: 125.9, y: 265.5 },
+      'device_666': { x: -222.1, y: 246.5 }
+    };
 
     function computeDynamicOrganicLayout(graphData, scale = 1.0) {
       const visibleNodes = (graphData.nodes || []).filter(n => activeFilters[n.group] !== false);
@@ -1985,52 +2007,35 @@ html_template = """<!DOCTYPE html>
       const merchNodes = visibleNodes.filter(n => n.group === "merchant");
       const otherNodes = visibleNodes.filter(n => n.group !== "user" && n.group !== "device" && n.group !== "merchant");
 
+      const userSlots = ['user_6', 'user_5', 'user_7', 'user_0', 'user_1', 'user_2', 'user_3', 'user_4'];
+      const merchSlots = ['merchant_2', 'merchant_0', 'merchant_1', 'merchant_3'];
+      const devSlots = ['device_331', 'device_154', 'device_799', 'device_74', 'device_666'];
+
       const positions = {};
 
-      // 1. Central Mule Hub placed at (0, 0)
-      const centerIdx = userNodes.length > 6 ? 6 : 0;
-      if (userNodes.length > 0) {
-        positions[userNodes[centerIdx].id] = { x: 0.0, y: 0.0 };
-      }
-
-      // 2. Outer Core Users (7 nodes) distributed in spacious ring
-      const otherUsers = userNodes.filter((_, i) => i !== centerIdx);
-      const nU = Math.max(1, otherUsers.length);
-      otherUsers.forEach((u, i) => {
-        const ang = (2 * Math.PI * i) / nU - Math.PI / 2;
-        positions[u.id] = {
-          x: Math.round(135 * scale * Math.cos(ang) * 10) / 10,
-          y: Math.round(120 * scale * Math.sin(ang) * 10) / 10
-        };
+      userNodes.forEach((u, i) => {
+        const slotKey = SS3_CANONICAL_POSITIONS[u.id] ? u.id : userSlots[i % userSlots.length];
+        const p = SS3_CANONICAL_POSITIONS[slotKey];
+        positions[u.id] = { x: Math.round(p.x * scale * 10) / 10, y: Math.round(p.y * scale * 10) / 10 };
       });
 
-      // 3. Merchants (4 nodes) in perimeter diamond
-      const merchAngles = [-Math.PI / 2 - 0.1, -Math.PI / 6, Math.PI / 2, (5 * Math.PI) / 6];
       merchNodes.forEach((m, i) => {
-        const ang = merchAngles[i % merchAngles.length];
-        positions[m.id] = {
-          x: Math.round(195 * scale * Math.cos(ang) * 10) / 10,
-          y: Math.round(185 * scale * Math.sin(ang) * 10) / 10
-        };
+        const slotKey = SS3_CANONICAL_POSITIONS[m.id] ? m.id : merchSlots[i % merchSlots.length];
+        const p = SS3_CANONICAL_POSITIONS[slotKey];
+        positions[m.id] = { x: Math.round(p.x * scale * 10) / 10, y: Math.round(p.y * scale * 10) / 10 };
       });
 
-      // 4. Hardware Devices (5 nodes) in 5-pointed perimeter star
-      const devAngles = [-Math.PI / 2 + 0.25, -Math.PI / 6 - 0.15, Math.PI / 4, (3 * Math.PI) / 4, (-5 * Math.PI) / 6 + 0.1];
       devNodes.forEach((d, i) => {
-        const ang = devAngles[i % devAngles.length];
-        positions[d.id] = {
-          x: Math.round(265 * scale * Math.cos(ang) * 10) / 10,
-          y: Math.round(245 * scale * Math.sin(ang) * 10) / 10
-        };
+        const slotKey = SS3_CANONICAL_POSITIONS[d.id] ? d.id : devSlots[i % devSlots.length];
+        const p = SS3_CANONICAL_POSITIONS[slotKey];
+        positions[d.id] = { x: Math.round(p.x * scale * 10) / 10, y: Math.round(p.y * scale * 10) / 10 };
       });
 
-      // 5. Auxiliary nodes
-      const nO = Math.max(1, otherNodes.length);
       otherNodes.forEach((o, i) => {
-        const ang = (2 * Math.PI * i) / nO;
+        const ang = (2 * Math.PI * i) / Math.max(1, otherNodes.length);
         positions[o.id] = {
-          x: Math.round(210 * scale * Math.cos(ang) * 10) / 10,
-          y: Math.round(210 * scale * Math.sin(ang) * 10) / 10
+          x: Math.round(220 * scale * Math.cos(ang) * 10) / 10,
+          y: Math.round(220 * scale * Math.sin(ang) * 10) / 10
         };
       });
 
@@ -2053,55 +2058,20 @@ html_template = """<!DOCTYPE html>
         }
       }
 
-      // 2. Fallback to balanced dynamic organic solver if custom graph
+      // 2. Fallback to balanced dynamic organic solver
       if (!rawPositions) {
         rawPositions = computeDynamicOrganicLayout(graphData, 1.0);
       }
 
-      // 3. Apply scale, face rotation (for run analysis animation), and collision resolution
+      // 3. Anchor firmly to SS3 canonical model (Zero rotation)
       const positions = {};
-      const cosA = Math.cos(faceAngle);
-      const sinA = Math.sin(faceAngle);
-
       for (const node of (graphData.nodes || [])) {
         const id = node.id;
         const p = rawPositions[id] || { x: 0, y: 0 };
-        const sx = p.x * scale;
-        const sy = p.y * scale;
-
-        // Smooth planar rotation for model face changing
-        const rx = sx * cosA - sy * sinA;
-        const ry = sx * sinA + sy * cosA;
-
         positions[id] = {
-          x: Math.round(rx * 10) / 10,
-          y: Math.round(ry * 10) / 10
+          x: Math.round(p.x * scale * 10) / 10,
+          y: Math.round(p.y * scale * 10) / 10
         };
-      }
-
-      // 4. Collision relaxation pass (Guarantees zero overlap, min distance >= 52px)
-      const keys = Object.keys(positions);
-      const minDistance = 52.0;
-      for (let iter = 0; iter < 15; iter++) {
-        for (let i = 0; i < keys.length; i++) {
-          for (let j = i + 1; j < keys.length; j++) {
-            const k1 = keys[i], k2 = keys[j];
-            const p1 = positions[k1], p2 = positions[k2];
-            let dx = p2.x - p1.x;
-            let dy = p2.y - p1.y;
-            let d = Math.hypot(dx, dy);
-            if (d < minDistance) {
-              if (d < 0.001) { dx = 1.0; dy = 0.0; d = 1.0; }
-              const overlap = (minDistance - d) / 2.0;
-              const nx = (dx / d) * overlap;
-              const ny = (dy / d) * overlap;
-              p1.x = Math.round((p1.x - nx) * 10) / 10;
-              p1.y = Math.round((p1.y - ny) * 10) / 10;
-              p2.x = Math.round((p2.x + nx) * 10) / 10;
-              p2.y = Math.round((p2.y + ny) * 10) / 10;
-            }
-          }
-        }
       }
 
       return positions;
@@ -2496,7 +2466,7 @@ html_template = """<!DOCTYPE html>
           zoomView: true,
           dragView: !globeModeActive,
           dragNodes: !globeModeActive,
-          zoomSpeed: 0.8,
+          zoomSpeed: 0.16, // Normal, smooth, professional mouse wheel zoom speed
           navigationButtons: false,
           keyboard: false
         }
@@ -2544,7 +2514,7 @@ html_template = """<!DOCTYPE html>
         });
 
         // =========================================================================
-        // CONSTANT SCREEN TEXT SIZE & VISIBILITY AT ALL ZOOM LEVELS (HIGH-PERF GPU)
+        // CONSTANT SCREEN TEXT SIZE & 3D CYBER GLOBE WIREFRAME (GPU ACCELERATED)
         // =========================================================================
         const labelWidthCache = {};
         network.on("afterDrawing", function(ctx) {
@@ -2552,6 +2522,59 @@ html_template = """<!DOCTYPE html>
           ctx.save();
           ctx.setTransform(1, 0, 0, 1, 0, 0);
 
+          // 1. Draw 3D Holographic Cyber Globe Wireframe when Globe Mode is Active
+          if (globeModeActive) {
+            const centerDOM = network.canvasToDOM({ x: 0, y: 0 });
+            const cx = centerDOM.x;
+            const cy = centerDOM.y;
+            const screenR = GLOBE_SPHERE_RADIUS * network.getScale();
+
+            if (screenR > 15) {
+              // Globe ambient glow
+              const grad = ctx.createRadialGradient(cx, cy, screenR * 0.1, cx, cy, screenR * 1.06);
+              grad.addColorStop(0, "rgba(56, 189, 248, 0.03)");
+              grad.addColorStop(0.85, "rgba(56, 189, 248, 0.08)");
+              grad.addColorStop(1, "rgba(56, 189, 248, 0.0)");
+              ctx.fillStyle = grad;
+              ctx.beginPath();
+              ctx.arc(cx, cy, screenR * 1.06, 0, Math.PI * 2);
+              ctx.fill();
+
+              // Outer boundary rim
+              ctx.strokeStyle = "rgba(56, 189, 248, 0.28)";
+              ctx.lineWidth = 1.3;
+              ctx.beginPath();
+              ctx.arc(cx, cy, screenR, 0, Math.PI * 2);
+              ctx.stroke();
+
+              // 3D Equator & Latitude rings
+              ctx.strokeStyle = "rgba(56, 189, 248, 0.20)";
+              ctx.lineWidth = 1.0;
+              ctx.setLineDash([5, 5]);
+
+              // Equator
+              const eqMinor = Math.max(1, screenR * Math.abs(Math.sin(currentPitch)));
+              ctx.beginPath();
+              ctx.ellipse(cx, cy, screenR, eqMinor, 0, 0, Math.PI * 2);
+              ctx.stroke();
+
+              // Meridian 1
+              const merMinor = Math.max(1, screenR * Math.abs(Math.cos(currentYaw)));
+              ctx.beginPath();
+              ctx.ellipse(cx, cy, merMinor, screenR, 0, 0, Math.PI * 2);
+              ctx.stroke();
+
+              // Meridian 2 (orthogonal)
+              const merMinor2 = Math.max(1, screenR * Math.abs(Math.sin(currentYaw)));
+              ctx.beginPath();
+              ctx.ellipse(cx, cy, merMinor2, screenR, 0, 0, Math.PI * 2);
+              ctx.stroke();
+
+              ctx.setLineDash([]);
+            }
+          }
+
+          // 2. High-performance Constant Screen Labels with Depth Cueing
           ctx.font = "600 11px 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
@@ -2566,6 +2589,10 @@ html_template = """<!DOCTYPE html>
                 domPos.y < -60 || domPos.y > container.clientHeight + 60) {
               continue;
             }
+
+            // Depth cueing in 3D globe mode (back-face dimming)
+            const isBackFace = globeModeActive && baseNodes3D[node.id] && baseNodes3D[node.id].lastZ < -15;
+            ctx.globalAlpha = isBackFace ? 0.28 : 1.0;
 
             const labelText = node.label;
             const yOffset = (node.group === "device" ? 22 : 18);
@@ -2611,11 +2638,9 @@ html_template = """<!DOCTYPE html>
       }
 
       // SUBSEQUENT RENDERS / RUN ANALYSIS:
-      // Smooth model traction face-morphing (NO DIRECT JUMP)
-      if (isAnalysisTriggered) {
-        analysisFaceAngle = (analysisFaceAngle + Math.PI * 0.42) % (Math.PI * 2);
-      }
-      const targetPositions = computeModelLayout(graphData, analysisFaceAngle, currentSpringLength);
+      // Canonical SS3 Model (Zero distortion, zero face rotation)
+      analysisFaceAngle = 0;
+      const targetPositions = computeModelLayout(graphData, 0, currentSpringLength);
       const oldPositions = network.getPositions();
       const oldCentroid = calculateCentroid(oldPositions);
 
@@ -2666,9 +2691,10 @@ html_template = """<!DOCTYPE html>
       currentNodesDataSet = newNodesDataSet;
       network.setData({ nodes: newNodesDataSet, edges: edges });
 
-      // Launch smooth traction morph transition between faces
+      // Launch smooth traction morph transition to exact SS3 layout
       animateTractionMorph(oldPositions, targetPositions, function() {
         setup3DCoordinates(targetPositions);
+        fitGraphView(true); // Guarantees SS2 perfect fit after Run Analysis
         if (physicsState) {
           network.setOptions({ physics: { enabled: true } });
           network.startSimulation();
@@ -2679,7 +2705,7 @@ html_template = """<!DOCTYPE html>
           network.setOptions({ physics: { enabled: false } });
           network.stopSimulation();
         }
-      }, 650);
+      }, 550);
     }
 
     function showNodeInspector(nodeId) {
@@ -2752,8 +2778,8 @@ html_template = """<!DOCTYPE html>
       if (!network) return;
       const s = network.getScale();
       network.moveTo({
-        scale: s * 1.3,
-        animation: { duration: 200, easingFunction: "easeInOutQuad" }
+        scale: Math.min(2.5, s * 1.18),
+        animation: { duration: 240, easingFunction: "easeInOutQuad" }
       });
     }
 
@@ -2761,8 +2787,8 @@ html_template = """<!DOCTYPE html>
       if (!network) return;
       const s = network.getScale();
       network.moveTo({
-        scale: s / 1.3,
-        animation: { duration: 200, easingFunction: "easeInOutQuad" }
+        scale: Math.max(0.25, s / 1.18),
+        animation: { duration: 240, easingFunction: "easeInOutQuad" }
       });
     }
 
@@ -2777,7 +2803,7 @@ html_template = """<!DOCTYPE html>
       if (!currentRing || !network) return;
 
       const oldPositions = network.getPositions();
-      const targetPositions = computeModelLayout(currentRing.graph, analysisFaceAngle, currentSpringLength);
+      const targetPositions = computeModelLayout(currentRing.graph, 0, currentSpringLength);
       animateTractionMorph(oldPositions, targetPositions, function() {
         setup3DCoordinates(targetPositions);
         if (physicsState) {
