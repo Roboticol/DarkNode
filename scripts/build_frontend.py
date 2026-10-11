@@ -127,59 +127,26 @@ html_template = """<!DOCTYPE html>
       line-height: 1;
     }
 
-    @keyframes defectiveLightBlink {
-      0%, 72%, 73.8%, 75.6%, 79.4%, 83.2%, 100% {
-        opacity: 1;
-        color: var(--yellow-primary);
-        text-shadow: 0 0 8px rgba(250, 204, 21, 0.6), 0 0 16px rgba(250, 204, 21, 0.3);
-      }
-      72.6% {
-        opacity: 0.16;
-        color: #655410;
-        text-shadow: none;
-      }
-      73.2% {
-        opacity: 0.95;
-        color: #fef08a;
-        text-shadow: 0 0 14px rgba(250, 204, 21, 0.9);
-      }
-      74.4% {
-        opacity: 0.1;
-        color: #4a3e0c;
-        text-shadow: none;
-      }
-      75.0% {
-        opacity: 0.72;
-        color: #facc15;
-        text-shadow: 0 0 5px rgba(250, 204, 21, 0.4);
-      }
-      76.8% {
-        opacity: 0.2;
-        color: #655410;
-        text-shadow: none;
-      }
-      77.8% {
-        opacity: 1;
+    @keyframes nodeLightEffect {
+      0%, 25% {
         color: #ffffff;
-        text-shadow: 0 0 18px rgba(250, 204, 21, 1), 0 0 32px rgba(250, 204, 21, 0.7);
+        text-shadow: none;
       }
-      78.8% {
-        opacity: 0.42;
-        color: #d97706;
-        text-shadow: 0 0 2px rgba(217, 119, 6, 0.3);
+      42%, 78% {
+        color: var(--yellow-primary);
+        text-shadow: 0 0 6px rgba(250, 204, 21, 0.65), 0 0 12px rgba(250, 204, 21, 0.35);
       }
-      82.4% {
-        opacity: 0.65;
-        color: #eab308;
-        text-shadow: 0 0 4px rgba(234, 179, 8, 0.4);
+      92%, 100% {
+        color: #ffffff;
+        text-shadow: none;
       }
     }
 
     .brand-title span.kicker {
-      color: var(--yellow-primary);
+      color: #ffffff;
       display: inline-block;
-      text-shadow: 0 0 8px rgba(250, 204, 21, 0.6), 0 0 16px rgba(250, 204, 21, 0.3);
-      animation: defectiveLightBlink 7s infinite;
+      font-weight: 800;
+      animation: nodeLightEffect 4.5s ease-in-out infinite;
     }
 
     .badge-pill {
@@ -1768,28 +1735,14 @@ html_template = """<!DOCTYPE html>
       const ids = Object.keys(positions);
       if (ids.length === 0) return;
 
-      // Find max radius from centroid
-      let maxDist = 0;
-      for (const id of ids) {
-        const p = positions[id];
-        const dist = Math.hypot(p.x - currentGraphCentroid.x, p.y - currentGraphCentroid.y);
-        if (dist > maxDist) maxDist = dist;
-      }
-      const globeRadius = Math.max(160, maxDist * 1.05);
-
-      // Deterministically map each node into 3D spherical shell coordinates
-      ids.forEach((id, idx) => {
+      // Setting z0 = 0 ensures that at initial frontal orientation (yaw=0, pitch=0),
+      // the perspective projection scale is 1.0, preserving 100% of the ss1 dimensions and structure!
+      ids.forEach((id) => {
         const p = positions[id];
         const x0 = p.x - currentGraphCentroid.x;
         const y0 = p.y - currentGraphCentroid.y;
-        const r2D = Math.hypot(x0, y0);
+        const z0 = 0;
 
-        // Spherical depth: alternate front/back hemispheres so nodes form a rich 3D constellation
-        const hemisphere = (idx % 2 === 0) ? 1 : -1;
-        const sphereCap = Math.sqrt(Math.max(0, globeRadius * globeRadius - r2D * r2D));
-        const z0 = hemisphere * Math.min(sphereCap * 0.85, 180 + (idx % 3) * 25);
-
-        // Get original visual size if defined
         const existingNode = currentNodesDataSet ? currentNodesDataSet.get(id) : null;
         const origSize = existingNode && existingNode.size ? existingNode.size : (id.startsWith("user") ? 20 : (id.startsWith("dev") ? 22 : 18));
 
@@ -1809,7 +1762,7 @@ html_template = """<!DOCTYPE html>
       const sinYaw = Math.sin(currentYaw);
       const cosPitch = Math.cos(currentPitch);
       const sinPitch = Math.sin(currentPitch);
-      const fov = 750;
+      const fov = 850;
 
       for (const id in baseNodes3D) {
         const node3D = baseNodes3D[id];
@@ -1829,7 +1782,7 @@ html_template = """<!DOCTYPE html>
         visNode.x = currentGraphCentroid.x + x1 * scale;
         visNode.y = currentGraphCentroid.y + y2 * scale;
         if (visNode.options) {
-          visNode.options.size = Math.max(10, Math.min(34, Math.round(node3D.origSize * scale)));
+          visNode.options.size = Math.max(12, Math.min(32, Math.round(node3D.origSize * scale)));
         }
       }
 
@@ -1863,11 +1816,23 @@ html_template = """<!DOCTYPE html>
             interaction: { dragView: false, dragNodes: false }
           });
           network.stopSimulation();
+          // Reset orientation so it opens in exact canonical ss1 structure without distortion
+          targetYaw = 0;
+          targetPitch = 0;
+          currentYaw = 0;
+          currentPitch = 0;
+          renderGlobeFrame();
+          fitGraphToScreen(true);
         } else {
+          // Restore unrotated canonical 2D layout
+          resetGlobeView();
           network.setOptions({
             physics: { enabled: physicsState },
             interaction: { dragView: true, dragNodes: true }
           });
+          if (physicsState) {
+            network.startSimulation();
+          }
         }
       }
 
@@ -1901,9 +1866,7 @@ html_template = """<!DOCTYPE html>
         currentNodesDataSet.update(finalUpdates);
       }
       updateGlobeIndicator();
-      if (network) {
-        network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
-      }
+      fitGraphToScreen(true);
       showToast("Reset 3D Globe orientation to default view");
     }
 
@@ -2024,7 +1987,7 @@ html_template = """<!DOCTYPE html>
       const merchs = visibleNodes.filter(n => n.group === "merchant");
       const others = visibleNodes.filter(n => n.group !== "user" && n.group !== "device" && n.group !== "merchant");
 
-      // Degree calculation to identify the central shared hardware hub vs satellite devices
+      // Degree calculation to identify the central apex device hub vs satellite devices
       const devDeg = {};
       devs.forEach(d => {
         devDeg[d.id] = visibleEdges.filter(e => e.from === d.id || e.to === d.id).length;
@@ -2034,88 +1997,77 @@ html_template = """<!DOCTYPE html>
       const apexDev = sortedDevs.length > 0 ? sortedDevs[0] : null;
       const satelliteDevs = sortedDevs.slice(1);
 
-      // Variation index cycles through subtle perspective shifts while keeping the iconic screenshot pattern
-      const v = Math.abs(typeof variationIndex === "number" ? Math.round(variationIndex) : 0) % 3;
+      // Pixel-measured canonical positions directly matching the spacious ss1 reference screenshot
+      // 1. Devices:
+      // Apex Hub (top center): [-25, -170]
+      // Satellites: NW [-250, -170], NE [255, -135], SW [-265, 80], SE [245, 115]
+      const apexPos = [-25, -170];
+      const satSlots = [
+        [-250, -170], // NW
+        [255, -135],  // NE
+        [-265, 80],   // SW
+        [245, 115]    // SE
+      ];
 
-      const apexCoords = [
-        [-30, -165],
-        [-15, -170],
-        [-25, -160]
-      ][v];
+      // 2. Users: Spacious 2-row elliptical nexus with >=80px clearance matching ss1
+      // Top row (4 users): [-125, -70], [-42, -70], [42, -65], [125, -60]
+      // Bottom row (4 users): [-135, 5], [-48, 5], [38, 12], [125, 20]
+      const canonicalUserSlots = [
+        [-125, -70],
+        [-42, -70],
+        [42, -65],
+        [125, -60],
+        [-135, 5],
+        [-48, 5],
+        [38, 12],
+        [125, 20]
+      ];
 
-      const satSlotsVariants = [
-        [[-215, -155], [-225, 135], [225, -110], [235, 155]],
-        [[-225, -150], [-215, 145], [235, -100], [225, 165]],
-        [[-205, -165], [-235, 125], [215, -120], [245, 145]]
-      ][v];
-
-      const anchorUserSlotsVariants = [
-        [[-105, -75], [-115, 50], [105, -20], [110, 80]],
-        [[-115, -70], [-105, 60], [115, -15], [100, 90]],
-        [[-95, -85],  [-125, 40], [95, -30],  [120, 75]]
-      ][v];
-
-      const interiorUserSlotsVariants = [
-        [[-10, -35], [-55, -15], [35, 20], [-15, 60], [0, 10], [-30, 20], [15, -10], [-20, -20]],
-        [[10, -35],  [-45, -25], [25, 30], [-25, 55], [-10, 15], [-20, 25], [20, -10], [-10, -20]],
-        [[-20, -40], [-60, -5],  [40, 10], [-10, 65], [10, 10],  [-35, 20], [10, -5],  [-30, -25]]
-      ][v];
-
-      const merchSlotsVariants = [
-        [[35, -135], [-85, 140], [-25, 180], [30, 150], [85, 165], [-60, 185]],
-        [[45, -130], [-75, 150], [-15, 185], [40, 145], [95, 160], [-50, 190]],
-        [[25, -140], [-95, 135], [-35, 175], [20, 160], [75, 170], [-70, 180]]
-      ][v];
+      // 3. Merchants: Top-right outflow [45, -165], bottom outflow basin [-80, 80], [-15, 105], [50, 90]
+      const canonicalMerchSlots = [
+        [45, -165],
+        [-80, 80],
+        [-15, 105],
+        [50, 90]
+      ];
 
       const positions = {};
 
-      // 1. Apex Hardware Hub
+      // 1. Apex Device Hub
       if (apexDev) {
         positions[apexDev.id] = {
-          x: Math.round(apexCoords[0] * scale * 10) / 10,
-          y: Math.round(apexCoords[1] * scale * 10) / 10
+          x: Math.round(apexPos[0] * scale * 10) / 10,
+          y: Math.round(apexPos[1] * scale * 10) / 10
         };
       }
 
-      // 2. Corner Satellite Devices & their connected anchor users
-      const matchedUsers = new Set();
+      // 2. Corner Satellite Devices
       satelliteDevs.forEach((sDev, idx) => {
-        const slot = satSlotsVariants[idx % satSlotsVariants.length];
+        const slot = satSlots[idx % satSlots.length];
         positions[sDev.id] = {
           x: Math.round(slot[0] * scale * 10) / 10,
           y: Math.round(slot[1] * scale * 10) / 10
         };
-
-        // Find user connected to this satellite device
-        const conn = visibleEdges
-          .filter(e => e.from === sDev.id || e.to === sDev.id)
-          .map(e => e.from === sDev.id ? e.to : e.from);
-        const connUsers = conn.filter(uid => users.some(u => u.id === uid) && !matchedUsers.has(uid));
-
-        if (connUsers.length > 0) {
-          const targetU = connUsers[0];
-          matchedUsers.add(targetU);
-          const uSlot = anchorUserSlotsVariants[idx % anchorUserSlotsVariants.length];
-          positions[targetU] = {
-            x: Math.round(uSlot[0] * scale * 10) / 10,
-            y: Math.round(uSlot[1] * scale * 10) / 10
-          };
-        }
       });
 
-      // 3. Interior Core Users
-      const remainingUsers = users.filter(u => !matchedUsers.has(u.id));
-      remainingUsers.forEach((u, idx) => {
-        const uSlot = interiorUserSlotsVariants[idx % interiorUserSlotsVariants.length];
+      // 3. Syndicate Member Users (Spacious & Clean matching ss1 in both Physics On & Physics Off modes)
+      users.forEach((u, idx) => {
+        let uSlot;
+        if (idx < canonicalUserSlots.length) {
+          uSlot = canonicalUserSlots[idx];
+        } else {
+          const angle = (idx / users.length) * Math.PI * 2;
+          uSlot = [Math.round(130 * Math.cos(angle)), Math.round(55 * Math.sin(angle))];
+        }
         positions[u.id] = {
           x: Math.round(uSlot[0] * scale * 10) / 10,
           y: Math.round(uSlot[1] * scale * 10) / 10
         };
       });
 
-      // 4. Target Merchants in Outflow Basin
+      // 4. Target Merchants
       merchs.forEach((m, idx) => {
-        const mSlot = merchSlotsVariants[idx % merchSlotsVariants.length];
+        const mSlot = canonicalMerchSlots[idx % canonicalMerchSlots.length];
         positions[m.id] = {
           x: Math.round(mSlot[0] * scale * 10) / 10,
           y: Math.round(mSlot[1] * scale * 10) / 10
@@ -2130,10 +2082,10 @@ html_template = """<!DOCTYPE html>
         };
       });
 
-      // 6. Collision Resolution Pass (Guarantee >= 52px clearance)
+      // 6. Collision Resolution Pass (Guarantee >= 60px clearance)
       const keys = Object.keys(positions);
-      const minDistance = 52.0;
-      for (let iter = 0; iter < 15; iter++) {
+      const minDistance = 60.0;
+      for (let iter = 0; iter < 12; iter++) {
         for (let i = 0; i < keys.length; i++) {
           for (let j = i + 1; j < keys.length; j++) {
             const k1 = keys[i], k2 = keys[j];
@@ -2160,23 +2112,119 @@ html_template = """<!DOCTYPE html>
 
     function fitGraphToScreen(animated = true) {
       if (!network) return;
-      network.fit({
+      const container = document.getElementById("network-canvas");
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      const width = rect.width || container.clientWidth || 800;
+      const height = rect.height || container.clientHeight || 500;
+
+      // Safe bounds avoiding top floating toolbar (top: 14px, h: 38px) and bottom legend (bottom: 14px, h: 30px)
+      const safeW = Math.max(260, width - 110);
+      const safeH = Math.max(220, height - 120);
+
+      const positions = network.getPositions();
+      const ids = Object.keys(positions);
+      if (ids.length === 0) return;
+
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (const id of ids) {
+        const p = positions[id];
+        if (!p) continue;
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.y > maxY) maxY = p.y;
+      }
+
+      const modelW = Math.max(100, (maxX - minX) + 80);
+      const modelH = Math.max(100, (maxY - minY) + 80);
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+
+      const fitScale = Math.min(safeW / modelW, safeH / modelH) * 0.90;
+      const targetScale = Math.max(0.38, Math.min(0.85, fitScale));
+
+      network.moveTo({
+        position: { x: centerX, y: centerY },
+        scale: targetScale,
         animation: animated ? { duration: 320, easingFunction: "easeInOutQuad" } : false
       });
-      setTimeout(() => {
-        if (!network) return;
-        const currentScale = network.getScale();
-        const currentView = network.getViewPosition();
-        // Zoom out to 82% scale and offset slightly down by 14px so apex node is comfortably below the top toolbar
-        network.moveTo({
-          position: { x: currentView.x, y: currentView.y - 14 },
-          scale: currentScale * 0.82,
-          animation: animated ? { duration: 250, easingFunction: "easeInOutQuad" } : false
-        });
-      }, animated ? 340 : 10);
     }
 
-    function animateTractionMorph(startPositions, targetPositions, onComplete, duration = 650) {
+    // High-tech Sequential User-to-User Neural Traversal Animation (Replaces direct jump / squeeze morphs!)
+    let traversalAnimState = null;
+    let traversalRafId = null;
+
+    function startUserTraversalAnimation(userNodes, onComplete) {
+      if (traversalRafId) {
+        cancelAnimationFrame(traversalRafId);
+        traversalRafId = null;
+      }
+      if (!userNodes || userNodes.length < 2 || !network) {
+        if (onComplete) onComplete();
+        return;
+      }
+
+      const durationPerHop = 150; // 150ms per user hop (~1.1s total)
+      const totalHops = userNodes.length - 1;
+      const totalDuration = totalHops * durationPerHop;
+      const startTime = performance.now();
+
+      traversalAnimState = {
+        userNodes: userNodes,
+        startTime: startTime,
+        durationPerHop: durationPerHop,
+        totalDuration: totalDuration,
+        currentHop: 0,
+        hopProgress: 0,
+        visitedNodes: new Set([userNodes[0]])
+      };
+
+      function animLoop(now) {
+        if (!traversalAnimState) return;
+        const elapsed = now - traversalAnimState.startTime;
+        const totalProg = Math.min(1.0, elapsed / traversalAnimState.totalDuration);
+
+        const hopFloat = totalProg * totalHops;
+        const currentHop = Math.min(totalHops - 1, Math.floor(hopFloat));
+        traversalAnimState.currentHop = currentHop;
+        traversalAnimState.hopProgress = hopFloat - currentHop;
+
+        for (let i = 0; i <= currentHop; i++) {
+          traversalAnimState.visitedNodes.add(userNodes[i]);
+        }
+        if (totalProg >= 1.0) {
+          traversalAnimState.visitedNodes.add(userNodes[userNodes.length - 1]);
+        }
+
+        // Synchronize highlight with sidebar account chips
+        const chips = document.querySelectorAll(".chip-account");
+        chips.forEach((c, idx) => {
+          if (idx <= currentHop) {
+            c.style.borderColor = "var(--yellow-primary)";
+            c.style.background = "rgba(250, 204, 21, 0.22)";
+            c.style.color = "#ffffff";
+          }
+        });
+
+        if (network) network.redraw();
+
+        if (totalProg < 1.0) {
+          traversalRafId = requestAnimationFrame(animLoop);
+        } else {
+          traversalRafId = null;
+          setTimeout(() => {
+            traversalAnimState = null;
+            if (network) network.redraw();
+          }, 400);
+          if (onComplete) onComplete();
+        }
+      }
+
+      traversalRafId = requestAnimationFrame(animLoop);
+    }
+
+    function animateTractionMorph(startPositions, targetPositions, onComplete, duration = 500) {
       if (morphRafId) cancelAnimationFrame(morphRafId);
       const startTime = performance.now();
       const nodeIds = Object.keys(targetPositions);
@@ -2200,7 +2248,6 @@ html_template = """<!DOCTYPE html>
       function step(now) {
         const elapsed = now - startTime;
         const progress = Math.min(1, elapsed / duration);
-        // Elastic spring traction ease-out
         const ease = 1 - Math.pow(1 - progress, 3);
 
         for (const id of nodeIds) {
@@ -2708,13 +2755,83 @@ html_template = """<!DOCTYPE html>
         });
 
         // =========================================================================
-        // CONSTANT SCREEN TEXT SIZE & VISIBILITY AT ALL ZOOM LEVELS
+        // CONSTANT SCREEN TEXT SIZE & VISIBILITY AT ALL ZOOM LEVELS + TRAVERSAL ANIMATION
         // =========================================================================
         network.on("afterDrawing", function(ctx) {
           ctx.save();
           ctx.setTransform(1, 0, 0, 1, 0, 0);
 
           const positions = network.getPositions();
+
+          // Render active User-to-User GNN traversal pulse animation
+          if (traversalAnimState && network) {
+            const uNodes = traversalAnimState.userNodes;
+            const currentHop = traversalAnimState.currentHop;
+            const hopProg = traversalAnimState.hopProgress;
+
+            // Highlight all visited user nodes with a golden aura
+            for (const id of traversalAnimState.visitedNodes) {
+              const p = positions[id];
+              if (p) {
+                const domP = network.canvasToDOM({ x: p.x, y: p.y });
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(domP.x, domP.y, 20, 0, Math.PI * 2);
+                ctx.strokeStyle = "rgba(250, 204, 21, 0.75)";
+                ctx.lineWidth = 2.5;
+                ctx.shadowColor = "#facc15";
+                ctx.shadowBlur = 12;
+                ctx.stroke();
+                ctx.restore();
+              }
+            }
+
+            // Draw traveling packet and electric traversal link
+            if (currentHop < uNodes.length - 1) {
+              const fromId = uNodes[currentHop];
+              const toId = uNodes[currentHop + 1];
+              const posFrom = positions[fromId];
+              const posTo = positions[toId];
+
+              if (posFrom && posTo) {
+                const domFrom = network.canvasToDOM({ x: posFrom.x, y: posFrom.y });
+                const domTo = network.canvasToDOM({ x: posTo.x, y: posTo.y });
+
+                const pktX = domFrom.x + (domTo.x - domFrom.x) * hopProg;
+                const pktY = domFrom.y + (domTo.y - domFrom.y) * hopProg;
+
+                ctx.save();
+                // 1. Electric traversal beam trailing behind packet
+                ctx.beginPath();
+                ctx.moveTo(domFrom.x, domFrom.y);
+                ctx.lineTo(pktX, pktY);
+                ctx.strokeStyle = "#facc15";
+                ctx.lineWidth = 3.2;
+                ctx.shadowColor = "#facc15";
+                ctx.shadowBlur = 14;
+                ctx.stroke();
+
+                // 2. High-energy white/yellow packet core
+                ctx.beginPath();
+                ctx.arc(pktX, pktY, 5.5, 0, Math.PI * 2);
+                ctx.fillStyle = "#ffffff";
+                ctx.shadowColor = "#facc15";
+                ctx.shadowBlur = 16;
+                ctx.fill();
+
+                // 3. Anticipation ripple expanding at the destination user
+                const ripR = 14 + hopProg * 18;
+                const ripAlpha = Math.max(0, 0.9 * (1 - hopProg));
+                ctx.beginPath();
+                ctx.arc(domTo.x, domTo.y, ripR, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(250, 204, 21, ${ripAlpha})`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+              }
+            }
+          }
+
           ctx.font = "600 11px 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
@@ -2766,19 +2883,27 @@ html_template = """<!DOCTYPE html>
       }
 
       // SUBSEQUENT RENDERS / RUN ANALYSIS:
-      // Smooth model traction face-morphing (NO DIRECT JUMP)
       if (isAnalysisTriggered) {
-        analysisRunIndex = (analysisRunIndex + 1) % 3;
+        // RUN ANALYSIS:
+        // Do NOT squeeze or direct jump! Keep canonical ss1 positions stable and animate
+        // a sequential neural traversal pulse across all syndicate user members!
+        const userNodes = visibleNodes.filter(n => n.group === "user").map(n => n.id);
+        startUserTraversalAnimation(userNodes, function() {
+          fitGraphToScreen(true);
+        });
+        return;
       }
-      const targetPositions = computeModelLayout(graphData, analysisRunIndex, currentSpringLength);
+
+      // SELECTING A DIFFERENT RING:
+      const targetPositions = computeModelLayout(graphData, 0, currentSpringLength);
       const oldPositions = network.getPositions();
       const oldCentroid = calculateCentroid(oldPositions);
 
-      // Initialize node coordinates at current on-screen positions so they don't jump
+      // Initialize node coordinates at target layout
       const positionedNodes = visibleNodes.map(n => {
-        const p = oldPositions[n.id] || {
-          x: targetPositions[n.id] ? targetPositions[n.id].x : (oldCentroid.x + (Math.random() - 0.5) * 50),
-          y: targetPositions[n.id] ? targetPositions[n.id].y : (oldCentroid.y + (Math.random() - 0.5) * 50)
+        const p = targetPositions[n.id] || {
+          x: oldCentroid.x + (Math.random() - 0.5) * 50,
+          y: oldCentroid.y + (Math.random() - 0.5) * 50
         };
         let color = "#facc15";
         let shape = "dot";
@@ -2821,16 +2946,16 @@ html_template = """<!DOCTYPE html>
       currentNodesDataSet = newNodesDataSet;
       network.setData({ nodes: newNodesDataSet, edges: edges });
 
-      // Launch smooth traction morph transition between faces
-      animateTractionMorph(oldPositions, targetPositions, function() {
-        setup3DCoordinates(targetPositions);
-        if (physicsState) {
-          network.setOptions({ physics: { enabled: true } });
-        } else {
-          network.setOptions({ physics: { enabled: false } });
-          network.stopSimulation();
-        }
-      }, 650);
+      setup3DCoordinates(targetPositions);
+      fitGraphToScreen(true);
+
+      if (physicsState) {
+        network.setOptions({ physics: { enabled: true } });
+        network.startSimulation();
+      } else {
+        network.setOptions({ physics: { enabled: false } });
+        network.stopSimulation();
+      }
     }
 
     function showNodeInspector(nodeId) {
