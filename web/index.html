@@ -3,44 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DarkNode — Fraud Ring Detection Platform</title>
+  <title>DarkNode — Fraud Syndicate Graph Intelligence</title>
   <!-- Vis-network CDN -->
   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
   <!-- Plus Jakarta Sans & JetBrains Mono Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg-page: #f4f6fa;
-      --card-bg: #ffffff;
-      --border-subtle: #e2e8f0;
-      --border-strong: #cbd5e1;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --text-light: #94a3b8;
+      /* Dark Grey Theme */
+      --bg-base: #111215;
+      --bg-panel: #18191e;
+      --bg-card: #20222a;
+      --bg-card-hover: #272a34;
+      --bg-input: #141519;
       
-      /* Vibrant Coral / Red from Slide */
-      --primary-red: #e11d48;
-      --primary-red-hover: #be123c;
-      --primary-red-bg: #fff1f2;
-      --primary-red-border: #fecdd3;
+      --border-subtle: #2b2e38;
+      --border-strong: #3b3f4d;
       
-      --accent-amber: #d97706;
-      --accent-amber-bg: #fef3c7;
-      --accent-emerald: #059669;
-      --accent-emerald-bg: #d1fae5;
-      --accent-indigo: #4f46e5;
-
-      --node-user: #e11d48;
-      --node-device: #f59e0b;
-      --node-merchant: #10b981;
-
-      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
-      --shadow-md: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
-      --shadow-lg: 0 10px 25px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.03);
-      --radius: 14px;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      
+      /* Vibrant Electric Yellow Accents */
+      --yellow-primary: #facc15;
+      --yellow-hover: #fde047;
+      --yellow-dim: #ca8a04;
+      --yellow-bg: rgba(250, 204, 21, 0.12);
+      --yellow-border: rgba(250, 204, 21, 0.35);
+      
+      /* Node Entity Colors */
+      --node-user: #facc15;
+      --node-device: #38bdf8;
+      --node-merchant: #34d399;
+      
+      --accent-cyan: #38bdf8;
+      --accent-emerald: #34d399;
+      --accent-rose: #f43f5e;
+      
+      --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.45);
+      --shadow-glow: 0 0 16px rgba(250, 204, 21, 0.2);
+      
+      --radius: 12px;
       --radius-sm: 8px;
     }
 
@@ -52,7 +58,7 @@
 
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: var(--bg-page);
+      background-color: var(--bg-base);
       color: var(--text-main);
       height: 100vh;
       overflow: hidden;
@@ -63,34 +69,39 @@
 
     /* Top Navigation Bar */
     header {
-      background: var(--card-bg);
+      background: var(--bg-panel);
       border-bottom: 1px solid var(--border-subtle);
-      height: 60px;
-      padding: 0 24px;
+      height: 56px;
+      padding: 0 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-shrink: 0;
       z-index: 50;
-      box-shadow: var(--shadow-sm);
     }
 
     .brand-group {
       display: flex;
-      flex-direction: column;
-      gap: 2px;
+      align-items: center;
+      gap: 12px;
     }
 
-    .brand-kicker {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--primary-red);
+    .brand-logo-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--yellow-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: #111215;
+      font-size: 15px;
+      box-shadow: var(--shadow-glow);
     }
 
     .brand-title {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 800;
       letter-spacing: -0.02em;
       color: var(--text-main);
@@ -99,33 +110,37 @@
       gap: 8px;
     }
 
+    .brand-title span.kicker {
+      color: var(--yellow-primary);
+    }
+
     .badge-pill {
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
       font-weight: 600;
       padding: 2px 8px;
-      border-radius: 12px;
-      background: var(--bg-page);
-      color: var(--text-muted);
-      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      background: var(--bg-card);
+      color: var(--yellow-primary);
+      border: 1px solid var(--yellow-border);
     }
 
-    /* Top Stats Pills */
+    /* Telemetry Stats */
     .header-stats {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .stat-pill {
       display: flex;
       align-items: center;
-      gap: 8px;
-      background: var(--bg-page);
+      gap: 6px;
+      background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 12px;
+      padding: 5px 10px;
+      border-radius: 7px;
+      font-size: 11px;
       color: var(--text-muted);
     }
 
@@ -135,18 +150,19 @@
       color: var(--text-main);
     }
 
+    /* Controls */
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .api-box {
       display: flex;
       align-items: center;
-      background: var(--bg-page);
+      background: var(--bg-input);
       border: 1px solid var(--border-subtle);
-      border-radius: 8px;
+      border-radius: 7px;
       padding: 4px 10px;
       gap: 8px;
     }
@@ -157,7 +173,7 @@
       color: var(--text-main);
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      width: 170px;
+      width: 160px;
       outline: none;
     }
 
@@ -166,20 +182,28 @@
       height: 7px;
       border-radius: 50%;
       background: var(--accent-emerald);
-      box-shadow: 0 0 6px rgba(5, 150, 105, 0.4);
+      box-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
     }
 
     .status-dot.offline {
-      background: var(--accent-amber);
-      box-shadow: 0 0 6px rgba(217, 119, 6, 0.4);
+      background: var(--yellow-primary);
+      box-shadow: 0 0 8px rgba(250, 204, 21, 0.6);
+    }
+
+    .status-text {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
     .btn {
-      height: 34px;
+      height: 32px;
       padding: 0 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 700;
       cursor: pointer;
       border: none;
       display: inline-flex;
@@ -190,137 +214,139 @@
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    .btn-red {
-      background: var(--primary-red);
-      color: #ffffff;
-      box-shadow: 0 2px 8px rgba(225, 29, 72, 0.25);
+    .btn-yellow {
+      background: var(--yellow-primary);
+      color: #111215;
+      box-shadow: 0 2px 10px rgba(250, 204, 21, 0.25);
     }
 
-    .btn-red:hover {
-      background: var(--primary-red-hover);
-      box-shadow: 0 4px 12px rgba(225, 29, 72, 0.35);
+    .btn-yellow:hover {
+      background: var(--yellow-hover);
+      box-shadow: 0 4px 14px rgba(250, 204, 21, 0.35);
     }
 
     .btn-outline {
-      background: #ffffff;
+      background: var(--bg-card);
       border: 1px solid var(--border-subtle);
       color: var(--text-main);
     }
 
     .btn-outline:hover {
-      background: var(--bg-page);
+      background: var(--bg-card-hover);
       border-color: var(--border-strong);
     }
 
-    /* Main Workspace Container (Airy & Floating Cards) */
+    /* Main Workspace */
     .workspace {
       display: flex;
       flex: 1;
-      gap: 16px;
-      padding: 16px 24px;
-      height: calc(100vh - 60px);
+      gap: 12px;
+      padding: 12px 16px;
+      height: calc(100vh - 56px);
       overflow: hidden;
+      box-sizing: border-box;
     }
 
-    /* Floating Card Panel */
+    /* Panels */
     .panel-card {
-      background: var(--card-bg);
+      background: var(--bg-panel);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius);
-      box-shadow: var(--shadow-md);
+      box-shadow: var(--shadow-card);
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
 
-    /* Left Sidebar: Rings List */
+    /* Left Sidebar: Rings Directory */
     .sidebar-left {
       width: 310px;
       flex-shrink: 0;
+      height: 100%;
     }
 
     .panel-header-clean {
-      padding: 14px 18px;
+      padding: 12px 16px;
       border-bottom: 1px solid var(--border-subtle);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      background: rgba(24, 25, 30, 0.6);
     }
 
     .panel-title {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--text-main);
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
     }
 
     .search-box-clean {
       padding: 10px 14px;
       border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-panel);
     }
 
     .search-input-clean {
       width: 100%;
-      background: var(--bg-page);
+      background: var(--bg-input);
       border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      padding: 7px 12px;
-      font-size: 12px;
+      border-radius: 7px;
+      padding: 7px 10px;
+      font-size: 11px;
       color: var(--text-main);
       outline: none;
       font-family: inherit;
     }
 
     .search-input-clean:focus {
-      border-color: var(--primary-red);
-      background: #ffffff;
+      border-color: var(--yellow-primary);
     }
 
     .rings-list-scroll {
       flex: 1;
       overflow-y: auto;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    /* Clean Ring Card */
-    .ring-card-item {
-      background: var(--bg-page);
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      padding: 12px 14px;
-      cursor: pointer;
-      transition: all 0.15s ease;
+      padding: 8px;
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
 
+    /* Ring Card Item */
+    .ring-card-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      position: relative;
+    }
+
     .ring-card-item:hover {
-      background: #ffffff;
+      background: var(--bg-card-hover);
       border-color: var(--border-strong);
-      box-shadow: var(--shadow-sm);
     }
 
     .ring-card-item.active {
-      background: #ffffff;
-      border-color: var(--primary-red);
-      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.12);
-      position: relative;
+      background: #252834;
+      border-color: var(--yellow-primary);
+      box-shadow: 0 2px 10px rgba(250, 204, 21, 0.15);
     }
 
     .ring-card-item.active::before {
       content: "";
       position: absolute;
       left: 0;
-      top: 10px;
-      bottom: 10px;
-      width: 4px;
+      top: 8px;
+      bottom: 8px;
+      width: 3.5px;
       border-radius: 0 4px 4px 0;
-      background: var(--primary-red);
+      background: var(--yellow-primary);
     }
 
     .ring-card-top {
@@ -330,105 +356,121 @@
     }
 
     .ring-label {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--text-main);
     }
 
     .ring-risk-tag {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 6px;
-      background: var(--primary-red-bg);
-      color: var(--primary-red);
-      border: 1px solid var(--primary-red-border);
+      padding: 2px 6px;
+      border-radius: 5px;
+      background: var(--yellow-bg);
+      color: var(--yellow-primary);
+      border: 1px solid var(--yellow-border);
     }
 
     .ring-card-bottom {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       font-size: 11px;
       color: var(--text-muted);
     }
 
-    /* Center Viewport (Network Graph Canvas) */
+    /* Center Viewport: Spacious Graph */
     .viewport-center {
       flex: 1;
+      min-width: 0;
+      height: 100%;
       position: relative;
-      background: #ffffff;
+      background: #14151a;
       display: flex;
       flex-direction: column;
     }
 
-    #network-canvas {
-      width: 100%;
+    /* Fixed Canvas Wrapper */
+    .canvas-outer {
+      position: relative;
       flex: 1;
-      background-color: #ffffff;
-      background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px);
+      width: 100%;
+      height: 100%;
+      min-height: 450px;
+      overflow: hidden;
+      background-color: #14151a;
+      background-image: radial-gradient(#252834 1.2px, transparent 1.2px);
       background-size: 24px 24px;
+    }
+
+    #network-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
     }
 
     /* Floating Graph Bar */
     .canvas-bar {
       position: absolute;
-      top: 16px;
-      left: 16px;
+      top: 14px;
+      left: 14px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      background: rgba(255, 255, 255, 0.95);
+      gap: 6px;
+      background: rgba(24, 25, 30, 0.92);
       backdrop-filter: blur(8px);
       border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      padding: 6px 10px;
-      box-shadow: var(--shadow-sm);
+      border-radius: 8px;
+      padding: 5px 8px;
+      box-shadow: var(--shadow-card);
       z-index: 10;
     }
 
     .canvas-pill-btn {
-      height: 28px;
+      height: 26px;
       padding: 0 10px;
-      border-radius: 6px;
+      border-radius: 5px;
       border: 1px solid transparent;
       background: transparent;
       color: var(--text-muted);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       transition: all 0.12s ease;
+      font-family: inherit;
     }
 
     .canvas-pill-btn:hover {
-      background: var(--bg-page);
+      background: var(--bg-card);
       color: var(--text-main);
     }
 
     .canvas-pill-btn.active {
-      background: var(--bg-page);
-      border-color: var(--border-subtle);
-      color: var(--text-main);
+      background: var(--bg-card);
+      border-color: var(--border-strong);
+      color: var(--yellow-primary);
     }
 
     /* Legend Floating Pill */
     .canvas-legend {
       position: absolute;
-      bottom: 60px;
-      left: 16px;
+      bottom: 54px;
+      left: 14px;
       display: flex;
       align-items: center;
-      gap: 14px;
-      background: rgba(255, 255, 255, 0.95);
+      gap: 12px;
+      background: rgba(24, 25, 30, 0.92);
       backdrop-filter: blur(8px);
       border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      padding: 8px 14px;
-      box-shadow: var(--shadow-sm);
+      border-radius: 7px;
+      padding: 6px 12px;
+      box-shadow: var(--shadow-card);
       font-size: 11px;
       font-weight: 600;
       color: var(--text-muted);
@@ -441,95 +483,116 @@
       gap: 6px;
     }
 
-    .legend-circle {
-      width: 10px;
-      height: 10px;
+    .legend-dot {
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
     }
 
-    /* Bottom Slide Banner ("Key detail" banner from Screenshot 2) */
+    .legend-diamond {
+      width: 9px;
+      height: 9px;
+      transform: rotate(45deg);
+    }
+
+    /* Bottom Architecture Banner */
     .key-detail-banner {
-      background: var(--primary-red-bg);
-      border-top: 1px solid var(--primary-red-border);
-      padding: 10px 18px;
-      font-size: 12px;
-      color: #9f1239;
+      background: rgba(24, 25, 30, 0.95);
+      border-top: 1px solid var(--border-subtle);
+      padding: 8px 16px;
+      font-size: 11px;
+      color: var(--text-muted);
       display: flex;
       align-items: center;
       gap: 8px;
       flex-shrink: 0;
+      z-index: 5;
     }
 
     .key-detail-banner strong {
       font-weight: 700;
-      color: var(--primary-red);
+      color: var(--yellow-primary);
     }
 
     /* Right Sidebar: Evidence & Signals Panel */
     .sidebar-right {
       width: 340px;
       flex-shrink: 0;
+      height: 100%;
       overflow-y: auto;
     }
 
     .inspector-content {
-      padding: 18px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
 
-    /* Hero Score Box (Matching Slide's red box) */
+    /* Hero Risk Box */
     .hero-risk-box {
-      background: linear-gradient(135deg, var(--primary-red), #be123c);
-      color: #ffffff;
-      border-radius: 12px;
-      padding: 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-left: 4px solid var(--yellow-primary);
+      border-radius: 9px;
+      padding: 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.25);
     }
 
     .hero-score-val {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 34px;
+      font-size: 30px;
       font-weight: 800;
       line-height: 1;
+      color: var(--yellow-primary);
     }
 
     .hero-score-sub {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      opacity: 0.85;
       margin-top: 4px;
     }
 
     .hero-rank-badge {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
+      font-size: 10px;
       font-weight: 700;
-      background: rgba(255, 255, 255, 0.2);
-      padding: 4px 10px;
-      border-radius: 20px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      background: var(--yellow-bg);
+      color: var(--yellow-primary);
+      border: 1px solid var(--yellow-border);
     }
 
-    /* Clean Signal Rows */
+    .block-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    /* Signals List */
     .signals-card-group {
-      background: var(--bg-page);
+      background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      border-radius: 10px;
+      border-radius: 9px;
       overflow: hidden;
     }
 
     .signal-item-row {
-      padding: 11px 14px;
+      padding: 9px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid var(--border-subtle);
+      font-size: 11px;
     }
 
     .signal-item-row:last-child {
@@ -537,77 +600,70 @@
     }
 
     .signal-label-text {
-      font-size: 12px;
-      font-weight: 500;
       color: var(--text-muted);
     }
 
     .signal-metric-val {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
       font-weight: 700;
       color: var(--text-main);
     }
 
-    /* User Chips */
-    .accounts-block-title {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-    }
-
+    /* Account Chips Grid */
     .user-chips-grid {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
+      max-height: 130px;
+      overflow-y: auto;
+      padding: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9px;
     }
 
     .chip-account {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
-      padding: 5px 10px;
-      border-radius: 6px;
-      background: var(--bg-page);
+      padding: 3px 8px;
+      border-radius: 5px;
+      background: var(--bg-panel);
       border: 1px solid var(--border-subtle);
-      color: var(--text-main);
+      color: var(--yellow-primary);
       cursor: pointer;
       transition: all 0.12s ease;
     }
 
     .chip-account:hover {
-      background: #ffffff;
-      border-color: var(--primary-red);
-      color: var(--primary-red);
-      box-shadow: var(--shadow-sm);
+      background: var(--yellow-bg);
+      border-color: var(--yellow-primary);
     }
 
-    /* Clean Toast */
+    /* Toast Alert */
     .toast-popup {
       position: fixed;
       bottom: 24px;
       right: 24px;
-      background: var(--text-main);
-      color: #ffffff;
-      padding: 12px 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-left: 4px solid var(--yellow-primary);
       border-radius: 8px;
+      padding: 10px 16px;
       font-size: 12px;
-      font-weight: 600;
       display: none;
       align-items: center;
       gap: 10px;
       z-index: 1000;
-      box-shadow: var(--shadow-lg);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
     .toast-dot-glow {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      background: var(--accent-emerald);
+      background: var(--yellow-primary);
+      box-shadow: 0 0 8px rgba(250, 204, 21, 0.8);
     }
   </style>
 </head>
@@ -616,17 +672,17 @@
   <!-- Top Header Navigation -->
   <header>
     <div class="brand-group">
-      <span class="brand-kicker">Fraud Intelligence & Network Analytics</span>
+      <div class="brand-logo-mark">D</div>
       <div class="brand-title">
-        DarkNode
-        <span class="badge-pill">GNN MPNN Engine</span>
+        Dark<span class="kicker">Node</span>
+        <span class="badge-pill">GNN MPNN</span>
       </div>
     </div>
 
     <!-- Header Stats -->
     <div class="header-stats">
       <div class="stat-pill">
-        <span>Users Evaluated:</span>
+        <span>Users:</span>
         <span class="stat-val" id="stat-users">1,000</span>
       </div>
       <div class="stat-pill">
@@ -634,8 +690,8 @@
         <span class="stat-val" id="stat-txs">13,680</span>
       </div>
       <div class="stat-pill">
-        <span>Fraud Rings Caught:</span>
-        <span class="stat-val" id="stat-rings" style="color: var(--primary-red);">0</span>
+        <span>Rings Detected:</span>
+        <span class="stat-val" id="stat-rings" style="color: var(--yellow-primary);">6</span>
       </div>
     </div>
 
@@ -644,22 +700,23 @@
       <div class="api-box">
         <div class="status-dot" id="status-dot"></div>
         <input type="text" id="api-url" value="http://localhost:8000" placeholder="http://localhost:8000">
+        <span class="status-text" id="status-label">ONLINE</span>
       </div>
 
-      <button class="btn btn-red" onclick="fetchRings()">
+      <button class="btn btn-yellow" onclick="fetchRings()">
         Run Analysis
       </button>
     </div>
   </header>
 
-  <!-- Spacious Workspace (3 Floating Cards) -->
+  <!-- Spacious Workspace (3 Floating Panels) -->
   <div class="workspace">
 
-    <!-- Card 1: Left Rings Directory -->
+    <!-- Panel 1: Left Rings Directory -->
     <div class="panel-card sidebar-left">
       <div class="panel-header-clean">
-        <span class="panel-title">Detected Rings</span>
-        <span class="badge-pill" id="rings-count-badge">0 total</span>
+        <span class="panel-title">Detected Syndicates</span>
+        <span class="badge-pill" id="rings-count-badge">6 total</span>
       </div>
       <div class="search-box-clean">
         <input type="text" class="search-input-clean" id="search-filter" placeholder="Filter by Ring ID or User..." oninput="filterRings()">
@@ -669,66 +726,69 @@
       </div>
     </div>
 
-    <!-- Card 2: Center Viewport (Clean Network Graph) -->
+    <!-- Panel 2: Center Viewport (Network Graph Canvas) -->
     <div class="panel-card viewport-center">
       <!-- Floating Toolbar -->
       <div class="canvas-bar">
-        <button class="canvas-pill-btn active" onclick="resetGraphView()">Fit Screen</button>
+        <button class="canvas-pill-btn active" onclick="resetGraphView()">Fit View</button>
+        <button class="canvas-pill-btn" id="spread-btn" onclick="spreadGraph()">Spread Out</button>
         <button class="canvas-pill-btn" id="physics-toggle" onclick="togglePhysics()">Physics: On</button>
         <span style="color: var(--border-subtle);">|</span>
-        <button class="canvas-pill-btn active" id="filter-user" onclick="toggleFilter('user')">Ring Users</button>
+        <button class="canvas-pill-btn active" id="filter-user" onclick="toggleFilter('user')">Users</button>
         <button class="canvas-pill-btn active" id="filter-device" onclick="toggleFilter('device')">Devices</button>
         <button class="canvas-pill-btn active" id="filter-merchant" onclick="toggleFilter('merchant')">Merchants</button>
       </div>
 
-      <!-- Graph Canvas -->
-      <div id="network-canvas"></div>
+      <!-- Graph Canvas Container (Guaranteed non-collapsing) -->
+      <div class="canvas-outer">
+        <div id="network-canvas"></div>
+      </div>
 
       <!-- Clean Floating Legend -->
       <div class="canvas-legend">
         <div class="legend-indicator">
-          <div class="legend-circle" style="background: var(--node-user);"></div>
-          <span>Ring Member (User)</span>
+          <div class="legend-dot" style="background: var(--node-user);"></div>
+          <span>Syndicate Member</span>
         </div>
         <div class="legend-indicator">
-          <div class="legend-circle" style="background: var(--node-device);"></div>
+          <div class="legend-diamond" style="background: var(--node-device);"></div>
           <span>Shared Device</span>
         </div>
         <div class="legend-indicator">
-          <div class="legend-circle" style="background: var(--node-merchant);"></div>
-          <span>Merchant</span>
+          <div class="legend-dot" style="background: var(--node-merchant); border-radius: 2px;"></div>
+          <span>Target Merchant</span>
         </div>
       </div>
 
-      <!-- Slide-Style Key Insight Banner at bottom -->
+      <!-- Bottom Insight Banner -->
       <div class="key-detail-banner">
-        <strong>Key architectural detail:</strong>
-        <span>The Heterogeneous MPNN evaluates multi-hop graph topology and microsecond burst velocity, eliminating 58% of rule-based false alarms.</span>
+        <strong>Architectural Signal:</strong>
+        <span>Heterogeneous Message Passing aggregates device hardware fingerprints and IP collision graphs, eliminating false alarms.</span>
       </div>
     </div>
 
-    <!-- Card 3: Right Inspector & Evidence Panel -->
+    <!-- Panel 3: Right Inspector & Evidence Panel -->
     <div class="panel-card sidebar-right">
       <div class="panel-header-clean">
-        <span class="panel-title" id="inspector-heading">Ring Evidence</span>
-        <span class="badge-pill" id="inspector-badge">#--</span>
+        <span class="panel-title" id="inspector-heading">Syndicate Dossier</span>
+        <span class="badge-pill" id="inspector-badge">RANK #1</span>
       </div>
 
       <div class="inspector-content">
-        <!-- Hero Threat Score Card (Rose/Red Gradient from slide) -->
+        <!-- Hero Threat Score Card -->
         <div class="hero-risk-box">
           <div>
             <div class="hero-score-val" id="threat-score-num">--</div>
             <div class="hero-score-sub">Threat Risk Score</div>
           </div>
           <div class="hero-rank-badge" id="threat-rank-pill">
-            RANK #--
+            RANK #1
           </div>
         </div>
 
         <!-- Evidence Signals -->
         <div>
-          <div class="accounts-block-title">Behavioral Reason Signals</div>
+          <div class="block-title">Behavioral Reason Signals</div>
           <div class="signals-card-group">
             <div class="signal-item-row">
               <span class="signal-label-text">Shared Device Concentration</span>
@@ -739,34 +799,34 @@
               <span class="signal-metric-val" id="sig-ip">0 pairs</span>
             </div>
             <div class="signal-item-row">
-              <span class="signal-label-text">Transaction Burst Velocity</span>
+              <span class="signal-label-text">Burst Velocity</span>
               <span class="signal-metric-val" id="sig-vel">0 tx/hr</span>
             </div>
             <div class="signal-item-row">
-              <span class="signal-label-text">GNN Fraud Confidence</span>
+              <span class="signal-label-text">GNN Confidence</span>
               <span class="signal-metric-val" id="sig-gnn">0.00</span>
             </div>
             <div class="signal-item-row">
-              <span class="signal-label-text">Rapid Burst Accounts</span>
-              <span class="signal-metric-val" id="sig-fresh">0 accounts</span>
+              <span class="signal-label-text">Fresh Accounts Ratio</span>
+              <span class="signal-metric-val" id="sig-fresh">0</span>
             </div>
           </div>
         </div>
 
         <!-- Member Accounts -->
         <div>
-          <div class="accounts-block-title">Identified Syndicate Members (<span id="members-count">0</span>)</div>
+          <div class="block-title">Syndicate Accounts (<span id="members-count">0</span>)</div>
           <div class="user-chips-grid" id="members-chips">
             <!-- Account Chips -->
           </div>
         </div>
 
         <!-- Compliance & Export Actions -->
-        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
-          <button class="btn btn-red" id="freeze-btn" style="height: 38px;" onclick="simulateFreeze()">
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
+          <button class="btn btn-yellow" id="freeze-btn" style="height: 36px;" onclick="simulateFreeze()">
             Freeze Ring Accounts (Simulation)
           </button>
-          <button class="btn btn-outline" style="height: 36px;" onclick="exportJson()">
+          <button class="btn btn-outline" style="height: 34px;" onclick="exportJson()">
             Export Ring Dossier (JSON)
           </button>
         </div>
@@ -778,7 +838,7 @@
   <!-- Toast Alert -->
   <div class="toast-popup" id="toast">
     <div class="toast-dot-glow"></div>
-    <span id="toast-text">Action executed successfully.</span>
+    <span id="toast-text">Action executed.</span>
   </div>
 
   <script>
@@ -786,89 +846,22 @@
     let allRings = [];
     let activeIndex = 0;
     let physicsState = true;
+    let currentSpringLength = 260;
     let activeFilters = { user: true, device: true, merchant: true };
 
-    // High-fidelity fallback dataset for instant offline loading
-    const FALLBACK_RINGS = [
-      {
-        ring_id: 3,
-        rank: 1,
-        score: 0.8289,
-        member_count: 8,
-        members: [0, 1, 2, 3, 4, 5, 6, 7],
-        avg_model_score: 0.6539,
-        shared_device_pct: 100.0,
-        shared_ip_pairs: 28,
-        transaction_velocity: 1594.1,
-        fresh_account_count: 0,
-        graph: {
-          nodes: [
-            { id: "user_0", label: "User 0", group: "user" },
-            { id: "user_1", label: "User 1", group: "user" },
-            { id: "user_2", label: "User 2", group: "user" },
-            { id: "user_3", label: "User 3", group: "user" },
-            { id: "user_4", label: "User 4", group: "user" },
-            { id: "user_5", label: "User 5", group: "user" },
-            { id: "user_6", label: "User 6", group: "user" },
-            { id: "user_7", label: "User 7", group: "user" },
-            { id: "device_799", label: "Device 799", group: "device" },
-            { id: "merchant_12", label: "Merchant 12", group: "merchant" }
-          ],
-          edges: [
-            { from: "user_0", to: "device_799", relation: "shared_device" },
-            { from: "user_1", to: "device_799", relation: "shared_device" },
-            { from: "user_2", to: "device_799", relation: "shared_device" },
-            { from: "user_3", to: "device_799", relation: "shared_device" },
-            { from: "user_4", to: "device_799", relation: "shared_device" },
-            { from: "user_5", to: "device_799", relation: "shared_device" },
-            { from: "user_6", to: "device_799", relation: "shared_device" },
-            { from: "user_7", to: "device_799", relation: "shared_device" },
-            { from: "user_0", to: "user_1", relation: "shared_ip" },
-            { from: "user_1", to: "user_2", relation: "shared_ip" },
-            { from: "user_2", to: "user_3", relation: "shared_ip" },
-            { from: "user_0", to: "merchant_12", relation: "transaction" }
-          ]
-        }
-      },
-      {
-        ring_id: 9,
-        rank: 2,
-        score: 0.8249,
-        member_count: 8,
-        members: [72, 73, 74, 75, 76, 77, 78, 79],
-        avg_model_score: 0.6521,
-        shared_device_pct: 100.0,
-        shared_ip_pairs: 28,
-        transaction_velocity: 1594.1,
-        fresh_account_count: 0,
-        graph: {
-          nodes: [
-            { id: "user_72", label: "User 72", group: "user" },
-            { id: "user_73", label: "User 73", group: "user" },
-            { id: "user_74", label: "User 74", group: "user" },
-            { id: "user_75", label: "User 75", group: "user" },
-            { id: "device_790", label: "Device 790", group: "device" }
-          ],
-          edges: [
-            { from: "user_72", to: "device_790", relation: "shared_device" },
-            { from: "user_73", to: "device_790", relation: "shared_device" },
-            { from: "user_74", to: "device_790", relation: "shared_device" },
-            { from: "user_75", to: "device_790", relation: "shared_device" },
-            { from: "user_72", to: "user_73", relation: "shared_ip" }
-          ]
-        }
-      }
-    ];
+    // Real fallback dataset extracted from trained GNN model
+    const FALLBACK_RINGS = [{"ring_id": 16, "score": 0.6014, "member_count": 18, "members": [296, 298, 423, 56, 57, 58, 59, 60, 61, 62, 63, 651, 737, 820, 821, 903, 966, 969], "avg_model_score": 1.0, "shared_device_ratio": 0.8333, "shared_device_pct": 83.3, "shared_ip_pairs": 31, "transaction_velocity": 0.17, "fresh_account_count": 0, "reason_signals": {"shared_device_pct": 83.3, "shared_ip_pairs": 31, "transaction_velocity": 0.17, "fresh_accounts": 0, "avg_model_score": 1.0}, "graph": {"nodes": [{"id": "user_56", "label": "User 56", "group": "user", "title": "User 56 | Risk: 1.00", "value": 1.0}, {"id": "user_57", "label": "User 57", "group": "user", "title": "User 57 | Risk: 1.00", "value": 1.0}, {"id": "user_58", "label": "User 58", "group": "user", "title": "User 58 | Risk: 1.00", "value": 1.0}, {"id": "user_59", "label": "User 59", "group": "user", "title": "User 59 | Risk: 1.00", "value": 1.0}, {"id": "user_60", "label": "User 60", "group": "user", "title": "User 60 | Risk: 1.00", "value": 1.0}, {"id": "user_61", "label": "User 61", "group": "user", "title": "User 61 | Risk: 1.00", "value": 1.0}, {"id": "user_62", "label": "User 62", "group": "user", "title": "User 62 | Risk: 1.00", "value": 1.0}, {"id": "user_63", "label": "User 63", "group": "user", "title": "User 63 | Risk: 1.00", "value": 1.0}, {"id": "user_296", "label": "User 296", "group": "user", "title": "User 296 | Risk: 1.00", "value": 1.0}, {"id": "user_298", "label": "User 298", "group": "user", "title": "User 298 | Risk: 1.00", "value": 1.0}, {"id": "user_423", "label": "User 423", "group": "user", "title": "User 423 | Risk: 1.00", "value": 1.0}, {"id": "user_651", "label": "User 651", "group": "user", "title": "User 651 | Risk: 1.00", "value": 1.0}, {"id": "device_276", "label": "Device 276", "group": "device", "title": "Device 276 (2 ring users shared)"}, {"id": "device_321", "label": "Device 321", "group": "device", "title": "Device 321 (2 ring users shared)"}, {"id": "device_792", "label": "Device 792", "group": "device", "title": "Device 792 (8 ring users shared)"}, {"id": "device_586", "label": "Device 586", "group": "device", "title": "Device 586 (1 ring users shared)"}, {"id": "device_467", "label": "Device 467", "group": "device", "title": "Device 467 (2 ring users shared)"}, {"id": "merchant_28", "label": "Merchant 28", "group": "merchant", "title": "Merchant 28 (8 ring users transacted)"}, {"id": "merchant_31", "label": "Merchant 31", "group": "merchant", "title": "Merchant 31 (9 ring users transacted)"}, {"id": "merchant_29", "label": "Merchant 29", "group": "merchant", "title": "Merchant 29 (8 ring users transacted)"}, {"id": "merchant_30", "label": "Merchant 30", "group": "merchant", "title": "Merchant 30 (8 ring users transacted)"}], "edges": [{"from": "user_56", "to": "device_586", "relation": "shared_device", "count": 1}, {"from": "user_56", "to": "device_792", "relation": "shared_device", "count": 1}, {"from": "user_57", "to": "device_321", "relation": "shared_device", "count": 1}, {"from": "user_57", "to": "device_792", "relation": "shared_device", "count": 1}, {"from": "user_58", "to": "device_792", "relation": "shared_device", "count": 1}, {"from": "user_59", "to": "device_792", "relation": "shared_device", "count": 1}, {"from": "user_60", "to": "device_792", "relation": "shared_device", "count": 1}, {"from": "user_61", "to": "device_467", "relation": "shared_device", "count": 1}, {"from": "user_61", "to": "device_792", "relation": "shared_device", "count": 1}, {"from": "user_62", "to": "device_792", "relation": "shared_device", "count": 1}, {"from": "user_63", "to": "device_276", "relation": "shared_device", "count": 1}, {"from": "user_63", "to": "device_792", "relation": "shared_device", "count": 1}, {"from": "user_296", "to": "device_276", "relation": "shared_device", "count": 1}, {"from": "user_423", "to": "device_467", "relation": "shared_device", "count": 1}, {"from": "user_651", "to": "device_321", "relation": "shared_device", "count": 1}, {"from": "user_56", "to": "merchant_28", "relation": "transaction", "count": 9}, {"from": "user_56", "to": "merchant_29", "relation": "transaction", "count": 9}, {"from": "user_56", "to": "merchant_30", "relation": "transaction", "count": 6}, {"from": "user_56", "to": "merchant_31", "relation": "transaction", "count": 6}, {"from": "user_57", "to": "merchant_28", "relation": "transaction", "count": 12}, {"from": "user_57", "to": "merchant_29", "relation": "transaction", "count": 9}, {"from": "user_57", "to": "merchant_31", "relation": "transaction", "count": 4}, {"from": "user_57", "to": "merchant_30", "relation": "transaction", "count": 5}, {"from": "user_58", "to": "merchant_30", "relation": "transaction", "count": 9}, {"from": "user_58", "to": "merchant_28", "relation": "transaction", "count": 6}, {"from": "user_58", "to": "merchant_29", "relation": "transaction", "count": 4}, {"from": "user_58", "to": "merchant_31", "relation": "transaction", "count": 11}, {"from": "user_59", "to": "merchant_29", "relation": "transaction", "count": 4}, {"from": "user_59", "to": "merchant_28", "relation": "transaction", "count": 7}, {"from": "user_59", "to": "merchant_31", "relation": "transaction", "count": 10}, {"from": "user_59", "to": "merchant_30", "relation": "transaction", "count": 9}, {"from": "user_60", "to": "merchant_29", "relation": "transaction", "count": 9}, {"from": "user_60", "to": "merchant_28", "relation": "transaction", "count": 5}, {"from": "user_60", "to": "merchant_30", "relation": "transaction", "count": 9}, {"from": "user_60", "to": "merchant_31", "relation": "transaction", "count": 7}, {"from": "user_61", "to": "merchant_30", "relation": "transaction", "count": 11}, {"from": "user_61", "to": "merchant_31", "relation": "transaction", "count": 6}, {"from": "user_61", "to": "merchant_28", "relation": "transaction", "count": 6}, {"from": "user_61", "to": "merchant_29", "relation": "transaction", "count": 7}, {"from": "user_62", "to": "merchant_31", "relation": "transaction", "count": 10}, {"from": "user_62", "to": "merchant_28", "relation": "transaction", "count": 6}, {"from": "user_62", "to": "merchant_29", "relation": "transaction", "count": 6}, {"from": "user_62", "to": "merchant_30", "relation": "transaction", "count": 8}, {"from": "user_63", "to": "merchant_31", "relation": "transaction", "count": 13}, {"from": "user_63", "to": "merchant_28", "relation": "transaction", "count": 10}, {"from": "user_63", "to": "merchant_29", "relation": "transaction", "count": 5}, {"from": "user_63", "to": "merchant_30", "relation": "transaction", "count": 2}, {"from": "user_423", "to": "merchant_31", "relation": "transaction", "count": 1}, {"from": "user_56", "to": "user_57", "relation": "shared_ip", "count": 2}, {"from": "user_56", "to": "user_58", "relation": "shared_ip", "count": 2}, {"from": "user_56", "to": "user_59", "relation": "shared_ip", "count": 2}, {"from": "user_56", "to": "user_60", "relation": "shared_ip", "count": 1}, {"from": "user_56", "to": "user_61", "relation": "shared_ip", "count": 1}, {"from": "user_56", "to": "user_62", "relation": "shared_ip", "count": 1}, {"from": "user_56", "to": "user_63", "relation": "shared_ip", "count": 1}, {"from": "user_57", "to": "user_58", "relation": "shared_ip", "count": 2}, {"from": "user_57", "to": "user_59", "relation": "shared_ip", "count": 2}, {"from": "user_57", "to": "user_60", "relation": "shared_ip", "count": 1}, {"from": "user_57", "to": "user_61", "relation": "shared_ip", "count": 1}, {"from": "user_57", "to": "user_62", "relation": "shared_ip", "count": 1}, {"from": "user_57", "to": "user_63", "relation": "shared_ip", "count": 1}, {"from": "user_58", "to": "user_59", "relation": "shared_ip", "count": 2}, {"from": "user_58", "to": "user_60", "relation": "shared_ip", "count": 1}, {"from": "user_58", "to": "user_61", "relation": "shared_ip", "count": 1}, {"from": "user_58", "to": "user_62", "relation": "shared_ip", "count": 1}, {"from": "user_58", "to": "user_63", "relation": "shared_ip", "count": 1}, {"from": "user_59", "to": "user_60", "relation": "shared_ip", "count": 1}, {"from": "user_59", "to": "user_61", "relation": "shared_ip", "count": 1}, {"from": "user_59", "to": "user_62", "relation": "shared_ip", "count": 1}, {"from": "user_59", "to": "user_63", "relation": "shared_ip", "count": 1}, {"from": "user_60", "to": "user_61", "relation": "shared_ip", "count": 2}, {"from": "user_60", "to": "user_62", "relation": "shared_ip", "count": 2}, {"from": "user_60", "to": "user_63", "relation": "shared_ip", "count": 2}, {"from": "user_61", "to": "user_62", "relation": "shared_ip", "count": 2}, {"from": "user_61", "to": "user_63", "relation": "shared_ip", "count": 2}, {"from": "user_62", "to": "user_63", "relation": "shared_ip", "count": 2}, {"from": "user_296", "to": "user_298", "relation": "shared_ip", "count": 1}]}, "rank": 1}, {"ring_id": 9, "score": 0.5999, "member_count": 52, "members": [0, 1, 10, 108, 11, 12, 13, 14, 15, 155, 2, 3, 303, 397, 4, 40, 41, 42, 424, 425, 426, 427, 428, 429, 43, 44, 45, 46, 47, 499, 5, 547, 592, 6, 603, 639, 676, 7, 703, 739, 776, 8, 813, 855, 856, 857, 858, 859, 871, 891, 9, 924], "avg_model_score": 1.0, "shared_device_ratio": 0.9038, "shared_device_pct": 90.4, "shared_ip_pairs": 110, "transaction_velocity": 0.49, "fresh_account_count": 0, "reason_signals": {"shared_device_pct": 90.4, "shared_ip_pairs": 110, "transaction_velocity": 0.49, "fresh_accounts": 0, "avg_model_score": 1.0}, "graph": {"nodes": [{"id": "user_0", "label": "User 0", "group": "user", "title": "User 0 | Risk: 1.00", "value": 1.0}, {"id": "user_1", "label": "User 1", "group": "user", "title": "User 1 | Risk: 1.00", "value": 1.0}, {"id": "user_10", "label": "User 10", "group": "user", "title": "User 10 | Risk: 1.00", "value": 1.0}, {"id": "user_11", "label": "User 11", "group": "user", "title": "User 11 | Risk: 1.00", "value": 1.0}, {"id": "user_12", "label": "User 12", "group": "user", "title": "User 12 | Risk: 1.00", "value": 1.0}, {"id": "user_13", "label": "User 13", "group": "user", "title": "User 13 | Risk: 1.00", "value": 1.0}, {"id": "user_14", "label": "User 14", "group": "user", "title": "User 14 | Risk: 1.00", "value": 1.0}, {"id": "user_15", "label": "User 15", "group": "user", "title": "User 15 | Risk: 1.00", "value": 1.0}, {"id": "user_2", "label": "User 2", "group": "user", "title": "User 2 | Risk: 1.00", "value": 1.0}, {"id": "user_3", "label": "User 3", "group": "user", "title": "User 3 | Risk: 1.00", "value": 1.0}, {"id": "user_4", "label": "User 4", "group": "user", "title": "User 4 | Risk: 1.00", "value": 1.0}, {"id": "user_40", "label": "User 40", "group": "user", "title": "User 40 | Risk: 1.00", "value": 1.0}, {"id": "device_799", "label": "Device 799", "group": "device", "title": "Device 799 (5 ring users shared)"}, {"id": "device_331", "label": "Device 331", "group": "device", "title": "Device 331 (1 ring users shared)"}, {"id": "device_798", "label": "Device 798", "group": "device", "title": "Device 798 (6 ring users shared)"}, {"id": "device_71", "label": "Device 71", "group": "device", "title": "Device 71 (1 ring users shared)"}, {"id": "device_154", "label": "Device 154", "group": "device", "title": "Device 154 (1 ring users shared)"}, {"id": "merchant_4", "label": "Merchant 4", "group": "merchant", "title": "Merchant 4 (6 ring users transacted)"}, {"id": "merchant_5", "label": "Merchant 5", "group": "merchant", "title": "Merchant 5 (6 ring users transacted)"}, {"id": "merchant_7", "label": "Merchant 7", "group": "merchant", "title": "Merchant 7 (6 ring users transacted)"}, {"id": "merchant_6", "label": "Merchant 6", "group": "merchant", "title": "Merchant 6 (6 ring users transacted)"}], "edges": [{"from": "user_0", "to": "device_331", "relation": "shared_device", "count": 1}, {"from": "user_0", "to": "device_799", "relation": "shared_device", "count": 1}, {"from": "user_1", "to": "device_154", "relation": "shared_device", "count": 1}, {"from": "user_1", "to": "device_799", "relation": "shared_device", "count": 1}, {"from": "user_10", "to": "device_71", "relation": "shared_device", "count": 1}, {"from": "user_10", "to": "device_798", "relation": "shared_device", "count": 1}, {"from": "user_11", "to": "device_798", "relation": "shared_device", "count": 1}, {"from": "user_12", "to": "device_798", "relation": "shared_device", "count": 1}, {"from": "user_13", "to": "device_798", "relation": "shared_device", "count": 1}, {"from": "user_14", "to": "device_798", "relation": "shared_device", "count": 1}, {"from": "user_15", "to": "device_798", "relation": "shared_device", "count": 1}, {"from": "user_2", "to": "device_799", "relation": "shared_device", "count": 1}, {"from": "user_3", "to": "device_799", "relation": "shared_device", "count": 1}, {"from": "user_4", "to": "device_799", "relation": "shared_device", "count": 1}, {"from": "user_10", "to": "merchant_5", "relation": "transaction", "count": 8}, {"from": "user_10", "to": "merchant_7", "relation": "transaction", "count": 7}, {"from": "user_10", "to": "merchant_4", "relation": "transaction", "count": 11}, {"from": "user_10", "to": "merchant_6", "relation": "transaction", "count": 4}, {"from": "user_11", "to": "merchant_4", "relation": "transaction", "count": 12}, {"from": "user_11", "to": "merchant_7", "relation": "transaction", "count": 10}, {"from": "user_11", "to": "merchant_6", "relation": "transaction", "count": 5}, {"from": "user_11", "to": "merchant_5", "relation": "transaction", "count": 3}, {"from": "user_12", "to": "merchant_7", "relation": "transaction", "count": 6}, {"from": "user_12", "to": "merchant_5", "relation": "transaction", "count": 7}, {"from": "user_12", "to": "merchant_4", "relation": "transaction", "count": 13}, {"from": "user_12", "to": "merchant_6", "relation": "transaction", "count": 4}, {"from": "user_13", "to": "merchant_4", "relation": "transaction", "count": 6}, {"from": "user_13", "to": "merchant_7", "relation": "transaction", "count": 8}, {"from": "user_13", "to": "merchant_6", "relation": "transaction", "count": 11}, {"from": "user_13", "to": "merchant_5", "relation": "transaction", "count": 5}, {"from": "user_14", "to": "merchant_7", "relation": "transaction", "count": 11}, {"from": "user_14", "to": "merchant_5", "relation": "transaction", "count": 7}, {"from": "user_14", "to": "merchant_6", "relation": "transaction", "count": 8}, {"from": "user_14", "to": "merchant_4", "relation": "transaction", "count": 4}, {"from": "user_15", "to": "merchant_5", "relation": "transaction", "count": 9}, {"from": "user_15", "to": "merchant_6", "relation": "transaction", "count": 9}, {"from": "user_15", "to": "merchant_4", "relation": "transaction", "count": 6}, {"from": "user_15", "to": "merchant_7", "relation": "transaction", "count": 6}, {"from": "user_0", "to": "user_1", "relation": "shared_ip", "count": 2}, {"from": "user_0", "to": "user_2", "relation": "shared_ip", "count": 2}, {"from": "user_0", "to": "user_3", "relation": "shared_ip", "count": 2}, {"from": "user_0", "to": "user_4", "relation": "shared_ip", "count": 2}, {"from": "user_1", "to": "user_2", "relation": "shared_ip", "count": 2}, {"from": "user_1", "to": "user_3", "relation": "shared_ip", "count": 2}, {"from": "user_1", "to": "user_4", "relation": "shared_ip", "count": 2}, {"from": "user_10", "to": "user_11", "relation": "shared_ip", "count": 2}, {"from": "user_10", "to": "user_12", "relation": "shared_ip", "count": 2}, {"from": "user_10", "to": "user_13", "relation": "shared_ip", "count": 2}, {"from": "user_10", "to": "user_14", "relation": "shared_ip", "count": 2}, {"from": "user_10", "to": "user_15", "relation": "shared_ip", "count": 1}, {"from": "user_11", "to": "user_12", "relation": "shared_ip", "count": 2}, {"from": "user_11", "to": "user_13", "relation": "shared_ip", "count": 2}, {"from": "user_11", "to": "user_14", "relation": "shared_ip", "count": 2}, {"from": "user_11", "to": "user_15", "relation": "shared_ip", "count": 1}, {"from": "user_12", "to": "user_13", "relation": "shared_ip", "count": 2}, {"from": "user_12", "to": "user_14", "relation": "shared_ip", "count": 2}, {"from": "user_12", "to": "user_15", "relation": "shared_ip", "count": 1}, {"from": "user_13", "to": "user_14", "relation": "shared_ip", "count": 2}, {"from": "user_13", "to": "user_15", "relation": "shared_ip", "count": 1}, {"from": "user_14", "to": "user_15", "relation": "shared_ip", "count": 1}, {"from": "user_2", "to": "user_3", "relation": "shared_ip", "count": 2}, {"from": "user_2", "to": "user_4", "relation": "shared_ip", "count": 2}, {"from": "user_3", "to": "user_4", "relation": "shared_ip", "count": 2}]}, "rank": 2}, {"ring_id": 14, "score": 0.5828, "member_count": 32, "members": [195, 196, 197, 198, 199, 220, 221, 222, 224, 230, 236, 266, 283, 32, 33, 34, 35, 36, 37, 38, 39, 394, 399, 419, 420, 634, 645, 648, 678, 702, 715, 867], "avg_model_score": 1.0, "shared_device_ratio": 0.8438, "shared_device_pct": 84.4, "shared_ip_pairs": 45, "transaction_velocity": 0.25, "fresh_account_count": 0, "reason_signals": {"shared_device_pct": 84.4, "shared_ip_pairs": 45, "transaction_velocity": 0.25, "fresh_accounts": 0, "avg_model_score": 1.0}, "graph": {"nodes": [{"id": "user_32", "label": "User 32", "group": "user", "title": "User 32 | Risk: 1.00", "value": 1.0}, {"id": "user_33", "label": "User 33", "group": "user", "title": "User 33 | Risk: 1.00", "value": 1.0}, {"id": "user_34", "label": "User 34", "group": "user", "title": "User 34 | Risk: 1.00", "value": 1.0}, {"id": "user_35", "label": "User 35", "group": "user", "title": "User 35 | Risk: 1.00", "value": 1.0}, {"id": "user_36", "label": "User 36", "group": "user", "title": "User 36 | Risk: 1.00", "value": 1.0}, {"id": "user_37", "label": "User 37", "group": "user", "title": "User 37 | Risk: 1.00", "value": 1.0}, {"id": "user_38", "label": "User 38", "group": "user", "title": "User 38 | Risk: 1.00", "value": 1.0}, {"id": "user_39", "label": "User 39", "group": "user", "title": "User 39 | Risk: 1.00", "value": 1.0}, {"id": "user_195", "label": "User 195", "group": "user", "title": "User 195 | Risk: 1.00", "value": 1.0}, {"id": "user_196", "label": "User 196", "group": "user", "title": "User 196 | Risk: 1.00", "value": 1.0}, {"id": "user_197", "label": "User 197", "group": "user", "title": "User 197 | Risk: 1.00", "value": 1.0}, {"id": "user_198", "label": "User 198", "group": "user", "title": "User 198 | Risk: 1.00", "value": 1.0}, {"id": "device_795", "label": "Device 795", "group": "device", "title": "Device 795 (8 ring users shared)"}, {"id": "device_508", "label": "Device 508", "group": "device", "title": "Device 508 (1 ring users shared)"}, {"id": "device_577", "label": "Device 577", "group": "device", "title": "Device 577 (1 ring users shared)"}, {"id": "device_633", "label": "Device 633", "group": "device", "title": "Device 633 (1 ring users shared)"}, {"id": "device_476", "label": "Device 476", "group": "device", "title": "Device 476 (2 ring users shared)"}, {"id": "merchant_18", "label": "Merchant 18", "group": "merchant", "title": "Merchant 18 (8 ring users transacted)"}, {"id": "merchant_17", "label": "Merchant 17", "group": "merchant", "title": "Merchant 17 (9 ring users transacted)"}, {"id": "merchant_19", "label": "Merchant 19", "group": "merchant", "title": "Merchant 19 (8 ring users transacted)"}, {"id": "merchant_16", "label": "Merchant 16", "group": "merchant", "title": "Merchant 16 (8 ring users transacted)"}], "edges": [{"from": "user_32", "to": "device_577", "relation": "shared_device", "count": 1}, {"from": "user_32", "to": "device_795", "relation": "shared_device", "count": 1}, {"from": "user_33", "to": "device_633", "relation": "shared_device", "count": 1}, {"from": "user_33", "to": "device_795", "relation": "shared_device", "count": 1}, {"from": "user_34", "to": "device_508", "relation": "shared_device", "count": 1}, {"from": "user_34", "to": "device_795", "relation": "shared_device", "count": 1}, {"from": "user_35", "to": "device_795", "relation": "shared_device", "count": 1}, {"from": "user_36", "to": "device_795", "relation": "shared_device", "count": 2}, {"from": "user_37", "to": "device_476", "relation": "shared_device", "count": 1}, {"from": "user_37", "to": "device_795", "relation": "shared_device", "count": 1}, {"from": "user_38", "to": "device_795", "relation": "shared_device", "count": 1}, {"from": "user_39", "to": "device_795", "relation": "shared_device", "count": 1}, {"from": "user_195", "to": "device_476", "relation": "shared_device", "count": 1}, {"from": "user_32", "to": "merchant_16", "relation": "transaction", "count": 11}, {"from": "user_32", "to": "merchant_17", "relation": "transaction", "count": 7}, {"from": "user_32", "to": "merchant_19", "relation": "transaction", "count": 7}, {"from": "user_32", "to": "merchant_18", "relation": "transaction", "count": 5}, {"from": "user_33", "to": "merchant_17", "relation": "transaction", "count": 10}, {"from": "user_33", "to": "merchant_16", "relation": "transaction", "count": 6}, {"from": "user_33", "to": "merchant_18", "relation": "transaction", "count": 6}, {"from": "user_33", "to": "merchant_19", "relation": "transaction", "count": 8}, {"from": "user_34", "to": "merchant_19", "relation": "transaction", "count": 7}, {"from": "user_34", "to": "merchant_18", "relation": "transaction", "count": 9}, {"from": "user_34", "to": "merchant_16", "relation": "transaction", "count": 6}, {"from": "user_34", "to": "merchant_17", "relation": "transaction", "count": 8}, {"from": "user_35", "to": "merchant_19", "relation": "transaction", "count": 9}, {"from": "user_35", "to": "merchant_17", "relation": "transaction", "count": 11}, {"from": "user_35", "to": "merchant_18", "relation": "transaction", "count": 7}, {"from": "user_35", "to": "merchant_16", "relation": "transaction", "count": 3}, {"from": "user_36", "to": "merchant_16", "relation": "transaction", "count": 7}, {"from": "user_36", "to": "merchant_19", "relation": "transaction", "count": 5}, {"from": "user_36", "to": "merchant_17", "relation": "transaction", "count": 8}, {"from": "user_36", "to": "merchant_18", "relation": "transaction", "count": 10}, {"from": "user_37", "to": "merchant_16", "relation": "transaction", "count": 8}, {"from": "user_37", "to": "merchant_19", "relation": "transaction", "count": 7}, {"from": "user_37", "to": "merchant_17", "relation": "transaction", "count": 8}, {"from": "user_37", "to": "merchant_18", "relation": "transaction", "count": 7}, {"from": "user_38", "to": "merchant_18", "relation": "transaction", "count": 7}, {"from": "user_38", "to": "merchant_16", "relation": "transaction", "count": 8}, {"from": "user_38", "to": "merchant_17", "relation": "transaction", "count": 8}, {"from": "user_38", "to": "merchant_19", "relation": "transaction", "count": 7}, {"from": "user_39", "to": "merchant_17", "relation": "transaction", "count": 14}, {"from": "user_39", "to": "merchant_18", "relation": "transaction", "count": 7}, {"from": "user_39", "to": "merchant_16", "relation": "transaction", "count": 4}, {"from": "user_39", "to": "merchant_19", "relation": "transaction", "count": 5}, {"from": "user_198", "to": "merchant_17", "relation": "transaction", "count": 1}, {"from": "user_32", "to": "user_33", "relation": "shared_ip", "count": 2}, {"from": "user_32", "to": "user_34", "relation": "shared_ip", "count": 2}, {"from": "user_32", "to": "user_35", "relation": "shared_ip", "count": 1}, {"from": "user_32", "to": "user_36", "relation": "shared_ip", "count": 1}, {"from": "user_32", "to": "user_37", "relation": "shared_ip", "count": 1}, {"from": "user_32", "to": "user_38", "relation": "shared_ip", "count": 1}, {"from": "user_32", "to": "user_39", "relation": "shared_ip", "count": 1}, {"from": "user_33", "to": "user_34", "relation": "shared_ip", "count": 2}, {"from": "user_33", "to": "user_35", "relation": "shared_ip", "count": 1}, {"from": "user_33", "to": "user_36", "relation": "shared_ip", "count": 1}, {"from": "user_33", "to": "user_37", "relation": "shared_ip", "count": 1}, {"from": "user_33", "to": "user_38", "relation": "shared_ip", "count": 1}, {"from": "user_33", "to": "user_39", "relation": "shared_ip", "count": 1}, {"from": "user_34", "to": "user_35", "relation": "shared_ip", "count": 1}, {"from": "user_34", "to": "user_36", "relation": "shared_ip", "count": 1}, {"from": "user_34", "to": "user_37", "relation": "shared_ip", "count": 1}, {"from": "user_34", "to": "user_38", "relation": "shared_ip", "count": 1}, {"from": "user_34", "to": "user_39", "relation": "shared_ip", "count": 1}, {"from": "user_35", "to": "user_36", "relation": "shared_ip", "count": 2}, {"from": "user_35", "to": "user_37", "relation": "shared_ip", "count": 2}, {"from": "user_35", "to": "user_38", "relation": "shared_ip", "count": 2}, {"from": "user_35", "to": "user_39", "relation": "shared_ip", "count": 2}, {"from": "user_36", "to": "user_37", "relation": "shared_ip", "count": 2}, {"from": "user_36", "to": "user_38", "relation": "shared_ip", "count": 2}, {"from": "user_36", "to": "user_39", "relation": "shared_ip", "count": 2}, {"from": "user_37", "to": "user_38", "relation": "shared_ip", "count": 2}, {"from": "user_37", "to": "user_39", "relation": "shared_ip", "count": 2}, {"from": "user_38", "to": "user_39", "relation": "shared_ip", "count": 2}, {"from": "user_195", "to": "user_196", "relation": "shared_ip", "count": 1}, {"from": "user_195", "to": "user_197", "relation": "shared_ip", "count": 1}, {"from": "user_195", "to": "user_198", "relation": "shared_ip", "count": 1}, {"from": "user_196", "to": "user_197", "relation": "shared_ip", "count": 1}, {"from": "user_196", "to": "user_198", "relation": "shared_ip", "count": 1}, {"from": "user_197", "to": "user_198", "relation": "shared_ip", "count": 1}]}, "rank": 3}, {"ring_id": 4, "score": 0.57, "member_count": 79, "members": [100, 126, 149, 153, 16, 17, 18, 19, 20, 21, 215, 22, 223, 23, 232, 295, 335, 336, 337, 339, 361, 363, 376, 377, 378, 379, 389, 406, 414, 470, 471, 472, 473, 474, 492, 525, 527, 528, 529, 555, 556, 557, 558, 559, 561, 585, 586, 587, 588, 606, 631, 672, 685, 701, 712, 713, 714, 718, 745, 746, 747, 748, 749, 819, 898, 915, 919, 937, 955, 956, 957, 958, 959, 978, 980, 981, 982, 984, 986], "avg_model_score": 1.0, "shared_device_ratio": 0.8228, "shared_device_pct": 82.3, "shared_ip_pairs": 103, "transaction_velocity": 0.51, "fresh_account_count": 0, "reason_signals": {"shared_device_pct": 82.3, "shared_ip_pairs": 103, "transaction_velocity": 0.51, "fresh_accounts": 0, "avg_model_score": 1.0}, "graph": {"nodes": [{"id": "user_16", "label": "User 16", "group": "user", "title": "User 16 | Risk: 1.00", "value": 1.0}, {"id": "user_17", "label": "User 17", "group": "user", "title": "User 17 | Risk: 1.00", "value": 1.0}, {"id": "user_18", "label": "User 18", "group": "user", "title": "User 18 | Risk: 1.00", "value": 1.0}, {"id": "user_19", "label": "User 19", "group": "user", "title": "User 19 | Risk: 1.00", "value": 1.0}, {"id": "user_20", "label": "User 20", "group": "user", "title": "User 20 | Risk: 1.00", "value": 1.0}, {"id": "user_21", "label": "User 21", "group": "user", "title": "User 21 | Risk: 1.00", "value": 1.0}, {"id": "user_22", "label": "User 22", "group": "user", "title": "User 22 | Risk: 1.00", "value": 1.0}, {"id": "user_23", "label": "User 23", "group": "user", "title": "User 23 | Risk: 1.00", "value": 1.0}, {"id": "user_100", "label": "User 100", "group": "user", "title": "User 100 | Risk: 1.00", "value": 1.0}, {"id": "user_126", "label": "User 126", "group": "user", "title": "User 126 | Risk: 1.00", "value": 1.0}, {"id": "user_149", "label": "User 149", "group": "user", "title": "User 149 | Risk: 1.00", "value": 1.0}, {"id": "user_153", "label": "User 153", "group": "user", "title": "User 153 | Risk: 1.00", "value": 1.0}, {"id": "device_63", "label": "Device 63", "group": "device", "title": "Device 63 (1 ring users shared)"}, {"id": "device_797", "label": "Device 797", "group": "device", "title": "Device 797 (9 ring users shared)"}, {"id": "device_429", "label": "Device 429", "group": "device", "title": "Device 429 (2 ring users shared)"}, {"id": "device_599", "label": "Device 599", "group": "device", "title": "Device 599 (1 ring users shared)"}, {"id": "device_50", "label": "Device 50", "group": "device", "title": "Device 50 (1 ring users shared)"}, {"id": "merchant_10", "label": "Merchant 10", "group": "merchant", "title": "Merchant 10 (8 ring users transacted)"}, {"id": "merchant_8", "label": "Merchant 8", "group": "merchant", "title": "Merchant 8 (8 ring users transacted)"}, {"id": "merchant_11", "label": "Merchant 11", "group": "merchant", "title": "Merchant 11 (8 ring users transacted)"}, {"id": "merchant_9", "label": "Merchant 9", "group": "merchant", "title": "Merchant 9 (9 ring users transacted)"}], "edges": [{"from": "user_16", "to": "device_63", "relation": "shared_device", "count": 1}, {"from": "user_16", "to": "device_797", "relation": "shared_device", "count": 1}, {"from": "user_17", "to": "device_599", "relation": "shared_device", "count": 1}, {"from": "user_17", "to": "device_797", "relation": "shared_device", "count": 1}, {"from": "user_18", "to": "device_50", "relation": "shared_device", "count": 1}, {"from": "user_18", "to": "device_797", "relation": "shared_device", "count": 1}, {"from": "user_19", "to": "device_797", "relation": "shared_device", "count": 1}, {"from": "user_20", "to": "device_797", "relation": "shared_device", "count": 1}, {"from": "user_21", "to": "device_797", "relation": "shared_device", "count": 1}, {"from": "user_22", "to": "device_429", "relation": "shared_device", "count": 1}, {"from": "user_22", "to": "device_797", "relation": "shared_device", "count": 1}, {"from": "user_23", "to": "device_797", "relation": "shared_device", "count": 1}, {"from": "user_100", "to": "device_429", "relation": "shared_device", "count": 1}, {"from": "user_153", "to": "device_797", "relation": "shared_device", "count": 1}, {"from": "user_16", "to": "merchant_11", "relation": "transaction", "count": 5}, {"from": "user_16", "to": "merchant_8", "relation": "transaction", "count": 11}, {"from": "user_16", "to": "merchant_9", "relation": "transaction", "count": 6}, {"from": "user_16", "to": "merchant_10", "relation": "transaction", "count": 8}, {"from": "user_17", "to": "merchant_11", "relation": "transaction", "count": 6}, {"from": "user_17", "to": "merchant_8", "relation": "transaction", "count": 10}, {"from": "user_17", "to": "merchant_10", "relation": "transaction", "count": 7}, {"from": "user_17", "to": "merchant_9", "relation": "transaction", "count": 7}, {"from": "user_18", "to": "merchant_8", "relation": "transaction", "count": 7}, {"from": "user_18", "to": "merchant_9", "relation": "transaction", "count": 8}, {"from": "user_18", "to": "merchant_10", "relation": "transaction", "count": 6}, {"from": "user_18", "to": "merchant_11", "relation": "transaction", "count": 9}, {"from": "user_19", "to": "merchant_8", "relation": "transaction", "count": 5}, {"from": "user_19", "to": "merchant_11", "relation": "transaction", "count": 7}, {"from": "user_19", "to": "merchant_10", "relation": "transaction", "count": 9}, {"from": "user_19", "to": "merchant_9", "relation": "transaction", "count": 9}, {"from": "user_20", "to": "merchant_8", "relation": "transaction", "count": 7}, {"from": "user_20", "to": "merchant_10", "relation": "transaction", "count": 8}, {"from": "user_20", "to": "merchant_11", "relation": "transaction", "count": 7}, {"from": "user_20", "to": "merchant_9", "relation": "transaction", "count": 8}, {"from": "user_21", "to": "merchant_11", "relation": "transaction", "count": 5}, {"from": "user_21", "to": "merchant_8", "relation": "transaction", "count": 7}, {"from": "user_21", "to": "merchant_10", "relation": "transaction", "count": 5}, {"from": "user_21", "to": "merchant_9", "relation": "transaction", "count": 13}, {"from": "user_22", "to": "merchant_10", "relation": "transaction", "count": 10}, {"from": "user_22", "to": "merchant_11", "relation": "transaction", "count": 7}, {"from": "user_22", "to": "merchant_8", "relation": "transaction", "count": 8}, {"from": "user_22", "to": "merchant_9", "relation": "transaction", "count": 5}, {"from": "user_23", "to": "merchant_8", "relation": "transaction", "count": 12}, {"from": "user_23", "to": "merchant_9", "relation": "transaction", "count": 8}, {"from": "user_23", "to": "merchant_10", "relation": "transaction", "count": 6}, {"from": "user_23", "to": "merchant_11", "relation": "transaction", "count": 4}, {"from": "user_126", "to": "merchant_9", "relation": "transaction", "count": 1}, {"from": "user_16", "to": "user_17", "relation": "shared_ip", "count": 2}, {"from": "user_16", "to": "user_18", "relation": "shared_ip", "count": 2}, {"from": "user_16", "to": "user_19", "relation": "shared_ip", "count": 2}, {"from": "user_16", "to": "user_20", "relation": "shared_ip", "count": 1}, {"from": "user_16", "to": "user_21", "relation": "shared_ip", "count": 1}, {"from": "user_16", "to": "user_22", "relation": "shared_ip", "count": 1}, {"from": "user_16", "to": "user_23", "relation": "shared_ip", "count": 1}, {"from": "user_17", "to": "user_18", "relation": "shared_ip", "count": 2}, {"from": "user_17", "to": "user_19", "relation": "shared_ip", "count": 2}, {"from": "user_17", "to": "user_20", "relation": "shared_ip", "count": 1}, {"from": "user_17", "to": "user_21", "relation": "shared_ip", "count": 1}, {"from": "user_17", "to": "user_22", "relation": "shared_ip", "count": 1}, {"from": "user_17", "to": "user_23", "relation": "shared_ip", "count": 1}, {"from": "user_18", "to": "user_19", "relation": "shared_ip", "count": 2}, {"from": "user_18", "to": "user_20", "relation": "shared_ip", "count": 1}, {"from": "user_18", "to": "user_21", "relation": "shared_ip", "count": 1}, {"from": "user_18", "to": "user_22", "relation": "shared_ip", "count": 1}, {"from": "user_18", "to": "user_23", "relation": "shared_ip", "count": 1}, {"from": "user_19", "to": "user_20", "relation": "shared_ip", "count": 1}, {"from": "user_19", "to": "user_21", "relation": "shared_ip", "count": 1}, {"from": "user_19", "to": "user_22", "relation": "shared_ip", "count": 1}, {"from": "user_19", "to": "user_23", "relation": "shared_ip", "count": 1}, {"from": "user_20", "to": "user_21", "relation": "shared_ip", "count": 2}, {"from": "user_20", "to": "user_22", "relation": "shared_ip", "count": 2}, {"from": "user_20", "to": "user_23", "relation": "shared_ip", "count": 2}, {"from": "user_21", "to": "user_22", "relation": "shared_ip", "count": 2}, {"from": "user_21", "to": "user_23", "relation": "shared_ip", "count": 2}, {"from": "user_22", "to": "user_23", "relation": "shared_ip", "count": 2}]}, "rank": 4}, {"ring_id": 2, "score": 0.5685, "member_count": 93, "members": [120, 121, 122, 123, 124, 129, 133, 140, 141, 142, 143, 144, 145, 146, 147, 148, 174, 180, 194, 270, 271, 272, 273, 274, 277, 341, 350, 434, 440, 441, 442, 443, 444, 526, 531, 538, 549, 560, 575, 576, 577, 578, 594, 630, 657, 668, 691, 705, 706, 707, 708, 709, 711, 719, 759, 790, 791, 792, 793, 794, 795, 80, 805, 806, 807, 808, 81, 82, 83, 84, 85, 86, 863, 87, 875, 876, 877, 878, 879, 88, 883, 89, 90, 91, 913, 92, 93, 94, 95, 977, 985, 988, 989], "avg_model_score": 1.0, "shared_device_ratio": 0.8065, "shared_device_pct": 80.6, "shared_ip_pairs": 153, "transaction_velocity": 0.65, "fresh_account_count": 0, "reason_signals": {"shared_device_pct": 80.6, "shared_ip_pairs": 153, "transaction_velocity": 0.65, "fresh_accounts": 0, "avg_model_score": 1.0}, "graph": {"nodes": [{"id": "user_80", "label": "User 80", "group": "user", "title": "User 80 | Risk: 1.00", "value": 1.0}, {"id": "user_81", "label": "User 81", "group": "user", "title": "User 81 | Risk: 1.00", "value": 1.0}, {"id": "user_82", "label": "User 82", "group": "user", "title": "User 82 | Risk: 1.00", "value": 1.0}, {"id": "user_83", "label": "User 83", "group": "user", "title": "User 83 | Risk: 1.00", "value": 1.0}, {"id": "user_84", "label": "User 84", "group": "user", "title": "User 84 | Risk: 1.00", "value": 1.0}, {"id": "user_85", "label": "User 85", "group": "user", "title": "User 85 | Risk: 1.00", "value": 1.0}, {"id": "user_86", "label": "User 86", "group": "user", "title": "User 86 | Risk: 1.00", "value": 1.0}, {"id": "user_87", "label": "User 87", "group": "user", "title": "User 87 | Risk: 1.00", "value": 1.0}, {"id": "user_88", "label": "User 88", "group": "user", "title": "User 88 | Risk: 1.00", "value": 1.0}, {"id": "user_89", "label": "User 89", "group": "user", "title": "User 89 | Risk: 1.00", "value": 1.0}, {"id": "user_90", "label": "User 90", "group": "user", "title": "User 90 | Risk: 1.00", "value": 1.0}, {"id": "user_91", "label": "User 91", "group": "user", "title": "User 91 | Risk: 1.00", "value": 1.0}, {"id": "device_400", "label": "Device 400", "group": "device", "title": "Device 400 (1 ring users shared)"}, {"id": "device_789", "label": "Device 789", "group": "device", "title": "Device 789 (8 ring users shared)"}, {"id": "device_788", "label": "Device 788", "group": "device", "title": "Device 788 (4 ring users shared)"}, {"id": "device_508", "label": "Device 508", "group": "device", "title": "Device 508 (1 ring users shared)"}, {"id": "device_253", "label": "Device 253", "group": "device", "title": "Device 253 (1 ring users shared)"}, {"id": "merchant_42", "label": "Merchant 42", "group": "merchant", "title": "Merchant 42 (7 ring users transacted)"}, {"id": "merchant_43", "label": "Merchant 43", "group": "merchant", "title": "Merchant 43 (8 ring users transacted)"}, {"id": "merchant_41", "label": "Merchant 41", "group": "merchant", "title": "Merchant 41 (8 ring users transacted)"}, {"id": "merchant_40", "label": "Merchant 40", "group": "merchant", "title": "Merchant 40 (8 ring users transacted)"}], "edges": [{"from": "user_80", "to": "device_253", "relation": "shared_device", "count": 1}, {"from": "user_80", "to": "device_789", "relation": "shared_device", "count": 1}, {"from": "user_81", "to": "device_400", "relation": "shared_device", "count": 1}, {"from": "user_81", "to": "device_789", "relation": "shared_device", "count": 1}, {"from": "user_82", "to": "device_508", "relation": "shared_device", "count": 1}, {"from": "user_82", "to": "device_789", "relation": "shared_device", "count": 1}, {"from": "user_83", "to": "device_789", "relation": "shared_device", "count": 1}, {"from": "user_84", "to": "device_789", "relation": "shared_device", "count": 1}, {"from": "user_85", "to": "device_789", "relation": "shared_device", "count": 1}, {"from": "user_86", "to": "device_789", "relation": "shared_device", "count": 1}, {"from": "user_87", "to": "device_789", "relation": "shared_device", "count": 1}, {"from": "user_88", "to": "device_788", "relation": "shared_device", "count": 1}, {"from": "user_89", "to": "device_788", "relation": "shared_device", "count": 1}, {"from": "user_90", "to": "device_788", "relation": "shared_device", "count": 1}, {"from": "user_91", "to": "device_788", "relation": "shared_device", "count": 1}, {"from": "user_80", "to": "merchant_43", "relation": "transaction", "count": 9}, {"from": "user_80", "to": "merchant_42", "relation": "transaction", "count": 7}, {"from": "user_80", "to": "merchant_41", "relation": "transaction", "count": 10}, {"from": "user_80", "to": "merchant_40", "relation": "transaction", "count": 4}, {"from": "user_81", "to": "merchant_40", "relation": "transaction", "count": 11}, {"from": "user_81", "to": "merchant_43", "relation": "transaction", "count": 6}, {"from": "user_81", "to": "merchant_42", "relation": "transaction", "count": 8}, {"from": "user_81", "to": "merchant_41", "relation": "transaction", "count": 5}, {"from": "user_82", "to": "merchant_40", "relation": "transaction", "count": 8}, {"from": "user_82", "to": "merchant_43", "relation": "transaction", "count": 5}, {"from": "user_82", "to": "merchant_41", "relation": "transaction", "count": 7}, {"from": "user_82", "to": "merchant_42", "relation": "transaction", "count": 10}, {"from": "user_83", "to": "merchant_43", "relation": "transaction", "count": 7}, {"from": "user_83", "to": "merchant_41", "relation": "transaction", "count": 9}, {"from": "user_83", "to": "merchant_42", "relation": "transaction", "count": 7}, {"from": "user_83", "to": "merchant_40", "relation": "transaction", "count": 7}, {"from": "user_84", "to": "merchant_41", "relation": "transaction", "count": 5}, {"from": "user_84", "to": "merchant_42", "relation": "transaction", "count": 11}, {"from": "user_84", "to": "merchant_40", "relation": "transaction", "count": 8}, {"from": "user_84", "to": "merchant_43", "relation": "transaction", "count": 6}, {"from": "user_85", "to": "merchant_41", "relation": "transaction", "count": 9}, {"from": "user_85", "to": "merchant_42", "relation": "transaction", "count": 4}, {"from": "user_85", "to": "merchant_43", "relation": "transaction", "count": 8}, {"from": "user_85", "to": "merchant_40", "relation": "transaction", "count": 9}, {"from": "user_86", "to": "merchant_40", "relation": "transaction", "count": 10}, {"from": "user_86", "to": "merchant_41", "relation": "transaction", "count": 10}, {"from": "user_86", "to": "merchant_43", "relation": "transaction", "count": 10}, {"from": "user_87", "to": "merchant_43", "relation": "transaction", "count": 8}, {"from": "user_87", "to": "merchant_40", "relation": "transaction", "count": 13}, {"from": "user_87", "to": "merchant_41", "relation": "transaction", "count": 6}, {"from": "user_87", "to": "merchant_42", "relation": "transaction", "count": 3}, {"from": "user_80", "to": "user_81", "relation": "shared_ip", "count": 2}, {"from": "user_80", "to": "user_82", "relation": "shared_ip", "count": 2}, {"from": "user_80", "to": "user_83", "relation": "shared_ip", "count": 2}, {"from": "user_80", "to": "user_84", "relation": "shared_ip", "count": 2}, {"from": "user_80", "to": "user_85", "relation": "shared_ip", "count": 1}, {"from": "user_80", "to": "user_86", "relation": "shared_ip", "count": 1}, {"from": "user_80", "to": "user_87", "relation": "shared_ip", "count": 1}, {"from": "user_81", "to": "user_82", "relation": "shared_ip", "count": 2}, {"from": "user_81", "to": "user_83", "relation": "shared_ip", "count": 2}, {"from": "user_81", "to": "user_84", "relation": "shared_ip", "count": 2}, {"from": "user_81", "to": "user_85", "relation": "shared_ip", "count": 1}, {"from": "user_81", "to": "user_86", "relation": "shared_ip", "count": 1}, {"from": "user_81", "to": "user_87", "relation": "shared_ip", "count": 1}, {"from": "user_82", "to": "user_83", "relation": "shared_ip", "count": 2}, {"from": "user_82", "to": "user_84", "relation": "shared_ip", "count": 2}, {"from": "user_82", "to": "user_85", "relation": "shared_ip", "count": 1}, {"from": "user_82", "to": "user_86", "relation": "shared_ip", "count": 1}, {"from": "user_82", "to": "user_87", "relation": "shared_ip", "count": 1}, {"from": "user_83", "to": "user_84", "relation": "shared_ip", "count": 2}, {"from": "user_83", "to": "user_85", "relation": "shared_ip", "count": 1}, {"from": "user_83", "to": "user_86", "relation": "shared_ip", "count": 1}, {"from": "user_83", "to": "user_87", "relation": "shared_ip", "count": 1}, {"from": "user_84", "to": "user_85", "relation": "shared_ip", "count": 1}, {"from": "user_84", "to": "user_86", "relation": "shared_ip", "count": 1}, {"from": "user_84", "to": "user_87", "relation": "shared_ip", "count": 1}, {"from": "user_85", "to": "user_86", "relation": "shared_ip", "count": 2}, {"from": "user_85", "to": "user_87", "relation": "shared_ip", "count": 2}, {"from": "user_85", "to": "user_88", "relation": "shared_ip", "count": 1}, {"from": "user_85", "to": "user_89", "relation": "shared_ip", "count": 1}, {"from": "user_86", "to": "user_87", "relation": "shared_ip", "count": 2}, {"from": "user_86", "to": "user_88", "relation": "shared_ip", "count": 1}, {"from": "user_86", "to": "user_89", "relation": "shared_ip", "count": 1}, {"from": "user_87", "to": "user_88", "relation": "shared_ip", "count": 1}, {"from": "user_87", "to": "user_89", "relation": "shared_ip", "count": 1}, {"from": "user_88", "to": "user_89", "relation": "shared_ip", "count": 2}, {"from": "user_88", "to": "user_90", "relation": "shared_ip", "count": 1}, {"from": "user_88", "to": "user_91", "relation": "shared_ip", "count": 1}, {"from": "user_89", "to": "user_90", "relation": "shared_ip", "count": 1}, {"from": "user_89", "to": "user_91", "relation": "shared_ip", "count": 1}, {"from": "user_90", "to": "user_91", "relation": "shared_ip", "count": 2}]}, "rank": 5}, {"ring_id": 1, "score": 0.5665, "member_count": 107, "members": [115, 116, 117, 118, 119, 135, 136, 137, 138, 139, 167, 175, 176, 177, 178, 179, 245, 246, 247, 248, 249, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 333, 375, 395, 396, 398, 405, 411, 416, 430, 431, 432, 433, 450, 451, 452, 453, 454, 456, 468, 48, 49, 490, 50, 505, 51, 52, 53, 532, 539, 54, 548, 55, 589, 635, 636, 637, 638, 646, 654, 655, 661, 681, 710, 716, 725, 726, 727, 728, 729, 766, 767, 770, 777, 799, 825, 826, 827, 828, 829, 847, 920, 921, 922, 923, 935, 940, 945, 946, 947, 948, 949, 990, 991, 992, 993, 994], "avg_model_score": 1.0, "shared_device_ratio": 0.8037, "shared_device_pct": 80.4, "shared_ip_pairs": 160, "transaction_velocity": 0.66, "fresh_account_count": 0, "reason_signals": {"shared_device_pct": 80.4, "shared_ip_pairs": 160, "transaction_velocity": 0.66, "fresh_accounts": 0, "avg_model_score": 1.0}, "graph": {"nodes": [{"id": "user_48", "label": "User 48", "group": "user", "title": "User 48 | Risk: 1.00", "value": 1.0}, {"id": "user_49", "label": "User 49", "group": "user", "title": "User 49 | Risk: 1.00", "value": 1.0}, {"id": "user_50", "label": "User 50", "group": "user", "title": "User 50 | Risk: 1.00", "value": 1.0}, {"id": "user_51", "label": "User 51", "group": "user", "title": "User 51 | Risk: 1.00", "value": 1.0}, {"id": "user_52", "label": "User 52", "group": "user", "title": "User 52 | Risk: 1.00", "value": 1.0}, {"id": "user_53", "label": "User 53", "group": "user", "title": "User 53 | Risk: 1.00", "value": 1.0}, {"id": "user_54", "label": "User 54", "group": "user", "title": "User 54 | Risk: 1.00", "value": 1.0}, {"id": "user_55", "label": "User 55", "group": "user", "title": "User 55 | Risk: 1.00", "value": 1.0}, {"id": "user_115", "label": "User 115", "group": "user", "title": "User 115 | Risk: 1.00", "value": 1.0}, {"id": "user_116", "label": "User 116", "group": "user", "title": "User 116 | Risk: 1.00", "value": 1.0}, {"id": "user_117", "label": "User 117", "group": "user", "title": "User 117 | Risk: 1.00", "value": 1.0}, {"id": "user_118", "label": "User 118", "group": "user", "title": "User 118 | Risk: 1.00", "value": 1.0}, {"id": "device_524", "label": "Device 524", "group": "device", "title": "Device 524 (1 ring users shared)"}, {"id": "device_793", "label": "Device 793", "group": "device", "title": "Device 793 (8 ring users shared)"}, {"id": "device_168", "label": "Device 168", "group": "device", "title": "Device 168 (1 ring users shared)"}, {"id": "device_350", "label": "Device 350", "group": "device", "title": "Device 350 (1 ring users shared)"}, {"id": "device_74", "label": "Device 74", "group": "device", "title": "Device 74 (1 ring users shared)"}, {"id": "merchant_24", "label": "Merchant 24", "group": "merchant", "title": "Merchant 24 (8 ring users transacted)"}, {"id": "merchant_26", "label": "Merchant 26", "group": "merchant", "title": "Merchant 26 (8 ring users transacted)"}, {"id": "merchant_25", "label": "Merchant 25", "group": "merchant", "title": "Merchant 25 (10 ring users transacted)"}, {"id": "merchant_27", "label": "Merchant 27", "group": "merchant", "title": "Merchant 27 (9 ring users transacted)"}], "edges": [{"from": "user_48", "to": "device_74", "relation": "shared_device", "count": 1}, {"from": "user_48", "to": "device_793", "relation": "shared_device", "count": 1}, {"from": "user_49", "to": "device_524", "relation": "shared_device", "count": 1}, {"from": "user_49", "to": "device_793", "relation": "shared_device", "count": 1}, {"from": "user_50", "to": "device_168", "relation": "shared_device", "count": 1}, {"from": "user_50", "to": "device_793", "relation": "shared_device", "count": 1}, {"from": "user_51", "to": "device_350", "relation": "shared_device", "count": 1}, {"from": "user_51", "to": "device_793", "relation": "shared_device", "count": 1}, {"from": "user_52", "to": "device_793", "relation": "shared_device", "count": 1}, {"from": "user_53", "to": "device_793", "relation": "shared_device", "count": 1}, {"from": "user_54", "to": "device_793", "relation": "shared_device", "count": 1}, {"from": "user_55", "to": "device_793", "relation": "shared_device", "count": 1}, {"from": "user_48", "to": "merchant_25", "relation": "transaction", "count": 9}, {"from": "user_48", "to": "merchant_27", "relation": "transaction", "count": 7}, {"from": "user_48", "to": "merchant_24", "relation": "transaction", "count": 5}, {"from": "user_48", "to": "merchant_26", "relation": "transaction", "count": 9}, {"from": "user_49", "to": "merchant_25", "relation": "transaction", "count": 6}, {"from": "user_49", "to": "merchant_26", "relation": "transaction", "count": 14}, {"from": "user_49", "to": "merchant_27", "relation": "transaction", "count": 4}, {"from": "user_49", "to": "merchant_24", "relation": "transaction", "count": 6}, {"from": "user_50", "to": "merchant_25", "relation": "transaction", "count": 9}, {"from": "user_50", "to": "merchant_26", "relation": "transaction", "count": 9}, {"from": "user_50", "to": "merchant_24", "relation": "transaction", "count": 5}, {"from": "user_50", "to": "merchant_27", "relation": "transaction", "count": 7}, {"from": "user_51", "to": "merchant_26", "relation": "transaction", "count": 8}, {"from": "user_51", "to": "merchant_25", "relation": "transaction", "count": 10}, {"from": "user_51", "to": "merchant_24", "relation": "transaction", "count": 10}, {"from": "user_51", "to": "merchant_27", "relation": "transaction", "count": 2}, {"from": "user_52", "to": "merchant_24", "relation": "transaction", "count": 10}, {"from": "user_52", "to": "merchant_25", "relation": "transaction", "count": 5}, {"from": "user_52", "to": "merchant_26", "relation": "transaction", "count": 8}, {"from": "user_52", "to": "merchant_27", "relation": "transaction", "count": 7}, {"from": "user_53", "to": "merchant_25", "relation": "transaction", "count": 7}, {"from": "user_53", "to": "merchant_24", "relation": "transaction", "count": 7}, {"from": "user_53", "to": "merchant_26", "relation": "transaction", "count": 11}, {"from": "user_53", "to": "merchant_27", "relation": "transaction", "count": 5}, {"from": "user_54", "to": "merchant_24", "relation": "transaction", "count": 7}, {"from": "user_54", "to": "merchant_25", "relation": "transaction", "count": 9}, {"from": "user_54", "to": "merchant_26", "relation": "transaction", "count": 6}, {"from": "user_54", "to": "merchant_27", "relation": "transaction", "count": 8}, {"from": "user_55", "to": "merchant_25", "relation": "transaction", "count": 9}, {"from": "user_55", "to": "merchant_24", "relation": "transaction", "count": 4}, {"from": "user_55", "to": "merchant_26", "relation": "transaction", "count": 11}, {"from": "user_55", "to": "merchant_27", "relation": "transaction", "count": 6}, {"from": "user_117", "to": "merchant_25", "relation": "transaction", "count": 1}, {"from": "user_117", "to": "merchant_27", "relation": "transaction", "count": 1}, {"from": "user_118", "to": "merchant_25", "relation": "transaction", "count": 1}, {"from": "user_48", "to": "user_49", "relation": "shared_ip", "count": 2}, {"from": "user_48", "to": "user_50", "relation": "shared_ip", "count": 1}, {"from": "user_48", "to": "user_51", "relation": "shared_ip", "count": 1}, {"from": "user_48", "to": "user_52", "relation": "shared_ip", "count": 1}, {"from": "user_48", "to": "user_53", "relation": "shared_ip", "count": 1}, {"from": "user_48", "to": "user_54", "relation": "shared_ip", "count": 1}, {"from": "user_48", "to": "user_55", "relation": "shared_ip", "count": 1}, {"from": "user_49", "to": "user_50", "relation": "shared_ip", "count": 1}, {"from": "user_49", "to": "user_51", "relation": "shared_ip", "count": 1}, {"from": "user_49", "to": "user_52", "relation": "shared_ip", "count": 1}, {"from": "user_49", "to": "user_53", "relation": "shared_ip", "count": 1}, {"from": "user_49", "to": "user_54", "relation": "shared_ip", "count": 1}, {"from": "user_49", "to": "user_55", "relation": "shared_ip", "count": 1}, {"from": "user_50", "to": "user_51", "relation": "shared_ip", "count": 2}, {"from": "user_50", "to": "user_52", "relation": "shared_ip", "count": 2}, {"from": "user_50", "to": "user_53", "relation": "shared_ip", "count": 2}, {"from": "user_50", "to": "user_54", "relation": "shared_ip", "count": 2}, {"from": "user_50", "to": "user_55", "relation": "shared_ip", "count": 1}, {"from": "user_51", "to": "user_52", "relation": "shared_ip", "count": 2}, {"from": "user_51", "to": "user_53", "relation": "shared_ip", "count": 2}, {"from": "user_51", "to": "user_54", "relation": "shared_ip", "count": 2}, {"from": "user_51", "to": "user_55", "relation": "shared_ip", "count": 1}, {"from": "user_52", "to": "user_53", "relation": "shared_ip", "count": 2}, {"from": "user_52", "to": "user_54", "relation": "shared_ip", "count": 2}, {"from": "user_52", "to": "user_55", "relation": "shared_ip", "count": 1}, {"from": "user_53", "to": "user_54", "relation": "shared_ip", "count": 2}, {"from": "user_53", "to": "user_55", "relation": "shared_ip", "count": 1}, {"from": "user_54", "to": "user_55", "relation": "shared_ip", "count": 1}, {"from": "user_115", "to": "user_116", "relation": "shared_ip", "count": 1}, {"from": "user_115", "to": "user_117", "relation": "shared_ip", "count": 1}, {"from": "user_115", "to": "user_118", "relation": "shared_ip", "count": 1}, {"from": "user_116", "to": "user_117", "relation": "shared_ip", "count": 1}, {"from": "user_116", "to": "user_118", "relation": "shared_ip", "count": 1}, {"from": "user_117", "to": "user_118", "relation": "shared_ip", "count": 1}]}, "rank": 6}];
 
     async function fetchRings() {
       const url = document.getElementById("api-url").value.trim().replace(/\/$/, "");
       const dot = document.getElementById("status-dot");
+      const label = document.getElementById("status-label");
 
       try {
         const res = await fetch(`${url}/analyze`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ top_k: 15, threshold: 0.5 })
+          body: JSON.stringify({ top_k: 10, threshold: 0.5 })
         });
 
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -880,10 +873,13 @@
           document.getElementById("stat-txs").innerText = data.metadata.total_transactions?.toLocaleString() || "13,680";
         }
         dot.classList.remove("offline");
+        label.innerText = "LIVE API";
+        showToast("Connected to DarkNode GNN backend");
       } catch (err) {
-        console.warn("Backend unavailable, loading simulation data:", err);
+        console.warn("Backend unavailable, using cached model dossier:", err);
         allRings = FALLBACK_RINGS;
         dot.classList.add("offline");
+        label.innerText = "CACHED GNN";
       }
 
       document.getElementById("stat-rings").innerText = allRings.length;
@@ -909,7 +905,7 @@
             <span class="ring-risk-tag">${(ring.score * 100).toFixed(1)}% RISK</span>
           </div>
           <div class="ring-card-bottom">
-            <span>👥 ${ring.member_count} users</span>
+            <span>👥 ${ring.member_count} members</span>
             <span>📱 ${ring.shared_device_pct}% dev</span>
             <span>⚡ ${Math.round(ring.transaction_velocity)} tx/h</span>
           </div>
@@ -967,7 +963,7 @@
 
     function renderGraph(graphData) {
       const container = document.getElementById("network-canvas");
-      if (!graphData || !graphData.nodes) return;
+      if (!container || !graphData || !graphData.nodes) return;
 
       // Filter Nodes
       const visibleNodes = graphData.nodes.filter(n => activeFilters[n.group] !== false);
@@ -975,20 +971,20 @@
       const visibleEdges = (graphData.edges || []).filter(e => visibleIds.has(e.from) && visibleIds.has(e.to));
 
       const nodes = new vis.DataSet(visibleNodes.map(n => {
-        let color = "#e11d48";
+        let color = "#facc15";
         let shape = "dot";
-        let size = 20;
+        let size = 22;
 
         if (n.group === "user") {
-          color = "#e11d48"; // Vibrant Coral Red
+          color = "#facc15"; // Electric Yellow
           shape = "dot";
           size = 22;
         } else if (n.group === "device") {
-          color = "#f59e0b"; // Clean Amber
+          color = "#38bdf8"; // Cyan
           shape = "diamond";
           size = 24;
         } else if (n.group === "merchant") {
-          color = "#10b981"; // Emerald
+          color = "#34d399"; // Mint
           shape = "triangle";
           size = 20;
         }
@@ -999,75 +995,75 @@
           color: {
             background: color,
             border: "#ffffff",
-            highlight: { background: "#0f172a", border: color }
+            highlight: { background: "#ffffff", border: color }
           },
           borderWidth: 2,
           shape: shape,
           size: size,
           font: {
-            color: "#0f172a",
-            size: 12,
+            color: "#f3f4f6",
+            size: 11,
             face: "Plus Jakarta Sans",
-            bold: { color: "#0f172a", size: 12 }
+            bold: { color: "#f3f4f6", size: 11 },
+            background: "rgba(20, 21, 26, 0.85)"
           },
-          shadow: { enabled: true, color: "rgba(15, 23, 42, 0.12)", size: 6, x: 0, y: 3 }
+          shadow: { enabled: true, color: "rgba(0, 0, 0, 0.6)", size: 6, x: 0, y: 3 }
         };
       }));
 
-      // NOTE: We deliberately do NOT put static text labels on edges!
-      // This prevents the messy overlapping text scribble seen earlier and makes the network airy and clean.
-      // Instead, edges are color-coded and show details on hover.
+      // Airy, distinct edges with NO static labels to avoid clumping
       const edges = new vis.DataSet(visibleEdges.map(e => {
-        let edgeColor = "#cbd5e1";
+        let edgeColor = "#64748b";
         let dashes = false;
-        let width = 1.5;
-        let tooltip = "Interaction Link";
+        let width = 1.6;
+        let tooltip = `Connected (${e.count || 1} links)`;
 
-        if (e.label === "shared_ip" || e.relation === "shared_ip") {
-          edgeColor = "#f43f5e";
+        if (e.relation === "shared_ip") {
+          edgeColor = "#facc15";
           dashes = [5, 5];
-          width = 2;
-          tooltip = "Shared IP Cluster";
-        } else if (e.label === "shared_device" || e.relation === "shared_device") {
-          edgeColor = "#f59e0b";
-          width = 2;
-          tooltip = "Shared Device Hardware";
-        } else if (e.label === "transaction" || e.label === "burst_tx" || e.relation === "transaction") {
-          edgeColor = "#94a3b8";
-          width = 1.2;
-          tooltip = "Merchant Transaction";
+          width = 2.2;
+          tooltip = `Shared IP Interconnection (${e.count || 1} links)`;
+        } else if (e.relation === "shared_device" || e.relation === "connected") {
+          edgeColor = "#38bdf8";
+          width = 2.2;
+          tooltip = `Shared Hardware Device (${e.count || 1} links)`;
+        } else if (e.relation === "transaction" || e.relation === "burst_tx") {
+          edgeColor = "#475569";
+          width = 1.4;
+          tooltip = `Merchant Transaction Burst (${e.count || 1} txs)`;
         }
 
         return {
           from: e.from,
           to: e.to,
-          color: { color: edgeColor, highlight: "#e11d48", hover: "#e11d48" },
+          color: { color: edgeColor, highlight: "#facc15", hover: "#facc15" },
           dashes: dashes,
           width: width,
           title: tooltip,
-          smooth: { type: "continuous", roundness: 0.2 }
+          smooth: { type: "continuous", roundness: 0.25 }
         };
       }));
 
       const data = { nodes, edges };
-      
-      // Spacious, relaxed physics configuration (giving nodes space to breathe)
+
+      // Free, spacious layout physics configuration
       const options = {
         physics: {
           enabled: physicsState,
           solver: "forceAtlas2Based",
           forceAtlas2Based: {
-            gravitationalConstant: -260, // Strong repulsion pushes nodes cleanly apart
-            centralGravity: 0.006,        // Gentle central gravity avoids tightly forcing together
-            springLength: 200,            // Long airy springs so labels never collide
-            springConstant: 0.04,
-            damping: 0.2
+            gravitationalConstant: -460, // Strong repulsion separates nodes widely
+            centralGravity: 0.002,       // Low gravity prevents pulling into a ball
+            springLength: currentSpringLength, // Spacious spring length
+            springConstant: 0.035,
+            damping: 0.28,
+            avoidOverlap: 1.0            // Strict collision prevention
           },
-          stabilization: { iterations: 140 }
+          stabilization: { iterations: 180 }
         },
         interaction: {
           hover: true,
-          tooltipDelay: 100,
+          tooltipDelay: 80,
           zoomView: true,
           dragView: true
         }
@@ -1076,15 +1072,36 @@
       if (network) network.destroy();
       network = new vis.Network(container, data, options);
 
+      network.once("stabilizationIterationsDone", function() {
+        network.fit({ animation: { duration: 400, easingFunction: "easeInOutQuad" } });
+      });
+
+      // Click node to focus
       network.on("click", function(params) {
         if (params.nodes.length > 0) {
-          showToast(`Focused node: ${params.nodes[0]}`);
+          showToast(`Focused: ${params.nodes[0]}`);
         }
       });
     }
 
     function resetGraphView() {
       if (network) network.fit({ animation: { duration: 400, easingFunction: "easeInOutQuad" } });
+    }
+
+    function spreadGraph() {
+      currentSpringLength = (currentSpringLength === 260) ? 360 : 260;
+      const btn = document.getElementById("spread-btn");
+      btn.innerText = currentSpringLength === 360 ? "Spread: Wide" : "Spread Out";
+      btn.classList.toggle("active", currentSpringLength === 360);
+
+      if (network) {
+        network.setOptions({
+          physics: {
+            forceAtlas2Based: { springLength: currentSpringLength, gravitationalConstant: currentSpringLength === 360 ? -600 : -460 }
+          }
+        });
+        network.startSimulation();
+      }
     }
 
     function togglePhysics() {
@@ -1104,7 +1121,7 @@
     function focusOnNode(nodeId) {
       if (!network) return;
       network.focus(nodeId, {
-        scale: 1.25,
+        scale: 1.3,
         animation: { duration: 500, easingFunction: "easeInOutQuad" }
       });
       network.selectNodes([nodeId]);
@@ -1114,10 +1131,10 @@
       const ring = allRings[activeIndex];
       if (!ring) return;
       const btn = document.getElementById("freeze-btn");
-      btn.innerText = "Accounts Suspended (Simulation)";
+      btn.innerText = "Accounts Frozen (Simulation)";
       btn.disabled = true;
       btn.style.opacity = "0.7";
-      showToast(`Simulation: Frozen ${ring.member_count} accounts in Syndicate #${ring.ring_id}`);
+      showToast(`Simulation: Suspended ${ring.member_count} syndicate accounts in Ring #${ring.ring_id}`);
     }
 
     function exportJson() {
@@ -1139,6 +1156,13 @@
       toast.style.display = "flex";
       setTimeout(() => { toast.style.display = "none"; }, 3500);
     }
+
+    window.addEventListener("resize", () => {
+      if (network) {
+        network.redraw();
+        network.fit();
+      }
+    });
 
     window.addEventListener("DOMContentLoaded", () => {
       fetchRings();

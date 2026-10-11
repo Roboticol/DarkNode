@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections import Counter
+from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
 from datetime import datetime
 from typing import Any
@@ -306,20 +306,38 @@ def extract_rings(
         vis_edges = []
         node_ids_added = set()
 
+        # For visualization clarity: focus visual subgraph on the core syndicate (top 12 members)
+        # so the layout is spacious, uncluttered, and every node is freely and clearly visible.
+        if len(members) > 12:
+            core_members = sorted(
+                members,
+                key=lambda m: (score_map.get(m, 1.0), nx_graph.degree(m) if hasattr(nx_graph, "degree") else 0),
+                reverse=True
+            )[:12]
+        else:
+            core_members = members
+
+        core_set = set(core_members)
+
         # Add member user nodes
-        for m in members:
+        for m in core_members:
             nid = f"user_{_to_user_id(m)}"
             node_ids_added.add(nid)
             vis_nodes.append({
                 "id": nid,
                 "label": f"User {_to_user_id(m)}",
                 "group": "user",
-                "title": f"Risk Score: {score_map.get(m, 1.0):.2f}",
+                "title": f"User {_to_user_id(m)} | Risk: {score_map.get(m, 1.0):.2f}",
                 "value": score_map.get(m, 1.0),
             })
 
-        # Add connected devices and merchants
-        for m in members:
+        # Identify connected devices and merchants
+        device_users: dict[str, set[Any]] = defaultdict(set)
+        merchant_users: dict[str, set[Any]] = defaultdict(set)
+        device_edges = []
+        merchant_edges = []
+
+        for m in core_members:
             m_nid = f"user_{_to_user_id(m)}"
             m_edges = nx_graph.out_edges(m, data=True) if hasattr(nx_graph, "out_edges") else nx_graph.edges(m, data=True)
             for _, dst, edata in m_edges:
@@ -327,26 +345,73 @@ def extract_rings(
                 rel = edata.get("relation", "connected")
                 dst_nid = f"{dtype}_{did}"
 
-                if dtype in ("device", "merchant"):
-                    if dst_nid not in node_ids_added:
-                        node_ids_added.add(dst_nid)
-                        vis_nodes.append({
-                            "id": dst_nid,
-                            "label": f"{dtype.capitalize()} {did}",
-                            "group": dtype,
-                            "title": f"Type: {dtype.capitalize()} | ID: {did}",
-                        })
-                    vis_edges.append({
-                        "from": m_nid,
-                        "to": dst_nid,
-                        "label": rel,
-                    })
-                elif dtype == "user" and dst in member_set and str(m) < str(dst):
-                    vis_edges.append({
-                        "from": m_nid,
-                        "to": dst_nid,
-                        "label": rel,
-                    })
+                if dtype == "device":
+                    device_users[dst_nid].add(m)
+                    device_edges.append((m_nid, dst_nid, rel))
+                elif dtype == "merchant":
+                    merchant_users[dst_nid].add(m)
+                    merchant_edges.append((m_nid, dst_nid, rel))
+
+        # Select devices to include: shared devices first, up to 5 total
+        sorted_devices = sorted(device_users.keys(), key=lambda d: len(device_users[d]), reverse=True)
+        selected_devices = set(sorted_devices[:5])
+
+        for d_nid in selected_devices:
+            node_ids_added.add(d_nid)
+            _, d_id = d_nid.split("_", 1)
+            shared_cnt = len(device_users[d_nid])
+            vis_nodes.append({
+                "id": d_nid,
+                "label": f"Device {d_id}",
+                "group": "device",
+                "title": f"Device {d_id} ({shared_cnt} ring users shared)",
+            })
+
+        # Select merchants: prioritize merchants transacted by >=2 ring members, up to 4
+        sorted_merchants = sorted(merchant_users.keys(), key=lambda m: len(merchant_users[m]), reverse=True)
+        selected_merchants = set([m for m in sorted_merchants if len(merchant_users[m]) >= 2][:4])
+        if not selected_merchants and sorted_merchants:
+            selected_merchants = set(sorted_merchants[:3])
+
+        for m_nid in selected_merchants:
+            node_ids_added.add(m_nid)
+            _, m_id = m_nid.split("_", 1)
+            shared_cnt = len(merchant_users[m_nid])
+            vis_nodes.append({
+                "id": m_nid,
+                "label": f"Merchant {m_id}",
+                "group": "merchant",
+                "title": f"Merchant {m_id} ({shared_cnt} ring users transacted)",
+            })
+
+        # Aggregate edges between added nodes
+        edge_counts: Counter[tuple[str, str, str]] = Counter()
+
+        for src, dst, rel in device_edges:
+            if dst in selected_devices:
+                edge_counts[(src, dst, rel)] += 1
+
+        for src, dst, rel in merchant_edges:
+            if dst in selected_merchants:
+                edge_counts[(src, dst, rel)] += 1
+
+        for m in core_members:
+            m_nid = f"user_{_to_user_id(m)}"
+            m_edges = nx_graph.out_edges(m, data=True) if hasattr(nx_graph, "out_edges") else nx_graph.edges(m, data=True)
+            for _, dst, edata in m_edges:
+                dtype, did = _normalize_node_key(dst)
+                if dtype == "user" and dst in core_set and str(m) < str(dst):
+                    rel = edata.get("relation", "shared_ip")
+                    dst_nid = f"user_{_to_user_id(dst)}"
+                    edge_counts[(m_nid, dst_nid, rel)] += 1
+
+        for (src_id, dst_id, rel), count in edge_counts.items():
+            vis_edges.append({
+                "from": src_id,
+                "to": dst_id,
+                "relation": rel,
+                "count": count,
+            })
 
         ring_entry = {
             "ring_id": ring_idx,
