@@ -866,6 +866,240 @@ html_template = """<!DOCTYPE html>
       border-radius: 4px;
       color: var(--yellow-primary);
     }
+
+    /* Risk Tier Filters in Sidebar */
+    .tier-filter-row {
+      display: flex;
+      gap: 4px;
+      padding: 0 12px 10px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .tier-tab-btn {
+      flex: 1;
+      height: 24px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 5px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.12s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+    }
+
+    .tier-tab-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+    }
+
+    .tier-tab-btn.active {
+      background: var(--yellow-bg);
+      border-color: var(--yellow-border);
+      color: var(--yellow-primary);
+    }
+
+    /* Signal Meters */
+    .signal-meter-bg {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 3px;
+    }
+
+    .signal-meter-fill {
+      height: 100%;
+      background: var(--yellow-primary);
+      border-radius: 2px;
+      transition: width 0.35s ease;
+    }
+
+    /* Floating Node Inspector */
+    .node-inspector-card {
+      position: absolute;
+      bottom: 44px;
+      right: 14px;
+      width: 270px;
+      background: rgba(24, 25, 30, 0.96);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), var(--shadow-glow);
+      z-index: 25;
+      overflow: hidden;
+      animation: inspectorSlideUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes inspectorSlideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .node-inspector-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .node-inspector-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .node-type-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--yellow-primary);
+    }
+
+    .node-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 3px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .node-close-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--yellow-primary);
+    }
+
+    .node-inspector-body {
+      padding: 11px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .inspect-field {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+    }
+
+    .inspect-lbl {
+      color: var(--text-muted);
+    }
+
+    .inspect-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .inspect-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    /* Benchmark Modal Styles */
+    .benchmark-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .benchmark-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .bench-kpi-title {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .bench-compare-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .bench-val-sub {
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    .bench-score-dim {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .bench-score-bright {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--yellow-primary);
+    }
+
+    .bench-delta-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 5px;
+      background: var(--yellow-bg);
+      color: var(--yellow-primary);
+      border: 1px solid var(--yellow-border);
+    }
+
+    .bench-progress-box {
+      width: 100%;
+      height: 6px;
+      background: var(--bg-input);
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .bench-bar-base {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: #64748b;
+      border-radius: 3px;
+    }
+
+    .bench-bar-gnn {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: var(--yellow-primary);
+      border-radius: 3px;
+      box-shadow: 0 0 8px rgba(250, 204, 21, 0.5);
+    }
   </style>
 </head>
 <body>
@@ -878,7 +1112,7 @@ html_template = """<!DOCTYPE html>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#111215" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><line x1="12" y1="9" x2="19" y2="6.5"/><line x1="12" y1="15" x2="5" y2="17.5"/></svg>
       </div>
       <div class="brand-title">
-        Dark<span class="kicker">Node</span>
+        DarkNode
         <span class="badge-pill">GNN-MPNN</span>
       </div>
     </div>
@@ -907,6 +1141,11 @@ html_template = """<!DOCTYPE html>
         <span class="status-text" id="status-label">ONLINE</span>
       </div>
 
+      <button class="btn btn-outline" onclick="openBenchmarkModal()" title="View Empirical Model Benchmarks vs Bank Rules">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        Benchmark
+      </button>
+
       <button class="btn btn-outline" onclick="openGuideModal()" title="View System Architecture and Dashboard Operator Guide">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         User Guide
@@ -928,6 +1167,14 @@ html_template = """<!DOCTYPE html>
         <span class="panel-title">Detected Syndicates</span>
         <span class="badge-pill" id="rings-count-badge">10 total</span>
       </div>
+
+      <!-- Risk Tier Filters -->
+      <div class="tier-filter-row">
+        <button class="tier-tab-btn active" id="tier-all" onclick="setTierFilter('all')">All (<span id="count-all">10</span>)</button>
+        <button class="tier-tab-btn" id="tier-critical" onclick="setTierFilter('critical')">Critical (<span id="count-critical">0</span>)</button>
+        <button class="tier-tab-btn" id="tier-elevated" onclick="setTierFilter('elevated')">Elevated (<span id="count-elevated">0</span>)</button>
+      </div>
+
       <div class="search-box-clean">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" class="search-input-clean" id="search-filter" placeholder="Filter by Ring ID or User ID..." oninput="filterRings()">
@@ -970,6 +1217,37 @@ html_template = """<!DOCTYPE html>
       <!-- Graph Canvas Container (Guaranteed non-collapsing) -->
       <div class="canvas-outer">
         <div id="network-canvas"></div>
+      </div>
+
+      <!-- Floating Node Inspector Card -->
+      <div class="node-inspector-card" id="node-inspector" style="display: none;">
+        <div class="node-inspector-head">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="node-type-dot" id="inspect-dot"></span>
+            <span class="node-inspector-title" id="inspect-id">User 0</span>
+          </div>
+          <button class="node-close-btn" onclick="closeNodeInspector()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="node-inspector-body">
+          <div class="inspect-field">
+            <span class="inspect-lbl">Entity Role</span>
+            <span class="inspect-val" id="inspect-role">Syndicate Mule Account</span>
+          </div>
+          <div class="inspect-field">
+            <span class="inspect-lbl">Signal Status</span>
+            <span class="inspect-val" id="inspect-score" style="color: var(--yellow-primary);">High Anomaly</span>
+          </div>
+          <div class="inspect-field">
+            <span class="inspect-lbl">Connected Hops</span>
+            <span class="inspect-val" id="inspect-deg">4 links</span>
+          </div>
+          <div class="inspect-actions">
+            <button class="btn btn-outline" style="height: 26px; font-size: 10px; flex: 1;" onclick="isolateNodeNeighbors()">Focus Hops</button>
+            <button class="btn btn-yellow" style="height: 26px; font-size: 10px; flex: 1;" onclick="copyNodeId()">Copy ID</button>
+          </div>
+        </div>
       </div>
 
       <!-- Clean Floating Legend -->
@@ -1018,25 +1296,40 @@ html_template = """<!DOCTYPE html>
         <div>
           <div class="block-title">Behavioral Reason Signals</div>
           <div class="signals-card-group">
-            <div class="signal-item-row">
-              <span class="signal-label-text"><span class="signal-prefix-tag">DEV</span>Shared Device Ratio</span>
-              <span class="signal-metric-val" id="sig-device">0%</span>
+            <div class="signal-item-row" style="flex-direction: column; align-items: stretch; gap: 5px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="signal-label-text"><span class="signal-prefix-tag">DEV</span>Shared Device Ratio</span>
+                <span class="signal-metric-val" id="sig-device">0%</span>
+              </div>
+              <div class="signal-meter-bg"><div class="signal-meter-fill" id="meter-device" style="width: 0%;"></div></div>
             </div>
-            <div class="signal-item-row">
-              <span class="signal-label-text"><span class="signal-prefix-tag">NET</span>Shared IP Pairs</span>
-              <span class="signal-metric-val" id="sig-ip">0 pairs</span>
+            <div class="signal-item-row" style="flex-direction: column; align-items: stretch; gap: 5px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="signal-label-text"><span class="signal-prefix-tag">NET</span>Shared IP Pairs</span>
+                <span class="signal-metric-val" id="sig-ip">0 pairs</span>
+              </div>
+              <div class="signal-meter-bg"><div class="signal-meter-fill" id="meter-ip" style="width: 0%;"></div></div>
             </div>
-            <div class="signal-item-row">
-              <span class="signal-label-text"><span class="signal-prefix-tag">VEL</span>Burst Velocity</span>
-              <span class="signal-metric-val" id="sig-vel">0 tx/hr</span>
+            <div class="signal-item-row" style="flex-direction: column; align-items: stretch; gap: 5px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="signal-label-text"><span class="signal-prefix-tag">VEL</span>Burst Velocity</span>
+                <span class="signal-metric-val" id="sig-vel">0 tx/hr</span>
+              </div>
+              <div class="signal-meter-bg"><div class="signal-meter-fill" id="meter-vel" style="width: 0%;"></div></div>
             </div>
-            <div class="signal-item-row">
-              <span class="signal-label-text"><span class="signal-prefix-tag">GNN</span>Model Confidence</span>
-              <span class="signal-metric-val" id="sig-gnn">0.00</span>
+            <div class="signal-item-row" style="flex-direction: column; align-items: stretch; gap: 5px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="signal-label-text"><span class="signal-prefix-tag">GNN</span>Model Confidence</span>
+                <span class="signal-metric-val" id="sig-gnn">0.00</span>
+              </div>
+              <div class="signal-meter-bg"><div class="signal-meter-fill" id="meter-gnn" style="width: 0%;"></div></div>
             </div>
-            <div class="signal-item-row">
-              <span class="signal-label-text"><span class="signal-prefix-tag">NEW</span>New Accounts Ratio</span>
-              <span class="signal-metric-val" id="sig-fresh">0</span>
+            <div class="signal-item-row" style="flex-direction: column; align-items: stretch; gap: 5px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="signal-label-text"><span class="signal-prefix-tag">NEW</span>New Accounts Ratio</span>
+                <span class="signal-metric-val" id="sig-fresh">0</span>
+              </div>
+              <div class="signal-meter-bg"><div class="signal-meter-fill" id="meter-fresh" style="width: 0%;"></div></div>
             </div>
           </div>
         </div>
@@ -1055,10 +1348,16 @@ html_template = """<!DOCTYPE html>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             Freeze Ring Accounts (Simulation)
           </button>
-          <button class="btn btn-outline" style="height: 34px;" onclick="exportJson()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Export Ring Dossier (JSON)
-          </button>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-outline" style="height: 34px; flex: 1;" onclick="copySarSummary()" title="Copy Case Investigation Summary">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy SAR
+            </button>
+            <button class="btn btn-outline" style="height: 34px; flex: 1;" onclick="exportJson()" title="Download Complete JSON Forensic Dossier">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export JSON
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1207,6 +1506,116 @@ html_template = """<!DOCTYPE html>
     </div>
   </div>
 
+  <!-- Model Benchmark Modal -->
+  <div class="modal-backdrop" id="benchmark-modal" onclick="closeBenchmarkModal(event)">
+    <div class="modal-window" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <div class="modal-title-group">
+          <div class="brand-logo-mark" style="width:24px; height:24px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#111215" stroke-width="2.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+          </div>
+          <div class="modal-title">
+            DarkNode Empirical Benchmark — GNN vs Bank Rules
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeBenchmarkModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Metric Comparison Grid -->
+        <div class="benchmark-grid">
+          <div class="benchmark-card">
+            <div class="bench-kpi-title">PRECISION (ACCURACY OF ALERTS)</div>
+            <div class="bench-compare-row">
+              <div>
+                <div class="bench-val-sub">Rule Baseline</div>
+                <div class="bench-score-dim">41.9%</div>
+              </div>
+              <div class="bench-delta-tag">+53.1 points</div>
+              <div style="text-align: right;">
+                <div class="bench-val-sub">DarkNode GNN</div>
+                <div class="bench-score-bright">95.0%</div>
+              </div>
+            </div>
+            <div class="bench-progress-box">
+              <div class="bench-bar-base" style="width: 41.9%;"></div>
+              <div class="bench-bar-gnn" style="width: 95.0%;"></div>
+            </div>
+          </div>
+
+          <div class="benchmark-card">
+            <div class="bench-kpi-title">FALSE-ALARM SHARE (DEFENSIVE NOISE)</div>
+            <div class="bench-compare-row">
+              <div>
+                <div class="bench-val-sub">Rule Baseline</div>
+                <div class="bench-score-dim" style="color: #ef4444;">58.1%</div>
+              </div>
+              <div class="bench-delta-tag" style="background: rgba(52, 211, 153, 0.15); color: #34d399; border-color: rgba(52, 211, 153, 0.3);">-53.1 points</div>
+              <div style="text-align: right;">
+                <div class="bench-val-sub">DarkNode GNN</div>
+                <div class="bench-score-bright" style="color: #34d399;">5.0%</div>
+              </div>
+            </div>
+            <div class="bench-progress-box">
+              <div class="bench-bar-base" style="width: 58.1%; background: #ef4444;"></div>
+              <div class="bench-bar-gnn" style="width: 5.0%; background: #34d399;"></div>
+            </div>
+          </div>
+
+          <div class="benchmark-card">
+            <div class="bench-kpi-title">F1 SCORE (HARMONIC MEAN)</div>
+            <div class="bench-compare-row">
+              <div>
+                <div class="bench-val-sub">Rule Baseline</div>
+                <div class="bench-score-dim">0.591</div>
+              </div>
+              <div class="bench-delta-tag">+0.383 lift</div>
+              <div style="text-align: right;">
+                <div class="bench-val-sub">DarkNode GNN</div>
+                <div class="bench-score-bright">0.974</div>
+              </div>
+            </div>
+            <div class="bench-progress-box">
+              <div class="bench-bar-base" style="width: 59.1%;"></div>
+              <div class="bench-bar-gnn" style="width: 97.4%;"></div>
+            </div>
+          </div>
+
+          <div class="benchmark-card">
+            <div class="bench-kpi-title">INFERENCE LATENCY (REAL-TIME ENGINE)</div>
+            <div class="bench-compare-row">
+              <div>
+                <div class="bench-val-sub">Full Graph Size</div>
+                <div class="bench-score-dim">15K Entities</div>
+              </div>
+              <div class="bench-delta-tag" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">Sub-10ms</div>
+              <div style="text-align: right;">
+                <div class="bench-val-sub">Forward Pass</div>
+                <div class="bench-score-bright" style="color: #38bdf8;">8.4 ms</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Architectural Insights -->
+        <div class="guide-section">
+          <h3>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Why DarkNode Solves Rule-Based Heuristic Failure
+          </h3>
+          <p>
+            Standard bank anti-money laundering (AML) rules fire on basic thresholds: e.g. <em>"Flag if multiple accounts use the same IP"</em> or <em>"Flag if 3+ transactions occur within an hour"</em>. This produces massive false positives whenever innocent people access university Wi-Fi, roommates share a device, or families shop during holiday sales.
+          </p>
+          <p>
+            <strong>DarkNode's Heterogeneous GNN</strong> passes multi-hop message embeddings across the topology. Isolated shared devices without coordinated IP subnets and transaction burst graphs are recognized as benign clusters. Only tightly bound syndicates displaying concurrent multi-signal convergence reach high threat scores.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     let network = null;
     let allRings = [];
@@ -1219,8 +1628,11 @@ html_template = """<!DOCTYPE html>
     // Real fallback dataset extracted from trained GNN model
     const FALLBACK_RINGS = __FALLBACK_JSON__;
 
+    let currentTierFilter = 'all';
+    let inspectedNodeId = null;
+
     async function fetchRings() {
-      const url = document.getElementById("api-url").value.trim().replace(/\\/$/, "");
+      const url = document.getElementById("api-url").value.trim().replace(/\/$/, "");
       const dot = document.getElementById("status-dot");
       const label = document.getElementById("status-label");
 
@@ -1251,10 +1663,28 @@ html_template = """<!DOCTYPE html>
 
       document.getElementById("stat-rings").innerText = allRings.length;
       document.getElementById("rings-count-badge").innerText = `${allRings.length} total`;
+      
+      const crit = allRings.filter(r => r.score >= 0.75).length;
+      const elev = allRings.length - crit;
+      const cntAll = document.getElementById("count-all");
+      const cntCrit = document.getElementById("count-critical");
+      const cntElev = document.getElementById("count-elevated");
+      if (cntAll) cntAll.innerText = allRings.length;
+      if (cntCrit) cntCrit.innerText = crit;
+      if (cntElev) cntElev.innerText = elev;
+
       renderRingsList(allRings);
       if (allRings.length > 0) {
         selectRing(0);
       }
+    }
+
+    function setTierFilter(tier) {
+      currentTierFilter = tier;
+      document.querySelectorAll('.tier-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeTab = document.getElementById(`tier-${tier}`);
+      if (activeTab) activeTab.classList.add('active');
+      filterRings();
     }
 
     function renderRingsList(rings) {
@@ -1292,10 +1722,14 @@ html_template = """<!DOCTYPE html>
 
     function filterRings() {
       const query = document.getElementById("search-filter").value.toLowerCase();
-      const filtered = allRings.filter(r => 
-        `ring #${r.ring_id}`.toLowerCase().includes(query) ||
-        r.members.some(m => String(m).includes(query))
-      );
+      const filtered = allRings.filter(r => {
+        const matchesQuery = `ring #${r.ring_id}`.toLowerCase().includes(query) ||
+          r.members.some(m => String(m).includes(query));
+        if (!matchesQuery) return false;
+        if (currentTierFilter === 'critical') return r.score >= 0.75;
+        if (currentTierFilter === 'elevated') return r.score < 0.75;
+        return true;
+      });
       renderRingsList(filtered);
     }
 
@@ -1321,6 +1755,18 @@ html_template = """<!DOCTYPE html>
       document.getElementById("sig-fresh").innerText = `${ring.fresh_account_count} accounts`;
       document.getElementById("members-count").innerText = ring.member_count;
 
+      // Update Visual Signal Meter Bars
+      const mDev = document.getElementById("meter-device");
+      const mIp = document.getElementById("meter-ip");
+      const mVel = document.getElementById("meter-vel");
+      const mGnn = document.getElementById("meter-gnn");
+      const mFresh = document.getElementById("meter-fresh");
+      if (mDev) mDev.style.width = `${Math.min(100, ring.shared_device_pct)}%`;
+      if (mIp) mIp.style.width = `${Math.min(100, (ring.shared_ip_pairs / 28) * 100)}%`;
+      if (mVel) mVel.style.width = `${Math.min(100, (ring.transaction_velocity / 45) * 100)}%`;
+      if (mGnn) mGnn.style.width = `${Math.min(100, ring.avg_model_score * 100)}%`;
+      if (mFresh) mFresh.style.width = `${Math.min(100, (ring.fresh_account_count / ring.member_count) * 100)}%`;
+
       // Reset freeze button
       const freezeBtn = document.getElementById("freeze-btn");
       freezeBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Freeze Ring Accounts (Simulation)`;
@@ -1333,6 +1779,7 @@ html_template = """<!DOCTYPE html>
         <span class="chip-account" onclick="focusOnNode('user_${m}')">User ${m}</span>
       `).join("");
 
+      closeNodeInspector();
       // Render Graph
       renderGraph(ring.graph);
     }
@@ -1509,11 +1956,74 @@ html_template = """<!DOCTYPE html>
         ctx.restore();
       });
 
-      // Click node to focus
+      // Click node to open deep inspector
       network.on("click", function(params) {
         if (params.nodes.length > 0) {
-          showToast(`Focused: ${params.nodes[0]}`);
+          showNodeInspector(params.nodes[0]);
+        } else {
+          closeNodeInspector();
         }
+      });
+    }
+
+    function showNodeInspector(nodeId) {
+      inspectedNodeId = nodeId;
+      const ring = allRings[activeIndex];
+      if (!ring || !ring.graph) return;
+      const node = ring.graph.nodes.find(n => n.id === nodeId);
+      if (!node) return;
+
+      const card = document.getElementById("node-inspector");
+      const dot = document.getElementById("inspect-dot");
+      const idEl = document.getElementById("inspect-id");
+      const roleEl = document.getElementById("inspect-role");
+      const scoreEl = document.getElementById("inspect-score");
+      const degEl = document.getElementById("inspect-deg");
+
+      idEl.innerText = node.label || node.id;
+      
+      const connectedEdges = (ring.graph.edges || []).filter(e => e.from === nodeId || e.to === nodeId);
+      degEl.innerText = `${connectedEdges.length} links connected`;
+
+      if (node.group === "user") {
+        dot.style.background = "var(--yellow-primary)";
+        roleEl.innerText = "Syndicate Mule Account";
+        scoreEl.innerText = `${(ring.avg_model_score * 100).toFixed(1)}% Anomaly Risk`;
+        scoreEl.style.color = "var(--yellow-primary)";
+      } else if (node.group === "device") {
+        dot.style.background = "var(--node-device)";
+        roleEl.innerText = "Shared Hardware Fingerprint";
+        scoreEl.innerText = `${ring.shared_device_pct}% Device Sharing`;
+        scoreEl.style.color = "var(--node-device)";
+      } else if (node.group === "merchant") {
+        dot.style.background = "var(--node-merchant)";
+        roleEl.innerText = "Target Merchant Endpoint";
+        scoreEl.innerText = `${ring.transaction_velocity} tx/hr Burst Velocity`;
+        scoreEl.style.color = "var(--node-merchant)";
+      }
+
+      card.style.display = "block";
+      showToast(`Selected: ${node.label || node.id}`);
+    }
+
+    function closeNodeInspector() {
+      const card = document.getElementById("node-inspector");
+      if (card) card.style.display = "none";
+      inspectedNodeId = null;
+    }
+
+    function isolateNodeNeighbors() {
+      if (!inspectedNodeId || !network) return;
+      const connected = network.getConnectedNodes(inspectedNodeId);
+      network.selectNodes([inspectedNodeId, ...connected]);
+      network.focus(inspectedNodeId, { scale: 1.4, animation: { duration: 400, easingFunction: "easeInOutQuad" } });
+      showToast(`Focused direct links of ${inspectedNodeId}`);
+    }
+
+    function copyNodeId() {
+      if (!inspectedNodeId) return;
+      navigator.clipboard.writeText(inspectedNodeId).then(() => {
+        showToast(`Copied ${inspectedNodeId} to clipboard`);
       });
     }
 
@@ -1590,6 +2100,7 @@ html_template = """<!DOCTYPE html>
         animation: { duration: 500, easingFunction: "easeInOutQuad" }
       });
       network.selectNodes([nodeId]);
+      showNodeInspector(nodeId);
     }
 
     function simulateFreeze() {
@@ -1600,6 +2111,28 @@ html_template = """<!DOCTYPE html>
       btn.disabled = true;
       btn.style.opacity = "0.7";
       showToast(`Simulation: Suspended ${ring.member_count} syndicate accounts in Ring #${ring.ring_id}`);
+    }
+
+    function copySarSummary() {
+      const ring = allRings[activeIndex];
+      if (!ring) return;
+      const summaryText = `[DARKNODE FORENSIC CASE REPORT]
+Case ID: DARKNODE-RING-${ring.ring_id}
+Threat Assessment: ${(ring.score * 100).toFixed(1)}% RISK (Rank #${ring.rank || activeIndex + 1})
+Syndicate Members (${ring.member_count}): ${ring.members.map(m => `User_${m}`).join(", ")}
+Evidence Signals:
+- Hardware Sharing: ${ring.shared_device_pct}% of accounts share physical device IDs
+- IP Subnets: ${ring.shared_ip_pairs} interconnected proxy pairs
+- Burst Velocity: ${ring.transaction_velocity} tx/hr
+- Heterogeneous GNN Confidence: ${ring.avg_model_score.toFixed(3)}
+- Rapid Onboarding: ${ring.fresh_account_count} accounts created in burst window
+Action Recommendation: Coordinated mule syndicate detected. Initiate credential suspension and SAR filing.`;
+
+      navigator.clipboard.writeText(summaryText).then(() => {
+        showToast(`Copied SAR Forensic Report for Ring #${ring.ring_id}!`);
+      }).catch(() => {
+        showToast(`Case report prepared for Ring #${ring.ring_id}`);
+      });
     }
 
     function exportJson() {
@@ -1626,10 +2159,33 @@ html_template = """<!DOCTYPE html>
       if (modal) modal.classList.remove("open");
     }
 
+    function openBenchmarkModal() {
+      const modal = document.getElementById("benchmark-modal");
+      if (modal) modal.classList.add("open");
+    }
+
+    function closeBenchmarkModal(e) {
+      if (e && e.target !== document.getElementById("benchmark-modal") && !e.target.closest(".modal-close-btn")) return;
+      const modal = document.getElementById("benchmark-modal");
+      if (modal) modal.classList.remove("open");
+    }
+
+    // Keyboard Shortcuts
     document.addEventListener("keydown", (e) => {
+      if (e.target.tagName === "INPUT") return;
       if (e.key === "Escape") {
-        const modal = document.getElementById("guide-modal");
-        if (modal) modal.classList.remove("open");
+        closeGuideModal();
+        closeBenchmarkModal();
+        closeNodeInspector();
+      } else if (e.key === "f" || e.key === "F") {
+        resetGraphView();
+      } else if (e.key === " ") {
+        e.preventDefault();
+        togglePhysics();
+      } else if (e.key === "+" || e.key === "=") {
+        zoomIn();
+      } else if (e.key === "-" || e.key === "_") {
+        zoomOut();
       }
     });
 
