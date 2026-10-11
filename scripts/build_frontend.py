@@ -1189,3 +1189,4 @@ with open("web/index.html", "w", encoding="utf-8") as f:
     f.write(output_html)
 
 print("web/index.html written successfully!")
+

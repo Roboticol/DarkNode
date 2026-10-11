@@ -72,18 +72,18 @@ To evaluate model performance, DarkNode includes a rule-based heuristic baseline
 
 | Metric | Rule-Based Heuristic | DarkNode Heterogeneous GNN | Performance Analysis |
 | :--- | :---: | :---: | :--- |
-| **Accuracy** | 84.0% | **99.5%** | **+15.5% overall accuracy gain** |
+| **Accuracy** | 84.0% | **99.5%** | **+15.5 percentage points gain** |
 | **ROC-AUC** | 1.000 | **1.000** | Saturated on synthetic signals (see note below) |
 | **Average Precision** | 1.000 | **1.000** | Saturated on synthetic signals (see note below) |
-| **Precision** | 41.9% | **95.0%** | **+53.1% lift (58% drop in false alarms)** |
-| **F1-Score** | 0.591 | **0.974** | **+38.3% lift in balanced detection** |
+| **Precision** | 41.9% | **95.0%** | **+53.1 percentage points (false alarm share drops from 58.1% to 5.0%)** |
+| **F1-Score** | 0.591 | **0.974** | **+0.383 F1 improvement (from 0.591 to 0.974)** |
 
 ### Why ROC-AUC and AP Don't Tell the Full Story
 On synthetic benchmark datasets with clean demarcations, ranked discrimination metrics like **ROC-AUC** and **Average Precision (AP)** both saturate near `1.000` because extreme burst velocity pushes true fraudsters into the top ranking deciles for both approaches.
 
 The **critical operational gap** is revealed in **Precision (41.9% vs. 95.0%)** and **F1-Score (0.591 vs. 0.974)**:
-- **Heuristic Failure**: Simple thresholds (sharing a device with 3+ users or exceeding 5 tx/hr) flag legitimate users in public Wi-Fi hotspots, shared family devices, or during promotional shopping bursts—producing a **58.1% false-positive rate** that would overwhelm fraud operations.
-- **GNN Advantage**: The Heterogeneous MPNN synthesizes multi-hop neighborhood context (e.g. *who* else uses the device, *which* merchant cohort is targeted, and *how* the temporal network evolves), effectively filtering out benign shared devices while preserving 95%+ precision.
+- **Heuristic Baseline Limitations**: Simple thresholds (such as sharing a device with 3+ users or exceeding 5 tx/hr) trigger on non-fraudulent accounts that happen to share subnets or devices in the graph topology. As a result, **58.1% of the heuristic flags are false alarms** (41.9% precision), burdening review queues.
+- **GNN Disambiguation**: The Heterogeneous MPNN synthesizes multi-hop neighborhood context (e.g. *who* else connects to the device, *which* merchant cohort is targeted, and *how* the temporal network evolves), distinguishing benign overlap from coordinated syndicates and reducing the false-alarm share among flags to 5.0% (95.0% precision).
 
 ---
 
@@ -110,40 +110,40 @@ pip install -r requirements.txt
 ```
 
 ### 2. Generate Graph Data
-
+ 
 Create a synthetic heterogeneous graph with seeded fraud rings and microsecond transaction bursts:
-
-```powershell
-python -m src.data_processing.generate_synthetic_graph --output data\synthetic_fraud_graph.pt
+ 
+```bash
+python -m src.data_processing.generate_synthetic_graph --output data/synthetic_fraud_graph.pt
 ```
-
+ 
 ### 3. Run Self-Checks & Tests
-
-```powershell
+ 
+```bash
 python -m pytest
 ```
-
+ 
 ### 4. Train Model & Benchmark
-
+ 
 Train the Heterogeneous GraphSAGE MPNN detector and benchmark against the heuristic baseline:
-
-```powershell
-python -m src.training.train data\synthetic_fraud_graph.pt --epochs 20 --output data\fraud_model.pt
+ 
+```bash
+python -m src.training.train data/synthetic_fraud_graph.pt --epochs 20 --output data/fraud_model.pt
 ```
-
+ 
 ### 5. Launch Backend API
-
-```powershell
+ 
+```bash
 uvicorn api.main:app --reload --port 8000
 ```
 - Interactive API Documentation: `http://localhost:8000/docs`
 - Health check: `http://localhost:8000/health`
 - Run inference & extract rings: `POST http://localhost:8000/analyze`
-
+ 
 ### 6. Launch Web Dashboard
-
+ 
 Simply open `web/index.html` directly in any web browser, or serve it locally:
-```powershell
+```bash
 python -m http.server 3000 --directory web
 ```
 Navigate to `http://localhost:3000` to inspect the live force-directed fraud ring visualization.
@@ -160,7 +160,7 @@ Navigate to `http://localhost:3000` to inspect the live force-directed fraud rin
    - **Build Command**: `pip install -r api/requirements.txt`
    - **Start Command**: `uvicorn api.main:app --host 0.0.0.0 --port $PORT`
 3. **Resource Optimization Note**:
-   - `api/requirements.txt` is pre-configured with CPU-only PyTorch (`--extra-index-url https://download.pytorch.org/whl/cpu`) to keep the build image under Render's free tier slug and 512 MB memory threshold.
+   - `api/requirements.txt` is pre-configured with CPU-only PyTorch (`--extra-index-url https://download.pytorch.org/whl/cpu`) which should keep the build image under Render's free tier slug and 512 MB memory threshold.
    - For low-memory instances, set environment variable `WEB_CONCURRENCY=1`.
 4. The health endpoint `GET /health` is configured for zero-downtime uptime monitoring.
 
@@ -177,14 +177,14 @@ Navigate to `http://localhost:3000` to inspect the live force-directed fraud rin
 
 - **Default Benchmark (Synthetic)**: By default, `src/data_processing/generate_synthetic_graph.py` generates deterministic, scalable fraud networks containing user, device, merchant nodes, burst timestamps, and ground-truth ring memberships.
 - **Real-World AML Data Limitations**: Public anti-money-laundering datasets like **Elliptic (Bitcoin)** or **IBM AML** primarily capture transaction flows (address-to-address or entity-to-entity) and **lack physical device or IP telemetry**. 
-- **Adapting to Real Environments**: DarkNode is intentionally architected for production banking and fintech environments where rich telemetry (device fingerprints, browser hashes, IP subnets, merchant gateways) is available. For pure transaction datasets without device data, the schema can be projected into bipartite user-merchant or account-account flow subgraphs, though the system demonstrates maximum defensive lift when multi-entity relationships are present.
+- **Adapting to Real Environments**: DarkNode is designed as an experimental graph prototype for multi-entity syndicate fraud detection where richer telemetry (device fingerprints, browser hashes, IP subnets, merchant gateways) can be collected. For pure transaction datasets without device data, the schema can be projected into bipartite user-merchant or account-account flow subgraphs, though graph neural networks demonstrate greater detection lift when multi-entity relationships are present.
 
 ---
 
 ## Interactive UI Features
 
 - **Force-Directed Graph**: Powered by `vis-network` with smooth physics stabilization and node clustering.
-- **Evidence Inspector**: Breakdowns of shared device %, shared IP pairs, burst velocity, GNN fraud confidence, and rapid accounts.
+- **Evidence Inspector**: Breakdowns of shared device %, shared IP pairs, burst velocity, GNN fraud confidence, and new accounts.
 - **Node-Level Focus**: Click individual user accounts to zoom and isolate their neighborhood graph.
 - **Account Freeze Simulation (Demo)**: A simulated mitigation action designed for hackathon walkthroughs to demonstrate operational compliance workflows.
 - **JSON Export**: One-click download of structured ring payloads for compliance auditing.
@@ -193,7 +193,7 @@ Navigate to `http://localhost:3000` to inspect the live force-directed fraud rin
 
 ## Acknowledgements & Attribution
 
-This project builds upon the foundational research and graph schema designs from **Apate** by **Oishik Guha**, expanded here into the **DarkNode** platform with community ring extraction, heuristic benchmarking, a lightweight FastAPI backend, and an interactive intelligence interface.
+This project builds upon the foundational research and graph schema designs from [Apate](https://github.com/roboticol/Apate) by **Oishik Guha**, expanded here into the **DarkNode** prototype with community ring extraction, heuristic benchmarking, a lightweight FastAPI backend, and an interactive intelligence interface.
 
 ---
 
