@@ -186,6 +186,62 @@ html_template = """<!DOCTYPE html>
       box-shadow: var(--shadow-glow);
     }
 
+    @keyframes defectiveNeonFlicker {
+      0%, 72% {
+        color: #facc15;
+        text-shadow: 0 0 8px rgba(250, 204, 21, 0.9), 0 0 18px rgba(250, 204, 21, 0.55), 0 0 28px rgba(250, 204, 21, 0.25);
+        opacity: 1;
+      }
+      73% {
+        /* 1st blackout dropout: defective tube power cut */
+        color: rgba(250, 204, 21, 0.2);
+        text-shadow: none;
+        opacity: 0.22;
+      }
+      75% {
+        /* Partial restrike */
+        color: #fde047;
+        text-shadow: 0 0 5px rgba(250, 204, 21, 0.6);
+        opacity: 0.75;
+      }
+      77% {
+        /* 2nd blackout dropout */
+        color: rgba(250, 204, 21, 0.12);
+        text-shadow: none;
+        opacity: 0.15;
+      }
+      80% {
+        /* High-voltage arc surge / spark */
+        color: #ffffff;
+        text-shadow: 0 0 12px #fde047, 0 0 24px #facc15, 0 0 36px #facc15;
+        opacity: 1;
+      }
+      83% {
+        /* Filament sag / dip */
+        color: #ca8a04;
+        text-shadow: 0 0 4px rgba(202, 138, 4, 0.5);
+        opacity: 0.55;
+      }
+      86% {
+        /* Restrike glow */
+        color: #fde047;
+        text-shadow: 0 0 10px rgba(250, 204, 21, 0.9), 0 0 20px rgba(250, 204, 21, 0.5);
+        opacity: 0.95;
+      }
+      88% {
+        /* Brief micro-stutter */
+        color: rgba(250, 204, 21, 0.35);
+        text-shadow: none;
+        opacity: 0.38;
+      }
+      90%, 100% {
+        /* Steady full neon illumination */
+        color: #facc15;
+        text-shadow: 0 0 8px rgba(250, 204, 21, 0.9), 0 0 18px rgba(250, 204, 21, 0.55), 0 0 28px rgba(250, 204, 21, 0.25);
+        opacity: 1;
+      }
+    }
+
     .brand-title {
       font-size: 17px;
       font-weight: 800;
@@ -196,7 +252,10 @@ html_template = """<!DOCTYPE html>
     }
 
     .brand-title span.kicker {
+      display: inline-block;
       color: var(--yellow-primary);
+      text-shadow: 0 0 8px rgba(250, 204, 21, 0.9), 0 0 18px rgba(250, 204, 21, 0.55);
+      animation: defectiveNeonFlicker 3.8s infinite ease-in-out;
     }
 
     .badge-pill {
@@ -1304,7 +1363,7 @@ html_template = """<!DOCTYPE html>
         </button>
         <button class="canvas-pill-btn" id="physics-toggle" onclick="togglePhysics()">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          <span id="physics-label">Physics: On</span>
+          <span id="physics-label">Physics: Off</span>
         </button>
         <span style="color: var(--border-subtle);">|</span>
         <button class="canvas-pill-btn active" id="filter-user" onclick="toggleFilter('user')">Users</button>
@@ -1701,7 +1760,7 @@ html_template = """<!DOCTYPE html>
     const FALLBACK_RINGS = __FALLBACK_JSON__;
     let allRings = FALLBACK_RINGS;
     let activeIndex = 0;
-    let physicsState = true;
+    let physicsState = false;
     let currentSpringLength = 160;
     let activeFilters = { user: true, device: true, merchant: true };
     let currentVisibleNodes = [];
@@ -1721,90 +1780,25 @@ html_template = """<!DOCTYPE html>
       const cw = (container && container.clientWidth) ? container.clientWidth : 800;
       const ch = (container && container.clientHeight) ? container.clientHeight : 500;
 
-      // Model bounding box from SS3 canonical positions:
-      // Min X: -237, Max X: 265 -> Width ~ 502px
-      // Min Y: -229, Max Y: 266 -> Height ~ 495px
-      // Center: X = 14.3, Y = 18.2
-      const modelWidth = 550;
-      const modelHeight = 540;
+      // Model bounding box from SS3 canonical positions with full labels and margins:
+      // Width ~ 680, Height ~ 660
+      const availW = Math.max(200, cw - 180);
+      const availH = Math.max(200, ch - 180);
 
-      // Safe margins: toolbar at top (60px), legend at bottom (50px), side margins (60px)
-      const availW = Math.max(220, cw - 120);
-      const availH = Math.max(200, ch - 120);
-
-      // Scale to fit comfortably with dark borders around model (SS2 perfect fit)
-      const fitScale = Math.min(availW / modelWidth, availH / modelHeight);
-      const targetScale = Math.max(0.42, Math.min(0.68, fitScale));
+      // Scale to fit comfortably with generous dark borders around model (SS2 perfect fit)
+      const fitScale = Math.min(availW / 680, availH / 660);
+      const targetScale = Math.max(0.38, Math.min(0.48, fitScale));
 
       network.moveTo({
         position: { x: 14.3, y: 18.2 },
         scale: targetScale,
-        animation: animate ? { duration: 280, easingFunction: "easeInOutQuad" } : false
+        animation: animate ? { duration: 240, easingFunction: "easeInOutQuad" } : false
       });
     }
 
     window.addEventListener("resize", () => {
       if (network) fitGraphView(false);
     });
-
-    // =========================================================================
-    // DEFECTIVE LIGHT ON/OFF EFFECT (ONLY NODES, REALISTIC TIMING & DELAYS)
-    // =========================================================================
-    let defectLightRaf = null;
-    let analysisPulseStartTime = 0;
-
-    function getDefectLightState(nodeId, now) {
-      // 1. If active analysis pulse wave is traversing, prioritize pulse highlight
-      if (analysisPulseStartTime > 0) {
-        const pulseElapsed = now - analysisPulseStartTime;
-        if (pulseElapsed < 1200) {
-          const p = SS3_CANONICAL_POSITIONS[nodeId] || { x: 0, y: 0 };
-          const dist = Math.hypot(p.x, p.y);
-          const waveFront = (pulseElapsed / 1000) * 360;
-          const diff = Math.abs(dist - waveFront);
-          if (diff < 45) {
-            return 1.6 - (diff / 45) * 0.6;
-          }
-        }
-      }
-
-      // 2. Realistic Defective Neon / Warning Light Flicker with Natural Delay
-      let hash = 0;
-      for (let i = 0; i < nodeId.length; i++) {
-        hash = (hash << 5) - hash + nodeId.charCodeAt(i);
-        hash |= 0;
-      }
-      const seed = Math.abs(hash);
-      // Natural cycle delay between 3.2s and 4.8s
-      const period = 3200 + (seed % 1600);
-      const phase = (now + seed * 137) % period;
-
-      // Steady state: stays fully lit for most of the period (~3 seconds)
-      if (phase < period - 380) {
-        return 1.0;
-      }
-
-      // Defective light flicker sequence (380ms total duration with realistic on/off timing):
-      const f = phase - (period - 380);
-      if (f < 55) return 0.05;  // 1st Dropout: completely OFF
-      if (f < 115) return 0.70; // Restrike partial
-      if (f < 165) return 0.05; // 2nd Dropout: OFF
-      if (f < 225) return 1.45; // High-voltage restrike surge / spark
-      if (f < 285) return 0.35; // Filament sag / dip
-      if (f < 335) return 0.85; // Restabilizing
-      return 1.0;              // Back to steady
-    }
-
-    function startDefectLightAnimation() {
-      if (defectLightRaf) cancelAnimationFrame(defectLightRaf);
-      function frame() {
-        if (network) {
-          network.redraw();
-        }
-        defectLightRaf = requestAnimationFrame(frame);
-      }
-      defectLightRaf = requestAnimationFrame(frame);
-    }
 
     // =========================================================================
     // REAL MODEL TOPOLOGICAL LAYOUT COMPUTATION (SS3 EXACT CANONICAL)
@@ -2312,17 +2306,17 @@ html_template = """<!DOCTYPE html>
 
       const data = { nodes, edges };
 
-      // Physics configuration (settles calmly into clear syndicate topology)
+      // Physics configuration (disabled by default to guarantee zero drift & zero CPU load)
       const options = {
         physics: {
-          enabled: physicsState,
+          enabled: false,
           solver: "forceAtlas2Based",
           forceAtlas2Based: {
-            gravitationalConstant: -350,
-            centralGravity: 0.003,
+            gravitationalConstant: -180,
+            centralGravity: 0.01,
             springLength: currentSpringLength,
-            springConstant: 0.008,
-            damping: 0.75,
+            springConstant: 0.015,
+            damping: 0.8,
             avoidOverlap: 0.8
           },
           stabilization: {
@@ -2348,17 +2342,9 @@ html_template = """<!DOCTYPE html>
         currentNodesDataSet = nodes;
         network = new vis.Network(container, data, options);
 
+        network.stopSimulation();
+        network.setOptions({ physics: { enabled: false } });
         fitGraphView(false);
-        startDefectLightAnimation();
-
-        if (!physicsState) {
-          network.stopSimulation();
-          network.setOptions({ physics: { enabled: false } });
-        } else {
-          setTimeout(() => {
-            if (network && physicsState) network.stopSimulation();
-          }, 400);
-        }
 
         network.on("stabilized", function() {
           if (network) network.stopSimulation();
@@ -2379,7 +2365,7 @@ html_template = """<!DOCTYPE html>
         });
 
         // =========================================================================
-        // DEFECTIVE LIGHT ON/OFF EFFECT (ONLY NODES) & CRISP CONSTANT LABELS
+        // HIGH-PERFORMANCE CRISP CONSTANT LABELS (ZERO LAG, CLEAN RENDERING)
         // =========================================================================
         const labelWidthCache = {};
         network.on("afterDrawing", function(ctx) {
@@ -2387,86 +2373,6 @@ html_template = """<!DOCTYPE html>
           ctx.save();
           ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-          const now = performance.now();
-
-          // 1. Defective Light On/Off Effect (STRICTLY APPLIED ONLY TO NODES)
-          for (const node of currentVisibleNodes) {
-            const visNode = network.body.nodes[node.id];
-            if (!visNode) continue;
-            const domPos = network.canvasToDOM({ x: visNode.x, y: visNode.y });
-
-            // Viewport culling
-            if (domPos.x < -40 || domPos.x > container.clientWidth + 40 ||
-                domPos.y < -40 || domPos.y > container.clientHeight + 40) {
-              continue;
-            }
-
-            const lightState = getDefectLightState(node.id, now);
-            const isOff = (lightState <= 0.15);
-            const isSurge = (lightState > 1.2);
-            const radius = (node.group === "device" ? 14 : (node.group === "merchant" ? 13 : 13));
-
-            if (isOff) {
-              // DEFECTIVE LIGHT OFF STATE:
-              // Blackout overlay shuts off the node body (filament power lost)
-              ctx.save();
-              ctx.fillStyle = "rgba(13, 14, 18, 0.94)";
-              ctx.beginPath();
-              if (node.group === "device") {
-                ctx.moveTo(domPos.x, domPos.y - radius);
-                ctx.lineTo(domPos.x + radius, domPos.y);
-                ctx.lineTo(domPos.x, domPos.y + radius);
-                ctx.lineTo(domPos.x - radius, domPos.y);
-                ctx.closePath();
-              } else if (node.group === "merchant") {
-                ctx.moveTo(domPos.x, domPos.y - radius * 1.15);
-                ctx.lineTo(domPos.x + radius, domPos.y + radius * 0.7);
-                ctx.lineTo(domPos.x - radius, domPos.y + radius * 0.7);
-                ctx.closePath();
-              } else {
-                ctx.arc(domPos.x, domPos.y, radius, 0, Math.PI * 2);
-              }
-              ctx.fill();
-              ctx.strokeStyle = "rgba(75, 85, 99, 0.4)";
-              ctx.lineWidth = 1.2;
-              ctx.stroke();
-              ctx.restore();
-            } else {
-              // DEFECTIVE LIGHT ON STATE (NEON CORONA & HIGH-VOLTAGE SURGE):
-              ctx.save();
-              const glowR = radius * (isSurge ? 2.3 : 1.6) * Math.min(1.3, lightState);
-              const grad = ctx.createRadialGradient(domPos.x, domPos.y, radius * 0.4, domPos.x, domPos.y, glowR);
-              if (node.group === "user") {
-                grad.addColorStop(0, `rgba(250, 204, 21, ${0.42 * lightState})`);
-                grad.addColorStop(0.5, `rgba(250, 204, 21, ${0.18 * lightState})`);
-                grad.addColorStop(1, "rgba(250, 204, 21, 0)");
-              } else if (node.group === "device") {
-                grad.addColorStop(0, `rgba(56, 189, 248, ${0.42 * lightState})`);
-                grad.addColorStop(0.5, `rgba(56, 189, 248, ${0.18 * lightState})`);
-                grad.addColorStop(1, "rgba(56, 189, 248, 0)");
-              } else {
-                grad.addColorStop(0, `rgba(52, 211, 153, ${0.42 * lightState})`);
-                grad.addColorStop(0.5, `rgba(52, 211, 153, ${0.18 * lightState})`);
-                grad.addColorStop(1, "rgba(52, 211, 153, 0)");
-              }
-              ctx.fillStyle = grad;
-              ctx.beginPath();
-              ctx.arc(domPos.x, domPos.y, glowR, 0, Math.PI * 2);
-              ctx.fill();
-
-              // High-voltage restrike corona ring
-              if (isSurge) {
-                ctx.strokeStyle = "#ffffff";
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.arc(domPos.x, domPos.y, radius + 2, 0, Math.PI * 2);
-                ctx.stroke();
-              }
-              ctx.restore();
-            }
-          }
-
-          // 2. High-performance Constant Screen Labels (clean, non-flickering)
           ctx.font = "600 11px 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
@@ -2735,11 +2641,11 @@ html_template = """<!DOCTYPE html>
               enabled: true,
               solver: "forceAtlas2Based",
               forceAtlas2Based: {
-                gravitationalConstant: -350,
-                centralGravity: 0.003,
+                gravitationalConstant: -180,
+                centralGravity: 0.01,
                 springLength: currentSpringLength,
-                springConstant: 0.008,
-                damping: 0.75,
+                springConstant: 0.015,
+                damping: 0.8,
                 avoidOverlap: 0.8
               },
               minVelocity: 0.75,
@@ -2754,6 +2660,14 @@ html_template = """<!DOCTYPE html>
         } else {
           network.stopSimulation();
           network.setOptions({ physics: { enabled: false } });
+          const currentRing = allRings[activeIndex];
+          if (currentRing) {
+            const oldPositions = network.getPositions();
+            const targetPositions = computeModelLayout(currentRing.graph, 0, currentSpringLength);
+            animateTractionMorph(oldPositions, targetPositions, () => {
+              fitGraphView(true);
+            }, 350);
+          }
           showToast("Physics: Off (Model Layout Locked)");
         }
       }
