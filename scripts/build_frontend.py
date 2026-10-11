@@ -1566,10 +1566,6 @@ html_template = """<!DOCTYPE html>
               <span>Spread Out / Decluster</span>
               <div>Click <span class="shortcut-badge">Spread Out</span> on top canvas bar for open layout</div>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
-              <span>3D Globe Rotation</span>
-              <div>Click <span class="shortcut-badge">3D Globe: On</span> or hold <span class="shortcut-badge">Shift / Alt / Right-Click</span> and drag cursor horizontally/vertically</div>
-            </div>
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0;">
               <span>Entity Filters</span>
               <div>Toggle <span class="shortcut-badge">Users</span>, <span class="shortcut-badge">Devices</span>, or <span class="shortcut-badge">Merchants</span> to isolate subgraphs</div>
@@ -1701,15 +1697,14 @@ html_template = """<!DOCTYPE html>
 
   <script>
     let network = null;
-    let allRings = [];
+    // Real fallback dataset extracted from trained GNN model
+    const FALLBACK_RINGS = __FALLBACK_JSON__;
+    let allRings = FALLBACK_RINGS;
     let activeIndex = 0;
     let physicsState = true;
     let currentSpringLength = 160;
     let activeFilters = { user: true, device: true, merchant: true };
     let currentVisibleNodes = [];
-
-    // Real fallback dataset extracted from trained GNN model
-    const FALLBACK_RINGS = __FALLBACK_JSON__;
     let currentTierFilter = 'all';
     let inspectedNodeId = null;
 
@@ -2340,8 +2335,8 @@ html_template = """<!DOCTYPE html>
           hover: true,
           tooltipDelay: 80,
           zoomView: true,
-          dragView: !globeModeActive,
-          dragNodes: !globeModeActive,
+          dragView: true,
+          dragNodes: true,
           zoomSpeed: 0.16, // Normal, smooth, professional mouse wheel zoom speed
           navigationButtons: false,
           keyboard: false
@@ -2533,7 +2528,15 @@ html_template = """<!DOCTYPE html>
       analysisFaceAngle = 0;
       const targetPositions = computeModelLayout(graphData, 0, currentSpringLength);
       const oldPositions = network.getPositions();
-      const oldCentroid = calculateCentroid(oldPositions);
+      let sumX = 0, sumY = 0, ptCount = 0;
+      for (const k in oldPositions) {
+        if (oldPositions[k]) {
+          sumX += oldPositions[k].x;
+          sumY += oldPositions[k].y;
+          ptCount++;
+        }
+      }
+      const oldCentroid = ptCount > 0 ? { x: sumX / ptCount, y: sumY / ptCount } : { x: 14.3, y: 18.2 };
 
       // Initialize node coordinates at current on-screen positions so they don't jump
       const positionedNodes = visibleNodes.map(n => {
@@ -2897,9 +2900,19 @@ Action Recommendation: Coordinated mule syndicate detected. Initiate credential 
       }
     });
 
-    window.addEventListener("DOMContentLoaded", () => {
+    function initApp() {
+      if (allRings && allRings.length > 0) {
+        renderRingsList(allRings);
+        selectRing(0);
+      }
       fetchRings();
-    });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initApp);
+    } else {
+      initApp();
+    }
   </script>
 </body>
 </html>
