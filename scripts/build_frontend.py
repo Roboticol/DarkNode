@@ -25,22 +25,25 @@ html_template = """<!DOCTYPE html>
   <title>DarkNode — Fraud Syndicate Graph Intelligence</title>
   <!-- Vis-network CDN -->
   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-  <!-- Plus Jakarta Sans & JetBrains Mono Fonts -->
+  <!-- Ultra-sharp Professional Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Segoe UI Mono', 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+
       /* Dark Grey Theme */
-      --bg-base: #111215;
-      --bg-panel: #18191e;
-      --bg-card: #20222a;
-      --bg-card-hover: #272a34;
-      --bg-input: #141519;
+      --bg-base: #0f1013;
+      --bg-panel: #16171c;
+      --bg-card: #1e2027;
+      --bg-card-hover: #262832;
+      --bg-input: #121317;
       
-      --border-subtle: #2b2e38;
-      --border-strong: #3b3f4d;
+      --border-subtle: #272a34;
+      --border-strong: #383c4a;
       
       --text-main: #f3f4f6;
       --text-muted: #9ca3af;
@@ -58,11 +61,11 @@ html_template = """<!DOCTYPE html>
       --node-device: #38bdf8;
       --node-merchant: #34d399;
       
-      --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.45);
+      --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
       --shadow-glow: 0 0 16px rgba(250, 204, 21, 0.2);
       
-      --radius: 12px;
-      --radius-sm: 8px;
+      --radius: 10px;
+      --radius-sm: 6px;
     }
 
     * {
@@ -72,7 +75,7 @@ html_template = """<!DOCTYPE html>
     }
 
     body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       background-color: var(--bg-base);
       color: var(--text-main);
       height: 100vh;
@@ -80,6 +83,9 @@ html_template = """<!DOCTYPE html>
       display: flex;
       flex-direction: column;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      letter-spacing: -0.01em;
     }
 
     /* Top Navigation Bar */
@@ -215,7 +221,7 @@ html_template = """<!DOCTYPE html>
       padding: 0 14px;
       border-radius: 7px;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
       border: none;
       display: inline-flex;
@@ -223,7 +229,7 @@ html_template = """<!DOCTYPE html>
       justify-content: center;
       gap: 6px;
       transition: all 0.15s ease;
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: var(--font-sans);
     }
 
     .btn-yellow {
@@ -287,11 +293,10 @@ html_template = """<!DOCTYPE html>
     }
 
     .panel-title {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
       color: var(--text-main);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: -0.01em;
     }
 
     .search-box-clean {
@@ -485,7 +490,7 @@ html_template = """<!DOCTYPE html>
     /* Legend Floating Pill */
     .canvas-legend {
       position: absolute;
-      bottom: 54px;
+      bottom: 14px;
       left: 14px;
       display: flex;
       align-items: center;
@@ -518,25 +523,6 @@ html_template = """<!DOCTYPE html>
       width: 9px;
       height: 9px;
       transform: rotate(45deg);
-    }
-
-    /* Bottom Architecture Banner */
-    .key-detail-banner {
-      background: rgba(24, 25, 30, 0.95);
-      border-top: 1px solid var(--border-subtle);
-      padding: 8px 16px;
-      font-size: 11px;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-      z-index: 5;
-    }
-
-    .key-detail-banner strong {
-      font-weight: 700;
-      color: var(--yellow-primary);
     }
 
     /* Right Sidebar: Evidence & Signals Panel */
@@ -579,7 +565,7 @@ html_template = """<!DOCTYPE html>
       font-weight: 600;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
       margin-top: 4px;
     }
 
@@ -595,11 +581,10 @@ html_template = """<!DOCTYPE html>
     }
 
     .block-title {
-      font-size: 11px;
+      font-size: 11.5px;
       font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      color: var(--text-main);
+      letter-spacing: -0.01em;
       margin-bottom: 8px;
     }
 
@@ -867,43 +852,6 @@ html_template = """<!DOCTYPE html>
       color: var(--yellow-primary);
     }
 
-    /* Risk Tier Filters in Sidebar */
-    .tier-filter-row {
-      display: flex;
-      gap: 4px;
-      padding: 0 12px 10px 12px;
-      border-bottom: 1px solid var(--border-subtle);
-    }
-
-    .tier-tab-btn {
-      flex: 1;
-      height: 24px;
-      font-size: 10px;
-      font-weight: 700;
-      font-family: 'JetBrains Mono', monospace;
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: 5px;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.12s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-    }
-
-    .tier-tab-btn:hover {
-      background: var(--bg-card-hover);
-      color: var(--text-main);
-    }
-
-    .tier-tab-btn.active {
-      background: var(--yellow-bg);
-      border-color: var(--yellow-border);
-      color: var(--yellow-primary);
-    }
-
     /* Signal Meters */
     .signal-meter-bg {
       width: 100%;
@@ -924,7 +872,7 @@ html_template = """<!DOCTYPE html>
     /* Floating Node Inspector */
     .node-inspector-card {
       position: absolute;
-      bottom: 44px;
+      bottom: 14px;
       right: 14px;
       width: 270px;
       background: rgba(24, 25, 30, 0.96);
@@ -1168,13 +1116,6 @@ html_template = """<!DOCTYPE html>
         <span class="badge-pill" id="rings-count-badge">10 total</span>
       </div>
 
-      <!-- Risk Tier Filters -->
-      <div class="tier-filter-row">
-        <button class="tier-tab-btn active" id="tier-all" onclick="setTierFilter('all')">All (<span id="count-all">10</span>)</button>
-        <button class="tier-tab-btn" id="tier-critical" onclick="setTierFilter('critical')">Critical (<span id="count-critical">0</span>)</button>
-        <button class="tier-tab-btn" id="tier-elevated" onclick="setTierFilter('elevated')">Elevated (<span id="count-elevated">0</span>)</button>
-      </div>
-
       <div class="search-box-clean">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" class="search-input-clean" id="search-filter" placeholder="Filter by Ring ID or User ID..." oninput="filterRings()">
@@ -1191,14 +1132,6 @@ html_template = """<!DOCTYPE html>
         <button class="canvas-pill-btn active" onclick="resetGraphView()">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
           Fit View
-        </button>
-        <button class="canvas-pill-btn" onclick="zoomIn()" title="Zoom In (+)">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Zoom +
-        </button>
-        <button class="canvas-pill-btn" onclick="zoomOut()" title="Zoom Out (-)">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Zoom −
         </button>
         <button class="canvas-pill-btn" id="spread-btn" onclick="spreadGraph()">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
@@ -1264,12 +1197,6 @@ html_template = """<!DOCTYPE html>
           <div class="legend-dot" style="background: var(--node-merchant); border-radius: 2px;"></div>
           <span>Target Merchant</span>
         </div>
-      </div>
-
-      <!-- Bottom Insight Banner -->
-      <div class="key-detail-banner">
-        <strong>Architectural Signal:</strong>
-        <span>Heterogeneous Message Passing propagates embeddings across device, IP, and transaction hops to eliminate heuristic false alarms.</span>
       </div>
     </div>
 
@@ -1599,19 +1526,6 @@ html_template = """<!DOCTYPE html>
           </div>
         </div>
 
-        <!-- Architectural Insights -->
-        <div class="guide-section">
-          <h3>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            Why DarkNode Solves Rule-Based Heuristic Failure
-          </h3>
-          <p>
-            Standard bank anti-money laundering (AML) rules fire on basic thresholds: e.g. <em>"Flag if multiple accounts use the same IP"</em> or <em>"Flag if 3+ transactions occur within an hour"</em>. This produces massive false positives whenever innocent people access university Wi-Fi, roommates share a device, or families shop during holiday sales.
-          </p>
-          <p>
-            <strong>DarkNode's Heterogeneous GNN</strong> passes multi-hop message embeddings across the topology. Isolated shared devices without coordinated IP subnets and transaction burst graphs are recognized as benign clusters. Only tightly bound syndicates displaying concurrent multi-signal convergence reach high threat scores.
-          </p>
-        </div>
       </div>
     </div>
   </div>
@@ -1627,8 +1541,6 @@ html_template = """<!DOCTYPE html>
 
     // Real fallback dataset extracted from trained GNN model
     const FALLBACK_RINGS = __FALLBACK_JSON__;
-
-    let currentTierFilter = 'all';
     let inspectedNodeId = null;
 
     async function fetchRings() {
@@ -1663,15 +1575,6 @@ html_template = """<!DOCTYPE html>
 
       document.getElementById("stat-rings").innerText = allRings.length;
       document.getElementById("rings-count-badge").innerText = `${allRings.length} total`;
-      
-      const crit = allRings.filter(r => r.score >= 0.75).length;
-      const elev = allRings.length - crit;
-      const cntAll = document.getElementById("count-all");
-      const cntCrit = document.getElementById("count-critical");
-      const cntElev = document.getElementById("count-elevated");
-      if (cntAll) cntAll.innerText = allRings.length;
-      if (cntCrit) cntCrit.innerText = crit;
-      if (cntElev) cntElev.innerText = elev;
 
       renderRingsList(allRings);
       if (allRings.length > 0) {
@@ -1679,17 +1582,20 @@ html_template = """<!DOCTYPE html>
       }
     }
 
-    function setTierFilter(tier) {
-      currentTierFilter = tier;
-      document.querySelectorAll('.tier-tab-btn').forEach(btn => btn.classList.remove('active'));
-      const activeTab = document.getElementById(`tier-${tier}`);
-      if (activeTab) activeTab.classList.add('active');
-      filterRings();
-    }
-
     function renderRingsList(rings) {
       const container = document.getElementById("rings-container");
       container.innerHTML = "";
+
+      if (!rings || rings.length === 0) {
+        container.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 160px; text-align: center; color: var(--text-muted); padding: 16px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5; margin-bottom: 8px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span style="font-size: 12px; font-weight: 600; color: var(--text-main);">No matching syndicates</span>
+            <span style="font-size: 11px; margin-top: 4px; color: var(--text-dim);">Try searching another Ring or User ID</span>
+          </div>
+        `;
+        return;
+      }
 
       rings.forEach((ring, index) => {
         const card = document.createElement("div");
@@ -1721,14 +1627,13 @@ html_template = """<!DOCTYPE html>
     }
 
     function filterRings() {
-      const query = document.getElementById("search-filter").value.toLowerCase();
+      const query = document.getElementById("search-filter").value.toLowerCase().trim();
       const filtered = allRings.filter(r => {
-        const matchesQuery = `ring #${r.ring_id}`.toLowerCase().includes(query) ||
-          r.members.some(m => String(m).includes(query));
-        if (!matchesQuery) return false;
-        if (currentTierFilter === 'critical') return r.score >= 0.75;
-        if (currentTierFilter === 'elevated') return r.score < 0.75;
-        return true;
+        if (!query) return true;
+        return `ring #${r.ring_id}`.toLowerCase().includes(query) ||
+               `syndicate ${r.ring_id}`.toLowerCase().includes(query) ||
+               String(r.ring_id).includes(query) ||
+               r.members.some(m => String(m).includes(query));
       });
       renderRingsList(filtered);
     }
