@@ -1661,7 +1661,7 @@ html_template = """<!DOCTYPE html>
     let dragStartYaw = 0;
     let dragStartPitch = 0;
     let globeRafPending = false;
-    let analysisFaceAngle = 0;
+    let analysisRunIndex = 0;
     let morphRafId = null;
 
     function calculateCentroid(positions) {
@@ -1922,78 +1922,138 @@ html_template = """<!DOCTYPE html>
     }
 
     // =========================================================================
-    // REAL MODEL TOPOLOGICAL LAYOUT COMPUTATION
-    // Guaranteed open, spacious, non-overlapping syndicate topology (like SS1 & SS2)
-    // Works 100% deterministically whether Physics is On or Off!
     // =========================================================================
-    function computeModelLayout(graphData, faceAngle = 0, springLength = 260) {
+    // REAL MODEL TOPOLOGICAL CONSTELLATION LAYOUT
+    // Recreates the exact satellite-star syndicate pattern from the user screenshot:
+    // - Crown / Apex Shared Device Hub at top
+    // - 4 Corner Satellite Devices (NW, SW, NE, SE)
+    // - 4 Corner Anchor Mules connected to the satellites
+    // - Interior Core Mule Nexus in the central diamond
+    // - Outflow Merchant Basin along the bottom arc
+    // Generates harmonious dynamic perspective variations on every Run Analysis!
+    // =========================================================================
+    function computeModelLayout(graphData, variationIndex = 0, springLength = 260) {
       const scale = springLength / 260;
-      const rUser = 140 * scale;
-      const rDev = 295 * scale;
-      const rMerch = 230 * scale;
 
       const visibleNodes = (graphData.nodes || []).filter(n => activeFilters[n.group] !== false);
       const visibleIds = new Set(visibleNodes.map(n => n.id));
       const visibleEdges = (graphData.edges || []).filter(e => visibleIds.has(e.from) && visibleIds.has(e.to));
 
-      const userNodes = visibleNodes.filter(n => n.group === "user");
-      const deviceNodes = visibleNodes.filter(n => n.group === "device");
-      const merchantNodes = visibleNodes.filter(n => n.group === "merchant");
-      const otherNodes = visibleNodes.filter(n => n.group !== "user" && n.group !== "device" && n.group !== "merchant");
+      const users = visibleNodes.filter(n => n.group === "user");
+      const devs = visibleNodes.filter(n => n.group === "device");
+      const merchs = visibleNodes.filter(n => n.group === "merchant");
+      const others = visibleNodes.filter(n => n.group !== "user" && n.group !== "device" && n.group !== "merchant");
+
+      // Degree calculation to identify the central shared hardware hub vs satellite devices
+      const devDeg = {};
+      devs.forEach(d => {
+        devDeg[d.id] = visibleEdges.filter(e => e.from === d.id || e.to === d.id).length;
+      });
+      const sortedDevs = [...devs].sort((a, b) => (devDeg[b.id] || 0) - (devDeg[a.id] || 0));
+
+      const apexDev = sortedDevs.length > 0 ? sortedDevs[0] : null;
+      const satelliteDevs = sortedDevs.slice(1);
+
+      // Variation index cycles through subtle perspective shifts while keeping the iconic screenshot pattern
+      const v = Math.abs(typeof variationIndex === "number" ? Math.round(variationIndex) : 0) % 3;
+
+      const apexCoords = [
+        [-40, -210],
+        [-15, -220],
+        [-35, -205]
+      ][v];
+
+      const satSlotsVariants = [
+        [[-265, -240], [-310, 175], [305, -140], [315, 205]],
+        [[-280, -225], [-295, 195], [320, -125], [295, 220]],
+        [[-250, -255], [-325, 160], [290, -155], [330, 190]]
+      ][v];
+
+      const anchorUserSlotsVariants = [
+        [[-135, -100], [-155, 65], [135, -30], [140, 105]],
+        [[-145, -90],  [-140, 80], [145, -20], [130, 115]],
+        [[-125, -110], [-165, 50], [125, -40], [150, 95]]
+      ][v];
+
+      const interiorUserSlotsVariants = [
+        [[-10, -50], [-75, -20], [45, 25], [-20, 85], [0, 15], [-40, 30], [20, -10], [-30, -30]],
+        [[15, -45], [-60, -35], [35, 40], [-35, 75], [-10, 20], [-25, 35], [30, -15], [-15, -25]],
+        [[-30, -55], [-80, -5], [55, 15], [-10, 90], [10, 10], [-50, 25], [15, -5], [-40, -35]]
+      ][v];
+
+      const merchSlotsVariants = [
+        [[45, -190], [-115, 195], [-35, 250], [40, 210], [110, 230], [-80, 260]],
+        [[55, -180], [-105, 205], [-20, 255], [50, 200], [120, 220], [-70, 265]],
+        [[35, -200], [-125, 185], [-45, 245], [30, 220], [100, 240], [-90, 255]]
+      ][v];
 
       const positions = {};
-      const userAngles = {};
 
-      // 1. Core Mule User Loop (Open Polygon / Circular Ring)
-      const nU = Math.max(1, userNodes.length);
-      userNodes.forEach((u, i) => {
-        const ang = (2 * Math.PI * i) / nU + faceAngle;
-        userAngles[u.id] = ang;
+      // 1. Apex Hardware Hub
+      if (apexDev) {
+        positions[apexDev.id] = {
+          x: Math.round(apexCoords[0] * scale * 10) / 10,
+          y: Math.round(apexCoords[1] * scale * 10) / 10
+        };
+      }
+
+      // 2. Corner Satellite Devices & their connected anchor users
+      const matchedUsers = new Set();
+      satelliteDevs.forEach((sDev, idx) => {
+        const slot = satSlotsVariants[idx % satSlotsVariants.length];
+        positions[sDev.id] = {
+          x: Math.round(slot[0] * scale * 10) / 10,
+          y: Math.round(slot[1] * scale * 10) / 10
+        };
+
+        // Find user connected to this satellite device
+        const conn = visibleEdges
+          .filter(e => e.from === sDev.id || e.to === sDev.id)
+          .map(e => e.from === sDev.id ? e.to : e.from);
+        const connUsers = conn.filter(uid => users.some(u => u.id === uid) && !matchedUsers.has(uid));
+
+        if (connUsers.length > 0) {
+          const targetU = connUsers[0];
+          matchedUsers.add(targetU);
+          const uSlot = anchorUserSlotsVariants[idx % anchorUserSlotsVariants.length];
+          positions[targetU] = {
+            x: Math.round(uSlot[0] * scale * 10) / 10,
+            y: Math.round(uSlot[1] * scale * 10) / 10
+          };
+        }
+      });
+
+      // 3. Interior Core Users
+      const remainingUsers = users.filter(u => !matchedUsers.has(u.id));
+      remainingUsers.forEach((u, idx) => {
+        const uSlot = interiorUserSlotsVariants[idx % interiorUserSlotsVariants.length];
         positions[u.id] = {
-          x: Math.round(rUser * Math.cos(ang) * 10) / 10,
-          y: Math.round(rUser * Math.sin(ang) * 10) / 10
+          x: Math.round(uSlot[0] * scale * 10) / 10,
+          y: Math.round(uSlot[1] * scale * 10) / 10
         };
       });
 
-      // 2. Peripheral Nodes (Devices & Merchants radiating outward along connected users)
-      const periphConfigs = [
-        { list: deviceNodes, baseR: rDev, angSpread: 0.42, rJitter: 30.0 },
-        { list: merchantNodes, baseR: rMerch, angSpread: 0.35, rJitter: 20.0 },
-        { list: otherNodes, baseR: 260 * scale, angSpread: 0.35, rJitter: 15.0 }
-      ];
-
-      periphConfigs.forEach(cfg => {
-        const nP = cfg.list.length;
-        cfg.list.forEach((p, j) => {
-          const conn = visibleEdges.filter(e => e.from === p.id || e.to === p.id).map(e => e.from === p.id ? e.to : e.from);
-          const connU = conn.filter(uid => userAngles[uid] !== undefined);
-
-          let finalAng;
-          if (connU.length > 0) {
-            let sinSum = 0, cosSum = 0;
-            connU.forEach(uid => {
-              sinSum += Math.sin(userAngles[uid]);
-              cosSum += Math.cos(userAngles[uid]);
-            });
-            const avgAng = Math.atan2(sinSum, cosSum);
-            const spreadOff = (j - (nP - 1) / 2) * cfg.angSpread;
-            finalAng = avgAng + spreadOff;
-          } else {
-            finalAng = (2 * Math.PI * j) / Math.max(1, nP) + faceAngle + 0.45;
-          }
-
-          const dist = cfg.baseR + (j % 2 === 1 ? cfg.rJitter : -cfg.rJitter * 0.5);
-          positions[p.id] = {
-            x: Math.round(dist * Math.cos(finalAng) * 10) / 10,
-            y: Math.round(dist * Math.sin(finalAng) * 10) / 10
-          };
-        });
+      // 4. Target Merchants in Outflow Basin
+      merchs.forEach((m, idx) => {
+        const mSlot = merchSlotsVariants[idx % merchSlotsVariants.length];
+        positions[m.id] = {
+          x: Math.round(mSlot[0] * scale * 10) / 10,
+          y: Math.round(mSlot[1] * scale * 10) / 10
+        };
       });
 
-      // 3. Collision Resolution Pass (Guarantees zero node overlap, min distance >= 52px)
+      // 5. Unmapped other nodes
+      others.forEach((o, idx) => {
+        positions[o.id] = {
+          x: Math.round(200 * Math.cos(idx) * scale * 10) / 10,
+          y: Math.round(200 * Math.sin(idx) * scale * 10) / 10
+        };
+      });
+
+      // 6. Collision Resolution Pass (Guarantee >= 52px clearance)
       const keys = Object.keys(positions);
       const minDistance = 52.0;
-      for (let iter = 0; iter < 25; iter++) {
+      for (let iter = 0; iter < 15; iter++) {
         for (let i = 0; i < keys.length; i++) {
           for (let j = i + 1; j < keys.length; j++) {
             const k1 = keys[i], k2 = keys[j];
@@ -2305,7 +2365,7 @@ html_template = """<!DOCTYPE html>
       const visibleEdges = (graphData.edges || []).filter(e => visibleIds.has(e.from) && visibleIds.has(e.to));
 
       // Compute initial spacious real-model positions
-      const initialPositions = computeModelLayout(graphData, analysisFaceAngle, currentSpringLength);
+      const initialPositions = computeModelLayout(graphData, analysisRunIndex, currentSpringLength);
 
       const nodes = new vis.DataSet(visibleNodes.map(n => {
         let color = "#facc15";
@@ -2501,9 +2561,9 @@ html_template = """<!DOCTYPE html>
       // SUBSEQUENT RENDERS / RUN ANALYSIS:
       // Smooth model traction face-morphing (NO DIRECT JUMP)
       if (isAnalysisTriggered) {
-        analysisFaceAngle = (analysisFaceAngle + Math.PI * 0.42) % (Math.PI * 2);
+        analysisRunIndex = (analysisRunIndex + 1) % 3;
       }
-      const targetPositions = computeModelLayout(graphData, analysisFaceAngle, currentSpringLength);
+      const targetPositions = computeModelLayout(graphData, analysisRunIndex, currentSpringLength);
       const oldPositions = network.getPositions();
       const oldCentroid = calculateCentroid(oldPositions);
 
@@ -2661,7 +2721,7 @@ html_template = """<!DOCTYPE html>
       if (!currentRing || !network) return;
 
       const oldPositions = network.getPositions();
-      const targetPositions = computeModelLayout(currentRing.graph, analysisFaceAngle, currentSpringLength);
+      const targetPositions = computeModelLayout(currentRing.graph, analysisRunIndex, currentSpringLength);
       animateTractionMorph(oldPositions, targetPositions, function() {
         setup3DCoordinates(targetPositions);
         if (physicsState) {
