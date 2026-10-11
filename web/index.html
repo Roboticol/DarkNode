@@ -388,17 +388,6 @@
       gap: 6px;
     }
 
-    @keyframes cardSlideIn {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
     /* Ring Card Item */
     .ring-card-item {
       background: var(--bg-card);
@@ -411,7 +400,6 @@
       flex-direction: column;
       gap: 6px;
       position: relative;
-      animation: cardSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
     .ring-card-item:hover {
@@ -1271,6 +1259,20 @@
           <span id="physics-label">Physics: On</span>
         </button>
         <span style="color: var(--border-subtle);">|</span>
+        <button class="canvas-pill-btn" id="rotate-mode-btn" onclick="toggleRotateMode()" title="Toggle manual cursor rotation (or drag holding Shift / Alt / Right-Click)">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          <span id="rotate-mode-label">Rotate: Off</span>
+        </button>
+        <button class="canvas-pill-btn" onclick="nudgeRotation(-30)" title="Rotate counter-clockwise 30°">
+          ↶ -30°
+        </button>
+        <button class="canvas-pill-btn" onclick="nudgeRotation(30)" title="Rotate clockwise 30°">
+          ↷ +30°
+        </button>
+        <button class="canvas-pill-btn" id="reset-rot-btn" onclick="resetRotation()" title="Reset rotation to 0°" style="display: none;">
+          Reset 0°
+        </button>
+        <span style="color: var(--border-subtle);">|</span>
         <button class="canvas-pill-btn active" id="filter-user" onclick="toggleFilter('user')">Users</button>
         <button class="canvas-pill-btn active" id="filter-device" onclick="toggleFilter('device')">Devices</button>
         <button class="canvas-pill-btn active" id="filter-merchant" onclick="toggleFilter('merchant')">Merchants</button>
@@ -1530,6 +1532,10 @@
               <span>Spread Out / Decluster</span>
               <div>Click <span class="shortcut-badge">Spread Out</span> on top canvas bar for open layout</div>
             </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
+              <span>Rotate Graph</span>
+              <div>Click <span class="shortcut-badge">Rotate: On</span> or hold <span class="shortcut-badge">Shift / Alt / Right-Click</span> and drag cursor</div>
+            </div>
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0;">
               <span>Entity Filters</span>
               <div>Toggle <span class="shortcut-badge">Users</span>, <span class="shortcut-badge">Devices</span>, or <span class="shortcut-badge">Merchants</span> to isolate subgraphs</div>
@@ -1673,6 +1679,190 @@
     let currentTierFilter = 'all';
     let inspectedNodeId = null;
 
+    // Graph Rotation State (Autonomous scan on Run Analysis + Manual cursor rotation)
+    let currentNodesDataSet = null;
+    let baseNodePositions = {};
+    let currentGraphCentroid = { x: 0, y: 0 };
+    let currentRotationAngle = 0; // in radians
+    let rotateModeActive = false;
+    let isRotating = false;
+    let startMouseAngle = 0;
+    let startGraphAngle = 0;
+    let triggerIntroRotation = false;
+    let rotAnimTimer = null;
+
+    function calculateCentroid(positions) {
+      let sumX = 0, sumY = 0, count = 0;
+      for (const id in positions) {
+        if (positions[id]) {
+          sumX += positions[id].x;
+          sumY += positions[id].y;
+          count++;
+        }
+      }
+      return count > 0 ? { x: sumX / count, y: sumY / count } : { x: 0, y: 0 };
+    }
+
+    function applyGraphRotation(theta) {
+      currentRotationAngle = theta;
+      if (!currentNodesDataSet || Object.keys(baseNodePositions).length === 0) return;
+
+      const cos = Math.cos(theta);
+      const sin = Math.sin(theta);
+      const updates = [];
+
+      for (const id in baseNodePositions) {
+        const base = baseNodePositions[id];
+        if (!base) continue;
+        const dx = base.x - currentGraphCentroid.x;
+        const dy = base.y - currentGraphCentroid.y;
+        updates.push({
+          id: id,
+          x: currentGraphCentroid.x + dx * cos - dy * sin,
+          y: currentGraphCentroid.y + dx * sin + dy * cos
+        });
+      }
+
+      currentNodesDataSet.update(updates);
+      updateRotationIndicator();
+    }
+
+    function updateRotationIndicator() {
+      const resetBtn = document.getElementById("reset-rot-btn");
+      if (!resetBtn) return;
+      const deg = Math.round((currentRotationAngle * 180 / Math.PI) % 360);
+      const normalizedDeg = (deg + 360) % 360;
+      if (normalizedDeg !== 0) {
+        resetBtn.style.display = "inline-flex";
+        resetBtn.innerText = `Reset (${normalizedDeg}°)`;
+      } else {
+        resetBtn.style.display = "none";
+      }
+    }
+
+    function resetRotation() {
+      if (rotAnimTimer) cancelAnimationFrame(rotAnimTimer);
+      applyGraphRotation(0);
+    }
+
+    function nudgeRotation(degDelta) {
+      if (rotAnimTimer) cancelAnimationFrame(rotAnimTimer);
+      const radDelta = degDelta * Math.PI / 180;
+      applyGraphRotation(currentRotationAngle + radDelta);
+    }
+
+    function animateGraphIntroRotation(duration = 1050) {
+      if (!currentNodesDataSet || Object.keys(baseNodePositions).length === 0) return;
+      if (rotAnimTimer) cancelAnimationFrame(rotAnimTimer);
+
+      const startAngle = -Math.PI * 2; // Full 360-degree orbital revolution
+      const endAngle = 0;
+      const startTime = performance.now();
+
+      function tick(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        // easeOutCubic: starts dynamically, settles gently
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const angle = startAngle + (endAngle - startAngle) * ease;
+        applyGraphRotation(angle);
+
+        if (progress < 1) {
+          rotAnimTimer = requestAnimationFrame(tick);
+        } else {
+          applyGraphRotation(0);
+          rotAnimTimer = null;
+        }
+      }
+      rotAnimTimer = requestAnimationFrame(tick);
+    }
+
+    function toggleRotateMode() {
+      rotateModeActive = !rotateModeActive;
+      const btn = document.getElementById("rotate-mode-btn");
+      const label = document.getElementById("rotate-mode-label");
+      const canvasContainer = document.getElementById("network-canvas");
+
+      if (btn) btn.classList.toggle("active", rotateModeActive);
+      if (label) label.innerText = `Rotate: ${rotateModeActive ? 'On' : 'Off'}`;
+
+      if (canvasContainer) {
+        canvasContainer.style.cursor = rotateModeActive ? "grab" : "";
+      }
+
+      if (network) {
+        network.setOptions({
+          interaction: {
+            dragView: !rotateModeActive,
+            dragNodes: !rotateModeActive
+          }
+        });
+      }
+
+      showToast(`Manual Rotation ${rotateModeActive ? 'Active — Drag cursor anywhere on canvas to rotate' : 'Disabled'}`);
+    }
+
+    function initCanvasRotationListeners() {
+      const container = document.getElementById("network-canvas");
+      if (!container || container.dataset.rotListenersAttached) return;
+      container.dataset.rotListenersAttached = "true";
+
+      container.addEventListener("contextmenu", (e) => {
+        // Prevent default context menu so right-click can be used for rotation
+        e.preventDefault();
+      });
+
+      container.addEventListener("mousedown", (e) => {
+        const shouldRotate = rotateModeActive || e.shiftKey || e.altKey || e.button === 2;
+        if (!shouldRotate || !network) return;
+
+        if (rotAnimTimer) cancelAnimationFrame(rotAnimTimer);
+
+        const domCenter = network.canvasToDOM(currentGraphCentroid);
+        const dx = e.clientX - domCenter.x;
+        const dy = e.clientY - domCenter.y;
+
+        startMouseAngle = Math.atan2(dy, dx);
+        startGraphAngle = currentRotationAngle;
+        isRotating = true;
+        container.style.cursor = "grabbing";
+
+        network.setOptions({ interaction: { dragView: false, dragNodes: false } });
+
+        e.preventDefault();
+        e.stopPropagation();
+      }, true);
+
+      window.addEventListener("mousemove", (e) => {
+        if (!isRotating || !network) return;
+
+        const domCenter = network.canvasToDOM(currentGraphCentroid);
+        const dx = e.clientX - domCenter.x;
+        const dy = e.clientY - domCenter.y;
+        const currentMouseAngle = Math.atan2(dy, dx);
+        const delta = currentMouseAngle - startMouseAngle;
+
+        applyGraphRotation(startGraphAngle + delta);
+      });
+
+      window.addEventListener("mouseup", (e) => {
+        if (!isRotating) return;
+        isRotating = false;
+        const c = document.getElementById("network-canvas");
+        if (c) {
+          c.style.cursor = rotateModeActive ? "grab" : "";
+        }
+        if (network) {
+          network.setOptions({
+            interaction: {
+              dragView: !rotateModeActive,
+              dragNodes: !rotateModeActive
+            }
+          });
+        }
+      });
+    }
+
     let scoreAnimTimer = null;
     function animateScoreCounter(targetScore, duration = 450) {
       const el = document.getElementById("threat-score-num");
@@ -1704,6 +1894,7 @@
     }
 
     async function fetchRings() {
+      triggerIntroRotation = true;
       const url = document.getElementById("api-url").value.trim().replace(/\/$/, "");
       const dot = document.getElementById("status-dot");
       const label = document.getElementById("status-label");
@@ -1829,7 +2020,6 @@
       rings.forEach((ring, index) => {
         const card = document.createElement("div");
         card.className = `ring-card-item ${index === activeIndex ? 'active' : ''}`;
-        card.style.animationDelay = `${index * 40}ms`;
         card.onclick = () => selectRing(index);
 
         card.innerHTML = `
@@ -2055,12 +2245,45 @@
       };
 
       if (network) network.destroy();
+      currentNodesDataSet = nodes;
+      currentRotationAngle = 0;
       network = new vis.Network(container, data, options);
+
+      initCanvasRotationListeners();
 
       // Once layout stabilizes, lock into static view so zooming is 100% calm and smooth
       network.once("stabilizationIterationsDone", function() {
         network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
         network.stopSimulation();
+
+        baseNodePositions = network.getPositions();
+        currentGraphCentroid = calculateCentroid(baseNodePositions);
+        currentRotationAngle = 0;
+        updateRotationIndicator();
+
+        if (triggerIntroRotation) {
+          triggerIntroRotation = false;
+          animateGraphIntroRotation(1050);
+        }
+      });
+
+      // Update unrotated base positions if user drags an individual node
+      network.on("dragEnd", function(params) {
+        if (params.nodes && params.nodes.length > 0 && !isRotating) {
+          const currentPos = network.getPositions();
+          const cos = Math.cos(-currentRotationAngle);
+          const sin = Math.sin(-currentRotationAngle);
+          baseNodePositions = {};
+          for (const id in currentPos) {
+            const p = currentPos[id];
+            const dx = p.x - currentGraphCentroid.x;
+            const dy = p.y - currentGraphCentroid.y;
+            baseNodePositions[id] = {
+              x: currentGraphCentroid.x + dx * cos - dy * sin,
+              y: currentGraphCentroid.y + dx * sin + dy * cos
+            };
+          }
+        }
       });
 
       // =========================================================================
@@ -2116,6 +2339,7 @@
 
       // Click node to open deep inspector
       network.on("click", function(params) {
+        if (rotateModeActive) return;
         if (params.nodes.length > 0) {
           showNodeInspector(params.nodes[0]);
         } else {
@@ -2186,6 +2410,7 @@
     }
 
     function resetGraphView() {
+      resetRotation();
       if (network) network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
     }
 
@@ -2223,7 +2448,13 @@
         });
         network.startSimulation();
         setTimeout(() => {
-          if (network) network.stopSimulation();
+          if (network) {
+            network.stopSimulation();
+            baseNodePositions = network.getPositions();
+            currentGraphCentroid = calculateCentroid(baseNodePositions);
+            currentRotationAngle = 0;
+            updateRotationIndicator();
+          }
         }, 1200);
       }
     }
