@@ -108,8 +108,59 @@
       line-height: 1;
     }
 
+    @keyframes defectiveLightBlink {
+      0%, 72%, 73.8%, 75.6%, 79.4%, 83.2%, 100% {
+        opacity: 1;
+        color: var(--yellow-primary);
+        text-shadow: 0 0 8px rgba(250, 204, 21, 0.6), 0 0 16px rgba(250, 204, 21, 0.3);
+      }
+      72.6% {
+        opacity: 0.16;
+        color: #655410;
+        text-shadow: none;
+      }
+      73.2% {
+        opacity: 0.95;
+        color: #fef08a;
+        text-shadow: 0 0 14px rgba(250, 204, 21, 0.9);
+      }
+      74.4% {
+        opacity: 0.1;
+        color: #4a3e0c;
+        text-shadow: none;
+      }
+      75.0% {
+        opacity: 0.72;
+        color: #facc15;
+        text-shadow: 0 0 5px rgba(250, 204, 21, 0.4);
+      }
+      76.8% {
+        opacity: 0.2;
+        color: #655410;
+        text-shadow: none;
+      }
+      77.8% {
+        opacity: 1;
+        color: #ffffff;
+        text-shadow: 0 0 18px rgba(250, 204, 21, 1), 0 0 32px rgba(250, 204, 21, 0.7);
+      }
+      78.8% {
+        opacity: 0.42;
+        color: #d97706;
+        text-shadow: 0 0 2px rgba(217, 119, 6, 0.3);
+      }
+      82.4% {
+        opacity: 0.65;
+        color: #eab308;
+        text-shadow: 0 0 4px rgba(234, 179, 8, 0.4);
+      }
+    }
+
     .brand-title span.kicker {
       color: var(--yellow-primary);
+      display: inline-block;
+      text-shadow: 0 0 8px rgba(250, 204, 21, 0.6), 0 0 16px rgba(250, 204, 21, 0.3);
+      animation: defectiveLightBlink 7s infinite;
     }
 
     .badge-pill {
