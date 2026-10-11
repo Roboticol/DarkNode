@@ -1418,27 +1418,32 @@ html_template = """<!DOCTYPE html>
 
       const data = { nodes, edges };
 
-      // Physics configuration
+      // Physics configuration (settles calmly into clear syndicate topology)
       const options = {
         physics: {
           enabled: physicsState,
           solver: "forceAtlas2Based",
           forceAtlas2Based: {
-            gravitationalConstant: -460,
-            centralGravity: 0.002,
+            gravitationalConstant: -420,
+            centralGravity: 0.003,
             springLength: currentSpringLength,
             springConstant: 0.035,
-            damping: 0.35,
+            damping: 0.45,
             avoidOverlap: 1.0
           },
-          stabilization: { iterations: 180 }
+          stabilization: {
+            enabled: true,
+            iterations: 150,
+            updateInterval: 25
+          }
         },
         interaction: {
           hover: true,
           tooltipDelay: 80,
           zoomView: true,
           dragView: true,
-          zoomSpeed: 0.35, // Moderate, responsive, and smooth zoom speed across all devices
+          dragNodes: true,
+          zoomSpeed: 0.5, // Standard, common, normal zoom speed across all trackpads and mice
           navigationButtons: false,
           keyboard: false
         }
@@ -1447,12 +1452,14 @@ html_template = """<!DOCTYPE html>
       if (network) network.destroy();
       network = new vis.Network(container, data, options);
 
+      // Once layout stabilizes, lock into static view so zooming is 100% calm and smooth
       network.once("stabilizationIterationsDone", function() {
-        network.fit({ animation: { duration: 400, easingFunction: "easeInOutQuad" } });
+        network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+        network.stopSimulation();
       });
 
       // =========================================================================
-      // 1. CONSTANT SCREEN TEXT SIZE & VISIBILITY AT ALL ZOOM LEVELS
+      // CONSTANT SCREEN TEXT SIZE & VISIBILITY AT ALL ZOOM LEVELS
       // =========================================================================
       // Rendered directly in native 1:1 screen pixel coordinates via afterDrawing.
       // Text size stays precisely 11px on screen whether zoomed in or zoomed out!
@@ -1502,50 +1509,6 @@ html_template = """<!DOCTYPE html>
         ctx.restore();
       });
 
-      // =========================================================================
-      // 2. DYNAMIC ZOOM ANIMATION (SMOOTH & MODERATE)
-      // =========================================================================
-      // When Zoom Out: springs contract, central gravity gently pulls in -> nodes smoothly group together!
-      // When Zoom In:  springs expand, strong repulsion pushes out -> nodes freely spread out!
-      let zoomDebounceTimer = null;
-      network.on("zoom", function(params) {
-        if (!physicsState) return;
-        const s = params.scale;
-
-        // Moderate 32ms debounce prevents jumpy physics resets while keeping animation fluid
-        clearTimeout(zoomDebounceTimer);
-        zoomDebounceTimer = setTimeout(() => {
-          let targetSpring, targetGravity, targetCentral;
-
-          if (s < 0.95) {
-            // Zoomed Out: cluster gently contracts together
-            const t = Math.max(0, (s - 0.25) / 0.70);
-            targetSpring = Math.round(135 + (260 - 135) * t);
-            targetGravity = Math.round(-220 + (-460 - -220) * t);
-            targetCentral = 0.012 + (0.002 - 0.012) * t;
-          } else {
-            // Zoomed In: cluster smoothly spreads freely apart
-            const t = Math.min(1.2, s - 0.95);
-            targetSpring = Math.round(260 + 110 * t);
-            targetGravity = Math.round(-460 - 150 * t);
-            targetCentral = Math.max(0.0008, 0.002 - 0.0008 * t);
-          }
-
-          network.setOptions({
-            physics: {
-              forceAtlas2Based: {
-                springLength: targetSpring,
-                gravitationalConstant: targetGravity,
-                centralGravity: targetCentral
-              }
-            }
-          });
-
-          // Trigger dynamic animation step smoothly
-          network.startSimulation();
-        }, 32);
-      });
-
       // Click node to focus
       network.on("click", function(params) {
         if (params.nodes.length > 0) {
@@ -1555,15 +1518,15 @@ html_template = """<!DOCTYPE html>
     }
 
     function resetGraphView() {
-      if (network) network.fit({ animation: { duration: 400, easingFunction: "easeInOutQuad" } });
+      if (network) network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
     }
 
     function zoomIn() {
       if (!network) return;
       const s = network.getScale();
       network.moveTo({
-        scale: s * 1.35,
-        animation: { duration: 250, easingFunction: "easeInOutQuad" }
+        scale: s * 1.3,
+        animation: { duration: 200, easingFunction: "easeInOutQuad" }
       });
     }
 
@@ -1571,8 +1534,8 @@ html_template = """<!DOCTYPE html>
       if (!network) return;
       const s = network.getScale();
       network.moveTo({
-        scale: s / 1.35,
-        animation: { duration: 250, easingFunction: "easeInOutQuad" }
+        scale: s / 1.3,
+        animation: { duration: 200, easingFunction: "easeInOutQuad" }
       });
     }
 
@@ -1586,10 +1549,14 @@ html_template = """<!DOCTYPE html>
       if (network) {
         network.setOptions({
           physics: {
-            forceAtlas2Based: { springLength: currentSpringLength, gravitationalConstant: currentSpringLength === 380 ? -620 : -460 }
+            enabled: true,
+            forceAtlas2Based: { springLength: currentSpringLength, gravitationalConstant: currentSpringLength === 380 ? -620 : -420 }
           }
         });
         network.startSimulation();
+        setTimeout(() => {
+          if (network) network.stopSimulation();
+        }, 1200);
       }
     }
 
@@ -1597,7 +1564,15 @@ html_template = """<!DOCTYPE html>
       physicsState = !physicsState;
       const label = document.getElementById("physics-label");
       label.innerText = `Physics: ${physicsState ? 'On' : 'Off'}`;
-      if (network) network.setOptions({ physics: { enabled: physicsState } });
+      if (network) {
+        if (physicsState) {
+          network.setOptions({ physics: { enabled: true } });
+          network.startSimulation();
+        } else {
+          network.stopSimulation();
+          network.setOptions({ physics: { enabled: false } });
+        }
+      }
     }
 
     function toggleFilter(type) {
