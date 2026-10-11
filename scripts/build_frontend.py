@@ -300,6 +300,46 @@ html_template = """<!DOCTYPE html>
       letter-spacing: -0.01em;
     }
 
+    /* Risk Tier Filters in Sidebar */
+    .tier-filter-row {
+      display: flex;
+      gap: 5px;
+      padding: 0 12px 10px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .tier-tab-btn {
+      flex: 1;
+      height: 25px;
+      font-size: 10.5px;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      font-variant-numeric: tabular-nums;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+    }
+
+    .tier-tab-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+      border-color: var(--border-strong);
+    }
+
+    .tier-tab-btn.active {
+      background: var(--yellow-bg);
+      border-color: var(--yellow-border);
+      color: var(--yellow-primary);
+      font-weight: 700;
+    }
+
     .search-box-clean {
       padding: 10px 14px;
       border-bottom: 1px solid var(--border-subtle);
@@ -1122,6 +1162,13 @@ html_template = """<!DOCTYPE html>
         <span class="badge-pill" id="rings-count-badge">10 total</span>
       </div>
 
+      <!-- Risk Tier Filters (3 Tabs) -->
+      <div class="tier-filter-row">
+        <button class="tier-tab-btn active" id="tier-all" onclick="setTierFilter('all')">All (<span id="count-all">10</span>)</button>
+        <button class="tier-tab-btn" id="tier-critical" onclick="setTierFilter('critical')">Critical (<span id="count-critical">10</span>)</button>
+        <button class="tier-tab-btn" id="tier-elevated" onclick="setTierFilter('elevated')">Elevated (<span id="count-elevated">0</span>)</button>
+      </div>
+
       <div class="search-box-clean">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" class="search-input-clean" id="search-filter" placeholder="Filter by Ring ID or User ID..." oninput="filterRings()">
@@ -1138,14 +1185,6 @@ html_template = """<!DOCTYPE html>
         <button class="canvas-pill-btn active" onclick="resetGraphView()">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
           Fit View
-        </button>
-        <button class="canvas-pill-btn" onclick="zoomIn()" title="Zoom In (+)">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Zoom +
-        </button>
-        <button class="canvas-pill-btn" onclick="zoomOut()" title="Zoom Out (-)">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Zoom −
         </button>
         <button class="canvas-pill-btn" id="spread-btn" onclick="spreadGraph()">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
@@ -1555,6 +1594,7 @@ html_template = """<!DOCTYPE html>
 
     // Real fallback dataset extracted from trained GNN model
     const FALLBACK_RINGS = __FALLBACK_JSON__;
+    let currentTierFilter = 'all';
     let inspectedNodeId = null;
 
     async function fetchRings() {
@@ -1590,10 +1630,27 @@ html_template = """<!DOCTYPE html>
       document.getElementById("stat-rings").innerText = allRings.length;
       document.getElementById("rings-count-badge").innerText = `${allRings.length} total`;
 
+      const crit = allRings.filter(r => r.score >= 0.75).length;
+      const elev = allRings.length - crit;
+      const cntAll = document.getElementById("count-all");
+      const cntCrit = document.getElementById("count-critical");
+      const cntElev = document.getElementById("count-elevated");
+      if (cntAll) cntAll.innerText = allRings.length;
+      if (cntCrit) cntCrit.innerText = crit;
+      if (cntElev) cntElev.innerText = elev;
+
       renderRingsList(allRings);
       if (allRings.length > 0) {
         selectRing(0);
       }
+    }
+
+    function setTierFilter(tier) {
+      currentTierFilter = tier;
+      document.querySelectorAll('.tier-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeTab = document.getElementById(`tier-${tier}`);
+      if (activeTab) activeTab.classList.add('active');
+      filterRings();
     }
 
     function renderRingsList(rings) {
@@ -1601,13 +1658,23 @@ html_template = """<!DOCTYPE html>
       container.innerHTML = "";
 
       if (!rings || rings.length === 0) {
-        container.innerHTML = `
-          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 160px; text-align: center; color: var(--text-muted); padding: 16px;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5; margin-bottom: 8px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <span style="font-size: 12px; font-weight: 600; color: var(--text-main);">No matching syndicates</span>
-            <span style="font-size: 11px; margin-top: 4px; color: var(--text-dim);">Try searching another Ring or User ID</span>
-          </div>
-        `;
+        if (currentTierFilter === 'elevated') {
+          container.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 180px; text-align: center; color: var(--text-muted); padding: 18px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--yellow-primary)" stroke-width="2" style="opacity: 0.9; margin-bottom: 8px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span style="font-size: 12px; font-weight: 700; color: var(--text-main);">0 Elevated Syndicates</span>
+              <span style="font-size: 11px; margin-top: 5px; color: var(--text-muted); line-height: 1.45;">All 10 detected mule syndicates met the Critical Risk threshold (&ge; 75%).</span>
+            </div>
+          `;
+        } else {
+          container.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 160px; text-align: center; color: var(--text-muted); padding: 16px;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5; margin-bottom: 8px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <span style="font-size: 12px; font-weight: 600; color: var(--text-main);">No matching syndicates</span>
+              <span style="font-size: 11px; margin-top: 4px; color: var(--text-dim);">Try searching another Ring or User ID</span>
+            </div>
+          `;
+        }
         return;
       }
 
@@ -1643,11 +1710,15 @@ html_template = """<!DOCTYPE html>
     function filterRings() {
       const query = document.getElementById("search-filter").value.toLowerCase().trim();
       const filtered = allRings.filter(r => {
-        if (!query) return true;
-        return `ring #${r.ring_id}`.toLowerCase().includes(query) ||
+        const matchesQuery = !query ||
+               `ring #${r.ring_id}`.toLowerCase().includes(query) ||
                `syndicate ${r.ring_id}`.toLowerCase().includes(query) ||
                String(r.ring_id).includes(query) ||
                r.members.some(m => String(m).includes(query));
+        if (!matchesQuery) return false;
+        if (currentTierFilter === 'critical') return r.score >= 0.75;
+        if (currentTierFilter === 'elevated') return r.score < 0.75;
+        return true;
       });
       renderRingsList(filtered);
     }
