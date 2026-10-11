@@ -1622,7 +1622,7 @@
     let allRings = [];
     let activeIndex = 0;
     let physicsState = true;
-    let currentSpringLength = 260;
+    let currentSpringLength = 160;
     let activeFilters = { user: true, device: true, merchant: true };
     let currentVisibleNodes = [];
 
@@ -1650,6 +1650,15 @@
     let globeRafPending = false;
     let analysisFaceAngle = 0;
     let morphRafId = null;
+
+    function fitGraphView(animate = true) {
+      if (!network) return;
+      network.fit({
+        animation: animate ? { duration: 320, easingFunction: "easeInOutQuad" } : false,
+        maxZoomLevel: 0.86,
+        minZoomLevel: 0.25
+      });
+    }
 
     function calculateCentroid(positions) {
       let sumX = 0, sumY = 0, count = 0;
@@ -1809,7 +1818,7 @@
       }
       updateGlobeIndicator();
       if (network) {
-        network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+        fitGraphView();
       }
       showToast("Reset 3D Globe orientation to default view");
     }
@@ -1912,7 +1921,7 @@
     // 100% Organic Syndicate Topology (Identical across Physics: On and Physics: Off)
     // Precomputed force equilibrium + Dynamic Organic Solver
     // =========================================================================
-    const PRECOMPUTED_ORGANIC_LAYOUTS = {"0": {"user_0": {"x": -69.0, "y": -12.8}, "user_1": {"x": 36.7, "y": 74.7}, "user_2": {"x": 61.5, "y": -17.5}, "user_3": {"x": -24.4, "y": -60.3}, "user_4": {"x": 28.1, "y": 24.3}, "user_5": {"x": -26.9, "y": 8.9}, "user_6": {"x": 7.7, "y": -20.5}, "user_7": {"x": -13.9, "y": 48.8}, "device_799": {"x": -74.6, "y": 74.2}, "device_74": {"x": -84.2, "y": -285.2}, "device_666": {"x": 280.1, "y": -105.9}, "device_331": {"x": -300.0, "y": -62.0}, "device_154": {"x": 146.1, "y": 281.2}, "merchant_0": {"x": -126.3, "y": 6.9}, "merchant_1": {"x": 51.4, "y": -104.6}, "merchant_3": {"x": 122.3, "y": 17.8}, "merchant_2": {"x": -14.8, "y": 131.8}}, "1": {"user_24": {"x": -4.3, "y": -69.6}, "user_25": {"x": -0.3, "y": 59.8}, "user_26": {"x": -74.0, "y": 6.2}, "user_27": {"x": 62.7, "y": 2.9}, "user_28": {"x": 29.5, "y": -58.2}, "user_29": {"x": -27.4, "y": -26.7}, "user_30": {"x": -21.9, "y": 17.1}, "user_31": {"x": 16.8, "y": -2.0}, "device_584": {"x": 59.2, "y": -235.7}, "device_796": {"x": -92.5, "y": -50.0}, "device_573": {"x": 4.3, "y": 288.6}, "device_105": {"x": 290.3, "y": 36.3}, "device_698": {"x": -300.0, "y": 37.5}, "merchant_14": {"x": 107.8, "y": -56.2}, "merchant_13": {"x": -55.5, "y": -120.0}, "merchant_15": {"x": -71.2, "y": 89.5}, "merchant_12": {"x": 76.5, "y": 80.4}}, "2": {"user_32": {"x": -61.8, "y": -40.5}, "user_33": {"x": 36.2, "y": -62.0}, "user_34": {"x": -52.9, "y": 61.1}, "user_35": {"x": 71.2, "y": 31.4}, "user_36": {"x": 9.8, "y": 44.8}, "user_37": {"x": -7.7, "y": -28.7}, "user_38": {"x": 31.7, "y": -1.9}, "user_39": {"x": -28.5, "y": 14.0}, "device_633": {"x": 154.2, "y": -279.3}, "device_508": {"x": -220.5, "y": 242.3}, "device_544": {"x": 300.0, "y": 126.1}, "device_577": {"x": -266.3, "y": -178.1}, "device_795": {"x": -107.4, "y": 6.5}, "merchant_19": {"x": 76.8, "y": 108.1}, "merchant_18": {"x": 117.1, "y": -51.9}, "merchant_16": {"x": -21.7, "y": 131.7}, "merchant_17": {"x": -30.3, "y": -123.6}}, "3": {"user_48": {"x": 55.1, "y": -24.0}, "user_49": {"x": -14.4, "y": -77.4}, "user_50": {"x": -39.0, "y": 55.3}, "user_51": {"x": 20.4, "y": 58.6}, "user_52": {"x": -41.2, "y": -30.1}, "user_53": {"x": -38.2, "y": 7.8}, "user_54": {"x": 8.8, "y": 11.4}, "user_55": {"x": 5.3, "y": -32.2}, "device_524": {"x": -45.8, "y": -300.0}, "device_74": {"x": 272.8, "y": -86.1}, "device_350": {"x": 125.9, "y": 255.4}, "device_793": {"x": 82.7, "y": 36.7}, "device_168": {"x": -162.4, "y": 245.2}, "merchant_27": {"x": -125.2, "y": -14.0}, "merchant_26": {"x": -98.9, "y": 70.9}, "merchant_24": {"x": 81.2, "y": -84.8}, "merchant_25": {"x": -87.0, "y": -92.6}}, "4": {"user_40": {"x": 45.8, "y": 66.2}, "user_41": {"x": 39.4, "y": -66.1}, "user_42": {"x": -57.6, "y": 59.3}, "user_43": {"x": -29.8, "y": -72.9}, "user_44": {"x": 41.2, "y": 4.0}, "user_45": {"x": -41.1, "y": 0.5}, "user_46": {"x": 1.3, "y": -22.9}, "user_47": {"x": -2.9, "y": 37.3}, "device_794": {"x": -93.6, "y": -59.3}, "device_798": {"x": 183.1, "y": -278.8}, "device_83": {"x": -244.3, "y": 236.2}, "device_184": {"x": 202.4, "y": 270.6}, "device_307": {"x": -146.9, "y": -300.0}, "merchant_21": {"x": 118.5, "y": -62.9}, "merchant_22": {"x": -137.0, "y": 16.5}, "merchant_20": {"x": -8.6, "y": 135.2}, "merchant_23": {"x": 130.1, "y": 36.9}}, "5": {"user_56": {"x": 74.6, "y": 21.9}, "user_57": {"x": 31.2, "y": -61.7}, "user_58": {"x": -42.1, "y": 64.3}, "user_59": {"x": -61.5, "y": -30.4}, "user_60": {"x": -28.9, "y": 15.4}, "user_61": {"x": 12.2, "y": 39.1}, "user_62": {"x": 31.7, "y": -4.6}, "user_63": {"x": -8.6, "y": -26.2}, "device_586": {"x": 300.0, "y": 92.0}, "device_711": {"x": -175.2, "y": 260.3}, "device_321": {"x": 127.2, "y": -278.5}, "device_608": {"x": -269.3, "y": -144.5}, "device_792": {"x": 65.2, "y": 82.6}, "merchant_31": {"x": -122.1, "y": 17.0}, "merchant_28": {"x": -38.6, "y": -114.9}, "merchant_29": {"x": 108.1, "y": -60.8}, "merchant_30": {"x": -3.9, "y": 129.0}}, "6": {"user_64": {"x": -39.4, "y": 54.6}, "user_65": {"x": -11.9, "y": 62.4}, "user_66": {"x": 25.1, "y": -51.7}, "user_67": {"x": 4.1, "y": -70.0}, "user_68": {"x": 18.0, "y": 4.0}, "user_69": {"x": -23.6, "y": -7.0}, "user_70": {"x": 64.6, "y": -4.1}, "user_71": {"x": 43.6, "y": 39.8}, "device_791": {"x": 94.0, "y": 69.9}, "device_317": {"x": 75.8, "y": -300.0}, "device_748": {"x": -74.6, "y": -272.2}, "device_66": {"x": -221.0, "y": 183.0}, "device_713": {"x": -116.1, "y": 283.6}, "merchant_33": {"x": 96.4, "y": -88.6}, "merchant_35": {"x": 142.3, "y": 2.4}, "merchant_34": {"x": 29.9, "y": 129.7}, "merchant_32": {"x": -107.0, "y": -35.8}}, "7": {"user_72": {"x": 34.1, "y": -65.8}, "user_73": {"x": -61.1, "y": 46.2}, "user_74": {"x": 68.1, "y": 64.6}, "user_75": {"x": -39.9, "y": -59.2}, "user_76": {"x": 11.3, "y": -17.6}, "user_77": {"x": -29.9, "y": 3.3}, "user_78": {"x": 4.4, "y": 50.7}, "user_79": {"x": 45.0, "y": 13.8}, "device_172": {"x": -195.3, "y": -266.6}, "device_472": {"x": 263.9, "y": 234.2}, "device_23": {"x": -284.1, "y": 185.3}, "device_684": {"x": 150.6, "y": -300.0}, "device_790": {"x": 116.4, "y": -3.7}, "merchant_39": {"x": -84.5, "y": 111.4}, "merchant_36": {"x": -123.7, "y": -41.0}, "merchant_38": {"x": 99.4, "y": -96.4}, "merchant_37": {"x": 25.3, "y": 140.9}}, "8": {"user_88": {"x": 72.3, "y": 33.6}, "user_89": {"x": 41.8, "y": -61.6}, "user_90": {"x": -61.1, "y": -42.6}, "user_91": {"x": -55.4, "y": 57.2}, "user_92": {"x": -5.2, "y": -27.7}, "user_93": {"x": -31.4, "y": 11.5}, "user_94": {"x": 33.5, "y": -0.5}, "user_95": {"x": 8.2, "y": 44.1}, "device_389": {"x": -231.1, "y": 235.2}, "device_788": {"x": -19.3, "y": -105.0}, "device_723": {"x": 168.5, "y": -276.6}, "device_563": {"x": 300.0, "y": 137.0}, "device_367": {"x": -256.3, "y": -198.0}, "merchant_45": {"x": -130.8, "y": -1.8}, "merchant_44": {"x": 71.9, "y": 112.8}, "merchant_46": {"x": 121.4, "y": -48.7}, "merchant_47": {"x": -26.9, "y": 131.1}}, "9": {"user_80": {"x": 30.7, "y": 76.7}, "user_81": {"x": 63.5, "y": -11.1}, "user_82": {"x": -68.0, "y": -14.5}, "user_83": {"x": -18.4, "y": -62.7}, "user_84": {"x": 9.8, "y": -21.1}, "user_85": {"x": -24.6, "y": 9.7}, "user_86": {"x": -28.3, "y": 58.8}, "user_87": {"x": 22.1, "y": 26.5}, "device_253": {"x": 126.8, "y": 295.1}, "device_400": {"x": 294.6, "y": -75.6}, "device_170": {"x": -56.9, "y": -297.1}, "device_508": {"x": -300.0, "y": -82.3}, "device_789": {"x": -90.4, "y": 62.6}, "merchant_42": {"x": 70.4, "y": -109.8}, "merchant_43": {"x": -124.2, "y": -29.0}, "merchant_41": {"x": 118.7, "y": 39.2}, "merchant_40": {"x": -25.9, "y": 134.6}}};
+    const PRECOMPUTED_ORGANIC_LAYOUTS = {"0": {"user_0": {"x": -45.2, "y": 9.6}, "user_1": {"x": 22.6, "y": 40.9}, "user_2": {"x": 39.5, "y": -13.1}, "user_3": {"x": -13.4, "y": -39.0}, "user_4": {"x": 15.4, "y": 11.5}, "user_5": {"x": -18.8, "y": -5.7}, "user_6": {"x": 7.5, "y": -14.8}, "user_7": {"x": -11.4, "y": 21.9}, "device_799": {"x": -7.2, "y": 62.8}, "device_74": {"x": -53.8, "y": -175.7}, "device_666": {"x": 172.2, "y": -64.9}, "device_331": {"x": -185.0, "y": 36.7}, "device_154": {"x": 89.1, "y": 166.2}, "merchant_0": {"x": -59.3, "y": -44.4}, "merchant_1": {"x": 32.2, "y": -65.3}, "merchant_3": {"x": 71.9, "y": 19.8}, "merchant_2": {"x": -56.3, "y": 53.3}}, "1": {"user_24": {"x": 16.4, "y": -37.4}, "user_25": {"x": 1.8, "y": 37.1}, "user_26": {"x": -45.6, "y": 6.4}, "user_27": {"x": 39.2, "y": -0.2}, "user_28": {"x": -5.1, "y": -43.2}, "user_29": {"x": -12.7, "y": 11.3}, "user_30": {"x": -18.0, "y": -15.7}, "user_31": {"x": 10.5, "y": -2.3}, "device_584": {"x": 28.4, "y": -148.8}, "device_796": {"x": -59.2, "y": -27.9}, "device_573": {"x": 12.0, "y": 179.2}, "device_105": {"x": 181.6, "y": 13.8}, "device_698": {"x": -185.0, "y": 33.8}, "merchant_14": {"x": 65.2, "y": -38.6}, "merchant_13": {"x": -38.6, "y": -72.7}, "merchant_15": {"x": -41.3, "y": 57.9}, "merchant_12": {"x": 50.3, "y": 47.3}}, "2": {"user_32": {"x": -28.9, "y": -37.1}, "user_33": {"x": 34.1, "y": -37.1}, "user_34": {"x": -37.3, "y": 28.7}, "user_35": {"x": 23.6, "y": 44.5}, "user_36": {"x": 28.4, "y": 3.6}, "user_37": {"x": -17.8, "y": -2.2}, "user_38": {"x": 6.2, "y": -20.1}, "user_39": {"x": 1.1, "y": 20.9}, "device_633": {"x": 139.8, "y": -154.7}, "device_508": {"x": -168.2, "y": 116.6}, "device_544": {"x": 96.2, "y": 185.0}, "device_577": {"x": -133.6, "y": -155.1}, "device_795": {"x": -66.9, "y": -8.6}, "merchant_19": {"x": 73.8, "y": 41.5}, "merchant_18": {"x": 81.8, "y": -21.6}, "merchant_16": {"x": -26.4, "y": 78.3}, "merchant_17": {"x": -5.8, "y": -82.5}}, "3": {"user_48": {"x": 40.1, "y": -13.0}, "user_49": {"x": -6.7, "y": -44.6}, "user_50": {"x": -40.0, "y": 21.1}, "user_51": {"x": 13.5, "y": 40.0}, "user_52": {"x": 5.4, "y": -18.0}, "user_53": {"x": -22.8, "y": -11.4}, "user_54": {"x": -11.3, "y": 15.3}, "user_55": {"x": 14.2, "y": 7.2}, "device_524": {"x": -26.3, "y": -185.0}, "device_74": {"x": 177.1, "y": -48.1}, "device_350": {"x": 67.3, "y": 170.8}, "device_793": {"x": 54.0, "y": 27.2}, "device_168": {"x": -164.6, "y": 88.6}, "merchant_27": {"x": -75.6, "y": -6.2}, "merchant_26": {"x": -19.8, "y": 71.5}, "merchant_24": {"x": 45.6, "y": -58.3}, "merchant_25": {"x": -49.9, "y": -57.1}}, "4": {"user_40": {"x": 30.6, "y": 40.5}, "user_41": {"x": 23.1, "y": -42.6}, "user_42": {"x": -34.8, "y": 38.8}, "user_43": {"x": -20.6, "y": -45.1}, "user_44": {"x": 25.9, "y": 1.5}, "user_45": {"x": -25.8, "y": 1.4}, "user_46": {"x": 0.2, "y": -14.4}, "user_47": {"x": -1.0, "y": 23.6}, "device_794": {"x": -60.3, "y": -34.9}, "device_798": {"x": 108.3, "y": -180.0}, "device_83": {"x": -148.0, "y": 154.6}, "device_184": {"x": 134.5, "y": 165.0}, "device_307": {"x": -100.0, "y": -185.0}, "merchant_21": {"x": 72.9, "y": -42.5}, "merchant_22": {"x": -85.8, "y": 13.8}, "merchant_20": {"x": -2.0, "y": 85.3}, "merchant_23": {"x": 82.8, "y": 19.9}}, "5": {"user_56": {"x": 45.9, "y": 19.4}, "user_57": {"x": 24.4, "y": -36.9}, "user_58": {"x": -31.7, "y": 38.1}, "user_59": {"x": -37.0, "y": -24.1}, "user_60": {"x": 4.6, "y": 26.0}, "user_61": {"x": 20.3, "y": -0.3}, "user_62": {"x": -3.6, "y": -17.2}, "user_63": {"x": -19.9, "y": 7.7}, "device_586": {"x": 185.0, "y": 79.9}, "device_711": {"x": -130.8, "y": 153.6}, "device_321": {"x": 102.1, "y": -167.9}, "device_608": {"x": -160.7, "y": -113.0}, "device_792": {"x": 35.5, "y": 57.5}, "merchant_31": {"x": -79.3, "y": 2.1}, "merchant_28": {"x": -16.2, "y": -76.1}, "merchant_29": {"x": 73.2, "y": -31.0}, "merchant_30": {"x": -12.0, "y": 82.2}}, "6": {"user_64": {"x": -7.9, "y": 45.5}, "user_65": {"x": -37.1, "y": 21.7}, "user_66": {"x": 0.3, "y": -42.1}, "user_67": {"x": 36.4, "y": -25.5}, "user_68": {"x": 9.0, "y": -12.1}, "user_69": {"x": -18.4, "y": -9.1}, "user_70": {"x": 23.6, "y": 11.7}, "user_71": {"x": -3.8, "y": 15.5}, "device_791": {"x": 24.8, "y": 56.0}, "device_317": {"x": 153.9, "y": -103.7}, "device_748": {"x": -14.3, "y": -181.9}, "device_66": {"x": -165.8, "y": 77.9}, "device_713": {"x": -22.3, "y": 185.0}, "merchant_33": {"x": -45.6, "y": -57.0}, "merchant_35": {"x": 65.4, "y": 40.8}, "merchant_34": {"x": 74.2, "y": -11.1}, "merchant_32": {"x": -72.5, "y": -11.4}}, "7": {"user_72": {"x": 23.7, "y": -36.6}, "user_73": {"x": -34.1, "y": 21.9}, "user_74": {"x": 20.1, "y": 48.1}, "user_75": {"x": -18.5, "y": -36.6}, "user_76": {"x": 14.2, "y": -8.7}, "user_77": {"x": -13.6, "y": -4.8}, "user_78": {"x": -0.3, "y": 23.4}, "user_79": {"x": 28.9, "y": 13.3}, "device_172": {"x": -99.7, "y": -158.1}, "device_472": {"x": 72.7, "y": 185.0}, "device_23": {"x": -166.2, "y": 88.5}, "device_684": {"x": 99.3, "y": -164.5}, "device_790": {"x": 65.8, "y": -5.4}, "merchant_39": {"x": -40.9, "y": 66.2}, "merchant_36": {"x": -71.0, "y": -18.5}, "merchant_38": {"x": 51.0, "y": -60.4}, "merchant_37": {"x": 68.5, "y": 47.2}}, "8": {"user_88": {"x": 44.6, "y": 16.0}, "user_89": {"x": 21.4, "y": -38.8}, "user_90": {"x": -38.5, "y": -22.0}, "user_91": {"x": -29.8, "y": 36.9}, "user_92": {"x": -4.5, "y": -16.1}, "user_93": {"x": -18.1, "y": 8.5}, "user_94": {"x": 19.8, "y": -2.1}, "user_95": {"x": 7.2, "y": 25.6}, "device_389": {"x": -124.1, "y": 152.0}, "device_788": {"x": -17.1, "y": -61.1}, "device_723": {"x": 84.7, "y": -173.1}, "device_563": {"x": 185.0, "y": 65.4}, "device_367": {"x": -162.3, "y": -103.9}, "merchant_45": {"x": -77.6, "y": 5.9}, "merchant_44": {"x": 48.7, "y": 63.0}, "merchant_46": {"x": 69.3, "y": -35.3}, "merchant_47": {"x": -8.9, "y": 79.1}}, "9": {"user_80": {"x": 21.6, "y": 40.1}, "user_81": {"x": 37.9, "y": -11.6}, "user_82": {"x": -45.3, "y": 4.4}, "user_83": {"x": -13.8, "y": -37.5}, "user_84": {"x": 12.1, "y": 11.7}, "user_85": {"x": 7.1, "y": -15.2}, "user_86": {"x": -13.7, "y": 31.0}, "user_87": {"x": -16.3, "y": -1.6}, "device_253": {"x": 89.8, "y": 163.4}, "device_400": {"x": 170.4, "y": -60.0}, "device_170": {"x": -54.2, "y": -172.7}, "device_508": {"x": -185.0, "y": 21.3}, "device_789": {"x": -49.4, "y": 41.5}, "merchant_42": {"x": 35.1, "y": -69.9}, "merchant_43": {"x": -58.5, "y": -43.7}, "merchant_41": {"x": 69.7, "y": 20.9}, "merchant_40": {"x": -7.4, "y": 77.9}}};
 
     function computeDynamicOrganicLayout(graphData, scale = 1.0) {
       const visibleNodes = (graphData.nodes || []).filter(n => activeFilters[n.group] !== false);
@@ -1922,29 +1931,29 @@
       const otherNodes = visibleNodes.filter(n => n.group !== "user" && n.group !== "device" && n.group !== "merchant");
 
       const positions = {};
-      // 1. Core Mule Users in compact cluster (radius 70-110px)
+      // 1. Core Mule Users in compact cluster (radius 48-68px)
       const nU = Math.max(1, userNodes.length);
       userNodes.forEach((u, i) => {
         const ang = (2 * Math.PI * i) / nU;
-        const r = 85 * (0.85 + (i % 3) * 0.2);
+        const r = 58 * (0.85 + (i % 3) * 0.2);
         positions[u.id] = { x: Math.round(r * Math.cos(ang) * 10) / 10, y: Math.round(r * Math.sin(ang) * 10) / 10 };
       });
 
-      // 2. Hardware Devices distributed symmetrically in star perimeter (radius 270-300px)
+      // 2. Hardware Devices distributed symmetrically in star perimeter (radius 175-195px)
       const nD = Math.max(1, devNodes.length);
       devNodes.forEach((d, i) => {
         const ang = Math.PI / 2 + (2 * Math.PI * i) / nD;
-        const r = 285 + (i % 2 === 1 ? 15 : -15);
+        const r = 180 + (i % 2 === 1 ? 12 : -12);
         positions[d.id] = { x: Math.round(r * Math.cos(ang) * 10) / 10, y: Math.round(r * Math.sin(ang) * 10) / 10 };
       });
 
-      // 3. Merchants clustered at top and bottom (radius 155-185px)
+      // 3. Merchants clustered at top and bottom (radius 105-125px)
       const nM = Math.max(1, merchNodes.length);
       merchNodes.forEach((m, i) => {
         const baseAng = (i % 2 === 0) ? -Math.PI / 2 : Math.PI / 2;
-        const angOffset = ((Math.floor(i / 2) - 0.5) * 0.55);
+        const angOffset = ((Math.floor(i / 2) - 0.5) * 0.5);
         const ang = baseAng + angOffset;
-        const r = 165 + (i % 3) * 15;
+        const r = 112 + (i % 3) * 10;
         positions[m.id] = { x: Math.round(r * Math.cos(ang) * 10) / 10, y: Math.round(r * Math.sin(ang) * 10) / 10 };
       });
 
@@ -1952,14 +1961,14 @@
       const nO = Math.max(1, otherNodes.length);
       otherNodes.forEach((o, i) => {
         const ang = (2 * Math.PI * i) / nO;
-        positions[o.id] = { x: Math.round(230 * Math.cos(ang) * 10) / 10, y: Math.round(230 * Math.sin(ang) * 10) / 10 };
+        positions[o.id] = { x: Math.round(145 * Math.cos(ang) * 10) / 10, y: Math.round(145 * Math.sin(ang) * 10) / 10 };
       });
 
       return positions;
     }
 
-    function computeModelLayout(graphData, faceAngle = 0, springLength = 260) {
-      const scale = springLength / 260;
+    function computeModelLayout(graphData, faceAngle = 0, springLength = 160) {
+      const scale = springLength / 160;
       let rawPositions = null;
 
       // 1. Match precomputed organic layout by active ring or node list
@@ -2000,9 +2009,9 @@
         };
       }
 
-      // 4. Collision relaxation pass (Guarantees zero overlap, min distance >= 55px)
+      // 4. Collision relaxation pass (Guarantees zero overlap, min distance >= 44px)
       const keys = Object.keys(positions);
-      const minDistance = 55.0;
+      const minDistance = 44.0;
       for (let iter = 0; iter < 18; iter++) {
         for (let i = 0; i < keys.length; i++) {
           for (let j = i + 1; j < keys.length; j++) {
@@ -2078,7 +2087,7 @@
           if (currentNodesDataSet) currentNodesDataSet.update(finalUpdates);
           setup3DCoordinates(targetPositions);
           if (network) {
-            network.fit({ animation: { duration: 300, easingFunction: "easeInOutQuad" } });
+            fitGraphView();
           }
           if (onComplete) onComplete();
         }
@@ -2431,12 +2440,12 @@
 
         initCanvasRotationListeners();
 
-        network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+        fitGraphView(false);
         setup3DCoordinates(initialPositions);
 
         network.once("stabilizationIterationsDone", function() {
           if (network) {
-            network.fit({ animation: { duration: 250, easingFunction: "easeInOutQuad" } });
+            fitGraphView();
             setup3DCoordinates(network.getPositions());
             network.stopSimulation();
             if (!physicsState) {
@@ -2666,7 +2675,7 @@
 
     function resetGraphView() {
       resetGlobeView();
-      if (network) network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+      if (network) fitGraphView();
     }
 
     function zoomIn() {
@@ -2688,11 +2697,11 @@
     }
 
     function spreadGraph() {
-      currentSpringLength = (currentSpringLength === 260) ? 380 : 260;
+      currentSpringLength = (currentSpringLength === 160) ? 230 : 160;
       const btn = document.getElementById("spread-btn");
       const label = document.getElementById("spread-label");
-      label.innerText = currentSpringLength === 380 ? "Spread: Wide" : "Spread Out";
-      btn.classList.toggle("active", currentSpringLength === 380);
+      label.innerText = currentSpringLength === 230 ? "Spread: Wide" : "Spread Out";
+      btn.classList.toggle("active", currentSpringLength === 230);
 
       const currentRing = allRings[activeIndex];
       if (!currentRing || !network) return;
@@ -2896,7 +2905,7 @@ Action Recommendation: Coordinated mule syndicate detected. Initiate credential 
     window.addEventListener("resize", () => {
       if (network) {
         network.redraw();
-        network.fit();
+        fitGraphView();
       }
     });
 

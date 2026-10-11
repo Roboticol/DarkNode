@@ -27,8 +27,8 @@ for idx, r in enumerate(fallback_rings):
     for e in r['graph']['edges']:
         w = 2.5 if e.get('relation') == 'shared_ip' else (1.5 if e.get('relation') == 'shared_device' else 1.0)
         G.add_edge(e['from'], e['to'], weight=w)
-    pos = nx.spring_layout(G, k=2.0, iterations=300, seed=42 + idx * 7)
-    organic_layouts[idx] = {k: {'x': round(v[0] * 300, 1), 'y': round(v[1] * 300, 1)} for k, v in pos.items()}
+    pos = nx.spring_layout(G, k=1.3, iterations=300, seed=42 + idx * 7)
+    organic_layouts[idx] = {k: {'x': round(v[0] * 185, 1), 'y': round(v[1] * 185, 1)} for k, v in pos.items()}
 
 organic_layouts_json = json.dumps(organic_layouts)
 
@@ -1656,7 +1656,7 @@ html_template = """<!DOCTYPE html>
     let allRings = [];
     let activeIndex = 0;
     let physicsState = true;
-    let currentSpringLength = 260;
+    let currentSpringLength = 160;
     let activeFilters = { user: true, device: true, merchant: true };
     let currentVisibleNodes = [];
 
@@ -1684,6 +1684,15 @@ html_template = """<!DOCTYPE html>
     let globeRafPending = false;
     let analysisFaceAngle = 0;
     let morphRafId = null;
+
+    function fitGraphView(animate = true) {
+      if (!network) return;
+      network.fit({
+        animation: animate ? { duration: 320, easingFunction: "easeInOutQuad" } : false,
+        maxZoomLevel: 0.86,
+        minZoomLevel: 0.25
+      });
+    }
 
     function calculateCentroid(positions) {
       let sumX = 0, sumY = 0, count = 0;
@@ -1843,7 +1852,7 @@ html_template = """<!DOCTYPE html>
       }
       updateGlobeIndicator();
       if (network) {
-        network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+        fitGraphView();
       }
       showToast("Reset 3D Globe orientation to default view");
     }
@@ -1956,29 +1965,29 @@ html_template = """<!DOCTYPE html>
       const otherNodes = visibleNodes.filter(n => n.group !== "user" && n.group !== "device" && n.group !== "merchant");
 
       const positions = {};
-      // 1. Core Mule Users in compact cluster (radius 70-110px)
+      // 1. Core Mule Users in compact cluster (radius 48-68px)
       const nU = Math.max(1, userNodes.length);
       userNodes.forEach((u, i) => {
         const ang = (2 * Math.PI * i) / nU;
-        const r = 85 * (0.85 + (i % 3) * 0.2);
+        const r = 58 * (0.85 + (i % 3) * 0.2);
         positions[u.id] = { x: Math.round(r * Math.cos(ang) * 10) / 10, y: Math.round(r * Math.sin(ang) * 10) / 10 };
       });
 
-      // 2. Hardware Devices distributed symmetrically in star perimeter (radius 270-300px)
+      // 2. Hardware Devices distributed symmetrically in star perimeter (radius 175-195px)
       const nD = Math.max(1, devNodes.length);
       devNodes.forEach((d, i) => {
         const ang = Math.PI / 2 + (2 * Math.PI * i) / nD;
-        const r = 285 + (i % 2 === 1 ? 15 : -15);
+        const r = 180 + (i % 2 === 1 ? 12 : -12);
         positions[d.id] = { x: Math.round(r * Math.cos(ang) * 10) / 10, y: Math.round(r * Math.sin(ang) * 10) / 10 };
       });
 
-      // 3. Merchants clustered at top and bottom (radius 155-185px)
+      // 3. Merchants clustered at top and bottom (radius 105-125px)
       const nM = Math.max(1, merchNodes.length);
       merchNodes.forEach((m, i) => {
         const baseAng = (i % 2 === 0) ? -Math.PI / 2 : Math.PI / 2;
-        const angOffset = ((Math.floor(i / 2) - 0.5) * 0.55);
+        const angOffset = ((Math.floor(i / 2) - 0.5) * 0.5);
         const ang = baseAng + angOffset;
-        const r = 165 + (i % 3) * 15;
+        const r = 112 + (i % 3) * 10;
         positions[m.id] = { x: Math.round(r * Math.cos(ang) * 10) / 10, y: Math.round(r * Math.sin(ang) * 10) / 10 };
       });
 
@@ -1986,14 +1995,14 @@ html_template = """<!DOCTYPE html>
       const nO = Math.max(1, otherNodes.length);
       otherNodes.forEach((o, i) => {
         const ang = (2 * Math.PI * i) / nO;
-        positions[o.id] = { x: Math.round(230 * Math.cos(ang) * 10) / 10, y: Math.round(230 * Math.sin(ang) * 10) / 10 };
+        positions[o.id] = { x: Math.round(145 * Math.cos(ang) * 10) / 10, y: Math.round(145 * Math.sin(ang) * 10) / 10 };
       });
 
       return positions;
     }
 
-    function computeModelLayout(graphData, faceAngle = 0, springLength = 260) {
-      const scale = springLength / 260;
+    function computeModelLayout(graphData, faceAngle = 0, springLength = 160) {
+      const scale = springLength / 160;
       let rawPositions = null;
 
       // 1. Match precomputed organic layout by active ring or node list
@@ -2034,9 +2043,9 @@ html_template = """<!DOCTYPE html>
         };
       }
 
-      // 4. Collision relaxation pass (Guarantees zero overlap, min distance >= 55px)
+      // 4. Collision relaxation pass (Guarantees zero overlap, min distance >= 44px)
       const keys = Object.keys(positions);
-      const minDistance = 55.0;
+      const minDistance = 44.0;
       for (let iter = 0; iter < 18; iter++) {
         for (let i = 0; i < keys.length; i++) {
           for (let j = i + 1; j < keys.length; j++) {
@@ -2112,7 +2121,7 @@ html_template = """<!DOCTYPE html>
           if (currentNodesDataSet) currentNodesDataSet.update(finalUpdates);
           setup3DCoordinates(targetPositions);
           if (network) {
-            network.fit({ animation: { duration: 300, easingFunction: "easeInOutQuad" } });
+            fitGraphView();
           }
           if (onComplete) onComplete();
         }
@@ -2465,12 +2474,12 @@ html_template = """<!DOCTYPE html>
 
         initCanvasRotationListeners();
 
-        network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+        fitGraphView(false);
         setup3DCoordinates(initialPositions);
 
         network.once("stabilizationIterationsDone", function() {
           if (network) {
-            network.fit({ animation: { duration: 250, easingFunction: "easeInOutQuad" } });
+            fitGraphView();
             setup3DCoordinates(network.getPositions());
             network.stopSimulation();
             if (!physicsState) {
@@ -2700,7 +2709,7 @@ html_template = """<!DOCTYPE html>
 
     function resetGraphView() {
       resetGlobeView();
-      if (network) network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+      if (network) fitGraphView();
     }
 
     function zoomIn() {
@@ -2722,11 +2731,11 @@ html_template = """<!DOCTYPE html>
     }
 
     function spreadGraph() {
-      currentSpringLength = (currentSpringLength === 260) ? 380 : 260;
+      currentSpringLength = (currentSpringLength === 160) ? 230 : 160;
       const btn = document.getElementById("spread-btn");
       const label = document.getElementById("spread-label");
-      label.innerText = currentSpringLength === 380 ? "Spread: Wide" : "Spread Out";
-      btn.classList.toggle("active", currentSpringLength === 380);
+      label.innerText = currentSpringLength === 230 ? "Spread: Wide" : "Spread Out";
+      btn.classList.toggle("active", currentSpringLength === 230);
 
       const currentRing = allRings[activeIndex];
       if (!currentRing || !network) return;
@@ -2930,7 +2939,7 @@ Action Recommendation: Coordinated mule syndicate detected. Initiate credential 
     window.addEventListener("resize", () => {
       if (network) {
         network.redraw();
-        network.fit();
+        fitGraphView();
       }
     });
 
