@@ -1,4 +1,11 @@
-"""Build and bundle web/index.html with dark grey and electric yellow theme and embedded cached rings."""
+"""Build web/index.html with:
+1. Always-visible constant-size screen text labels across all zoom levels.
+2. Dynamic zoom-reactive physics animation:
+   - Zoom out -> nodes smoothly pull closer together into a compact cluster.
+   - Zoom in  -> nodes smoothly spread out freely with open spacing.
+3. Clean, raw professional symbols/SVGs with all playful/AI emojis removed.
+4. Embedded real forward-pass rings from trained model.
+"""
 
 import json
 from pathlib import Path
@@ -51,10 +58,6 @@ html_template = """<!DOCTYPE html>
       --node-device: #38bdf8;
       --node-merchant: #34d399;
       
-      --accent-cyan: #38bdf8;
-      --accent-emerald: #34d399;
-      --accent-rose: #f43f5e;
-      
       --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.45);
       --shadow-glow: 0 0 16px rgba(250, 204, 21, 0.2);
       
@@ -106,9 +109,6 @@ html_template = """<!DOCTYPE html>
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 900;
-      color: #111215;
-      font-size: 15px;
       box-shadow: var(--shadow-glow);
     }
 
@@ -193,7 +193,7 @@ html_template = """<!DOCTYPE html>
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: var(--accent-emerald);
+      background: #34d399;
       box-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
     }
 
@@ -203,10 +203,10 @@ html_template = """<!DOCTYPE html>
     }
 
     .status-text {
+      font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
       font-weight: 600;
       color: var(--text-muted);
-      text-transform: uppercase;
       letter-spacing: 0.04em;
     }
 
@@ -272,7 +272,7 @@ html_template = """<!DOCTYPE html>
 
     /* Left Sidebar: Rings Directory */
     .sidebar-left {
-      width: 310px;
+      width: 320px;
       flex-shrink: 0;
       height: 100%;
     }
@@ -298,6 +298,9 @@ html_template = """<!DOCTYPE html>
       padding: 10px 14px;
       border-bottom: 1px solid var(--border-subtle);
       background: var(--bg-panel);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .search-input-clean {
@@ -335,7 +338,7 @@ html_template = """<!DOCTYPE html>
       transition: all 0.15s ease;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 6px;
       position: relative;
     }
 
@@ -387,9 +390,19 @@ html_template = """<!DOCTYPE html>
     .ring-card-bottom {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       font-size: 11px;
       color: var(--text-muted);
+    }
+
+    .raw-stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .raw-stat-pill svg {
+      opacity: 0.75;
     }
 
     /* Center Viewport: Spacious Graph */
@@ -432,7 +445,7 @@ html_template = """<!DOCTYPE html>
       display: flex;
       align-items: center;
       gap: 6px;
-      background: rgba(24, 25, 30, 0.92);
+      background: rgba(24, 25, 30, 0.94);
       backdrop-filter: blur(8px);
       border: 1px solid var(--border-subtle);
       border-radius: 8px;
@@ -453,7 +466,7 @@ html_template = """<!DOCTYPE html>
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       transition: all 0.12s ease;
       font-family: inherit;
     }
@@ -477,7 +490,7 @@ html_template = """<!DOCTYPE html>
       display: flex;
       align-items: center;
       gap: 12px;
-      background: rgba(24, 25, 30, 0.92);
+      background: rgba(24, 25, 30, 0.94);
       backdrop-filter: blur(8px);
       border: 1px solid var(--border-subtle);
       border-radius: 7px;
@@ -611,8 +624,22 @@ html_template = """<!DOCTYPE html>
       border-bottom: none;
     }
 
+    .signal-prefix-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: var(--bg-panel);
+      color: var(--yellow-primary);
+      border: 1px solid var(--border-subtle);
+      margin-right: 6px;
+    }
+
     .signal-label-text {
       color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
     }
 
     .signal-metric-val {
@@ -684,26 +711,29 @@ html_template = """<!DOCTYPE html>
   <!-- Top Header Navigation -->
   <header>
     <div class="brand-group">
-      <div class="brand-logo-mark">D</div>
+      <div class="brand-logo-mark">
+        <!-- Raw Network Graph Node Glyph -->
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#111215" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><line x1="12" y1="9" x2="19" y2="6.5"/><line x1="12" y1="15" x2="5" y2="17.5"/></svg>
+      </div>
       <div class="brand-title">
         Dark<span class="kicker">Node</span>
-        <span class="badge-pill">GNN MPNN</span>
+        <span class="badge-pill">GNN-MPNN</span>
       </div>
     </div>
 
     <!-- Header Stats -->
     <div class="header-stats">
       <div class="stat-pill">
-        <span>Users:</span>
+        <span>USR:</span>
         <span class="stat-val" id="stat-users">1,000</span>
       </div>
       <div class="stat-pill">
-        <span>Transactions:</span>
+        <span>TXS:</span>
         <span class="stat-val" id="stat-txs">13,680</span>
       </div>
       <div class="stat-pill">
-        <span>Rings Detected:</span>
-        <span class="stat-val" id="stat-rings" style="color: var(--yellow-primary);">6</span>
+        <span>RINGS:</span>
+        <span class="stat-val" id="stat-rings" style="color: var(--yellow-primary);">10</span>
       </div>
     </div>
 
@@ -716,6 +746,7 @@ html_template = """<!DOCTYPE html>
       </div>
 
       <button class="btn btn-yellow" onclick="fetchRings()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         Run Analysis
       </button>
     </div>
@@ -728,10 +759,11 @@ html_template = """<!DOCTYPE html>
     <div class="panel-card sidebar-left">
       <div class="panel-header-clean">
         <span class="panel-title">Detected Syndicates</span>
-        <span class="badge-pill" id="rings-count-badge">6 total</span>
+        <span class="badge-pill" id="rings-count-badge">10 total</span>
       </div>
       <div class="search-box-clean">
-        <input type="text" class="search-input-clean" id="search-filter" placeholder="Filter by Ring ID or User..." oninput="filterRings()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="search-input-clean" id="search-filter" placeholder="Filter by Ring ID or User ID..." oninput="filterRings()">
       </div>
       <div class="rings-list-scroll" id="rings-container">
         <!-- Injected rings -->
@@ -742,9 +774,18 @@ html_template = """<!DOCTYPE html>
     <div class="panel-card viewport-center">
       <!-- Floating Toolbar -->
       <div class="canvas-bar">
-        <button class="canvas-pill-btn active" onclick="resetGraphView()">Fit View</button>
-        <button class="canvas-pill-btn" id="spread-btn" onclick="spreadGraph()">Spread Out</button>
-        <button class="canvas-pill-btn" id="physics-toggle" onclick="togglePhysics()">Physics: On</button>
+        <button class="canvas-pill-btn active" onclick="resetGraphView()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+          Fit View
+        </button>
+        <button class="canvas-pill-btn" id="spread-btn" onclick="spreadGraph()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+          <span id="spread-label">Spread Out</span>
+        </button>
+        <button class="canvas-pill-btn" id="physics-toggle" onclick="togglePhysics()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span id="physics-label">Physics: On</span>
+        </button>
         <span style="color: var(--border-subtle);">|</span>
         <button class="canvas-pill-btn active" id="filter-user" onclick="toggleFilter('user')">Users</button>
         <button class="canvas-pill-btn active" id="filter-device" onclick="toggleFilter('device')">Devices</button>
@@ -775,7 +816,7 @@ html_template = """<!DOCTYPE html>
       <!-- Bottom Insight Banner -->
       <div class="key-detail-banner">
         <strong>Architectural Signal:</strong>
-        <span>Heterogeneous Message Passing aggregates device hardware fingerprints and IP collision graphs, eliminating false alarms.</span>
+        <span>Heterogeneous Message Passing propagates embeddings across device, IP, and transaction hops to eliminate heuristic false alarms.</span>
       </div>
     </div>
 
@@ -803,23 +844,23 @@ html_template = """<!DOCTYPE html>
           <div class="block-title">Behavioral Reason Signals</div>
           <div class="signals-card-group">
             <div class="signal-item-row">
-              <span class="signal-label-text">Shared Device Concentration</span>
+              <span class="signal-label-text"><span class="signal-prefix-tag">DEV</span>Shared Device Ratio</span>
               <span class="signal-metric-val" id="sig-device">0%</span>
             </div>
             <div class="signal-item-row">
-              <span class="signal-label-text">Shared IP Interconnections</span>
+              <span class="signal-label-text"><span class="signal-prefix-tag">NET</span>Shared IP Pairs</span>
               <span class="signal-metric-val" id="sig-ip">0 pairs</span>
             </div>
             <div class="signal-item-row">
-              <span class="signal-label-text">Burst Velocity</span>
+              <span class="signal-label-text"><span class="signal-prefix-tag">VEL</span>Burst Velocity</span>
               <span class="signal-metric-val" id="sig-vel">0 tx/hr</span>
             </div>
             <div class="signal-item-row">
-              <span class="signal-label-text">GNN Confidence</span>
+              <span class="signal-label-text"><span class="signal-prefix-tag">GNN</span>Model Confidence</span>
               <span class="signal-metric-val" id="sig-gnn">0.00</span>
             </div>
             <div class="signal-item-row">
-              <span class="signal-label-text">Fresh Accounts Ratio</span>
+              <span class="signal-label-text"><span class="signal-prefix-tag">NEW</span>New Accounts Ratio</span>
               <span class="signal-metric-val" id="sig-fresh">0</span>
             </div>
           </div>
@@ -827,7 +868,7 @@ html_template = """<!DOCTYPE html>
 
         <!-- Member Accounts -->
         <div>
-          <div class="block-title">Syndicate Accounts (<span id=\"members-count\">0</span>)</div>
+          <div class="block-title">Syndicate Accounts (<span id="members-count">0</span>)</div>
           <div class="user-chips-grid" id="members-chips">
             <!-- Account Chips -->
           </div>
@@ -836,9 +877,11 @@ html_template = """<!DOCTYPE html>
         <!-- Compliance & Export Actions -->
         <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
           <button class="btn btn-yellow" id="freeze-btn" style="height: 36px;" onclick="simulateFreeze()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             Freeze Ring Accounts (Simulation)
           </button>
           <button class="btn btn-outline" style="height: 34px;" onclick="exportJson()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Export Ring Dossier (JSON)
           </button>
         </div>
@@ -860,6 +903,7 @@ html_template = """<!DOCTYPE html>
     let physicsState = true;
     let currentSpringLength = 260;
     let activeFilters = { user: true, device: true, merchant: true };
+    let currentVisibleNodes = [];
 
     // Real fallback dataset extracted from trained GNN model
     const FALLBACK_RINGS = __FALLBACK_JSON__;
@@ -917,9 +961,18 @@ html_template = """<!DOCTYPE html>
             <span class="ring-risk-tag">${(ring.score * 100).toFixed(1)}% RISK</span>
           </div>
           <div class="ring-card-bottom">
-            <span>👥 ${ring.member_count} members</span>
-            <span>📱 ${ring.shared_device_pct}% dev</span>
-            <span>⚡ ${Math.round(ring.transaction_velocity)} tx/h</span>
+            <span class="raw-stat-pill">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              ${ring.member_count} USR
+            </span>
+            <span class="raw-stat-pill">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              ${ring.shared_device_pct}% DEV
+            </span>
+            <span class="raw-stat-pill">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              ${Math.round(ring.transaction_velocity)} TX/H
+            </span>
           </div>
         `;
         container.appendChild(card);
@@ -959,7 +1012,7 @@ html_template = """<!DOCTYPE html>
 
       // Reset freeze button
       const freezeBtn = document.getElementById("freeze-btn");
-      freezeBtn.innerText = "Freeze Ring Accounts (Simulation)";
+      freezeBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Freeze Ring Accounts (Simulation)`;
       freezeBtn.disabled = false;
       freezeBtn.style.opacity = "1";
 
@@ -979,31 +1032,34 @@ html_template = """<!DOCTYPE html>
 
       // Filter Nodes
       const visibleNodes = graphData.nodes.filter(n => activeFilters[n.group] !== false);
+      currentVisibleNodes = visibleNodes;
       const visibleIds = new Set(visibleNodes.map(n => n.id));
       const visibleEdges = (graphData.edges || []).filter(e => visibleIds.has(e.from) && visibleIds.has(e.to));
 
       const nodes = new vis.DataSet(visibleNodes.map(n => {
         let color = "#facc15";
         let shape = "dot";
-        let size = 22;
+        let size = 20;
 
         if (n.group === "user") {
           color = "#facc15"; // Electric Yellow
           shape = "dot";
-          size = 22;
+          size = 20;
         } else if (n.group === "device") {
           color = "#38bdf8"; // Cyan
           shape = "diamond";
-          size = 24;
+          size = 22;
         } else if (n.group === "merchant") {
           color = "#34d399"; // Mint
           shape = "triangle";
-          size = 20;
+          size = 18;
         }
 
         return {
           id: n.id,
-          label: n.label,
+          label: " ", // We use afterDrawing canvas overlay for constant-size crisp labels!
+          actualLabel: n.label,
+          group: n.group,
           color: {
             background: color,
             border: "#ffffff",
@@ -1012,18 +1068,11 @@ html_template = """<!DOCTYPE html>
           borderWidth: 2,
           shape: shape,
           size: size,
-          font: {
-            color: "#f3f4f6",
-            size: 11,
-            face: "Plus Jakarta Sans",
-            bold: { color: "#f3f4f6", size: 11 },
-            background: "rgba(20, 21, 26, 0.85)"
-          },
           shadow: { enabled: true, color: "rgba(0, 0, 0, 0.6)", size: 6, x: 0, y: 3 }
         };
       }));
 
-      // Airy, distinct edges with NO static labels to avoid clumping
+      // Clean, airy edges with hover tooltips
       const edges = new vis.DataSet(visibleEdges.map(e => {
         let edgeColor = "#64748b";
         let dashes = false;
@@ -1058,18 +1107,18 @@ html_template = """<!DOCTYPE html>
 
       const data = { nodes, edges };
 
-      // Free, spacious layout physics configuration
+      // Physics configuration
       const options = {
         physics: {
           enabled: physicsState,
           solver: "forceAtlas2Based",
           forceAtlas2Based: {
-            gravitationalConstant: -460, // Strong repulsion separates nodes widely
-            centralGravity: 0.002,       // Low gravity prevents pulling into a ball
-            springLength: currentSpringLength, // Spacious spring length
+            gravitationalConstant: -460,
+            centralGravity: 0.002,
+            springLength: currentSpringLength,
             springConstant: 0.035,
             damping: 0.28,
-            avoidOverlap: 1.0            // Strict collision prevention
+            avoidOverlap: 1.0
           },
           stabilization: { iterations: 180 }
         },
@@ -1088,6 +1137,96 @@ html_template = """<!DOCTYPE html>
         network.fit({ animation: { duration: 400, easingFunction: "easeInOutQuad" } });
       });
 
+      // =========================================================================
+      // 1. CONSTANT SCREEN TEXT SIZE & VISIBILITY AT ALL ZOOM LEVELS
+      // =========================================================================
+      // Rendered directly in native 1:1 screen pixel coordinates via afterDrawing.
+      // Text size stays precisely 11px on screen whether zoomed in or zoomed out!
+      network.on("afterDrawing", function(ctx) {
+        ctx.save();
+        // Reset canvas matrix to 1:1 screen device pixels
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+        const positions = network.getPositions();
+        ctx.font = "600 11px 'JetBrains Mono', monospace";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        for (const node of currentVisibleNodes) {
+          const pos = positions[node.id];
+          if (!pos) continue;
+          const domPos = network.canvasToDOM({ x: pos.x, y: pos.y });
+
+          // Skip drawing if outside viewport
+          if (domPos.x < -60 || domPos.x > container.clientWidth + 60 ||
+              domPos.y < -60 || domPos.y > container.clientHeight + 60) {
+            continue;
+          }
+
+          const labelText = node.label;
+          const yOffset = (node.group === "device" ? 22 : 18);
+          const textX = domPos.x;
+          const textY = domPos.y + yOffset;
+
+          // Crisp dark background pill for high contrast
+          const textWidth = ctx.measureText(labelText).width;
+          ctx.fillStyle = "rgba(17, 18, 22, 0.92)";
+          ctx.beginPath();
+          ctx.roundRect(textX - textWidth / 2 - 5, textY - 8, textWidth + 10, 16, 4);
+          ctx.fill();
+
+          // Subtle entity outline border
+          ctx.strokeStyle = node.group === "user" ? "rgba(250, 204, 21, 0.4)" : (node.group === "device" ? "rgba(56, 189, 248, 0.4)" : "rgba(52, 211, 153, 0.4)");
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+
+          // Text fill color
+          ctx.fillStyle = node.group === "user" ? "#facc15" : (node.group === "device" ? "#38bdf8" : "#34d399");
+          ctx.fillText(labelText, textX, textY);
+        }
+
+        ctx.restore();
+      });
+
+      // =========================================================================
+      // 2. DYNAMIC ZOOM ANIMATION
+      // =========================================================================
+      // When Zoom Out: springs contract, central gravity gently pulls in -> nodes smoothly group together!
+      // When Zoom In:  springs expand, strong repulsion pushes out -> nodes freely spread out!
+      network.on("zoom", function(params) {
+        if (!physicsState) return;
+        const s = params.scale;
+
+        let targetSpring, targetGravity, targetCentral;
+
+        if (s < 1.0) {
+          // Zoomed Out: cluster smoothly contracts together
+          const t = Math.max(0, (s - 0.25) / 0.75); // 0 at s=0.25, 1 at s=1.0
+          targetSpring = Math.round(110 + (260 - 110) * t);
+          targetGravity = Math.round(-150 + (-460 - -150) * t);
+          targetCentral = 0.022 + (0.002 - 0.022) * t;
+        } else {
+          // Zoomed In: cluster smoothly spreads freely apart
+          const t = Math.min(1.5, s - 1.0);
+          targetSpring = Math.round(260 + 120 * t);
+          targetGravity = Math.round(-460 - 180 * t);
+          targetCentral = Math.max(0.0005, 0.002 - 0.001 * t);
+        }
+
+        network.setOptions({
+          physics: {
+            forceAtlas2Based: {
+              springLength: targetSpring,
+              gravitationalConstant: targetGravity,
+              centralGravity: targetCentral
+            }
+          }
+        });
+
+        // Trigger dynamic animation step
+        network.startSimulation();
+      });
+
       // Click node to focus
       network.on("click", function(params) {
         if (params.nodes.length > 0) {
@@ -1101,15 +1240,16 @@ html_template = """<!DOCTYPE html>
     }
 
     function spreadGraph() {
-      currentSpringLength = (currentSpringLength === 260) ? 360 : 260;
+      currentSpringLength = (currentSpringLength === 260) ? 380 : 260;
       const btn = document.getElementById("spread-btn");
-      btn.innerText = currentSpringLength === 360 ? "Spread: Wide" : "Spread Out";
-      btn.classList.toggle("active", currentSpringLength === 360);
+      const label = document.getElementById("spread-label");
+      label.innerText = currentSpringLength === 380 ? "Spread: Wide" : "Spread Out";
+      btn.classList.toggle("active", currentSpringLength === 380);
 
       if (network) {
         network.setOptions({
           physics: {
-            forceAtlas2Based: { springLength: currentSpringLength, gravitationalConstant: currentSpringLength === 360 ? -600 : -460 }
+            forceAtlas2Based: { springLength: currentSpringLength, gravitationalConstant: currentSpringLength === 380 ? -620 : -460 }
           }
         });
         network.startSimulation();
@@ -1118,7 +1258,8 @@ html_template = """<!DOCTYPE html>
 
     function togglePhysics() {
       physicsState = !physicsState;
-      document.getElementById("physics-toggle").innerText = `Physics: ${physicsState ? 'On' : 'Off'}`;
+      const label = document.getElementById("physics-label");
+      label.innerText = `Physics: ${physicsState ? 'On' : 'Off'}`;
       if (network) network.setOptions({ physics: { enabled: physicsState } });
     }
 
@@ -1143,7 +1284,7 @@ html_template = """<!DOCTYPE html>
       const ring = allRings[activeIndex];
       if (!ring) return;
       const btn = document.getElementById("freeze-btn");
-      btn.innerText = "Accounts Frozen (Simulation)";
+      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Accounts Suspended (Simulation)`;
       btn.disabled = true;
       btn.style.opacity = "0.7";
       showToast(`Simulation: Suspended ${ring.member_count} syndicate accounts in Ring #${ring.ring_id}`);
@@ -1189,4 +1330,3 @@ with open("web/index.html", "w", encoding="utf-8") as f:
     f.write(output_html)
 
 print("web/index.html written successfully!")
-
