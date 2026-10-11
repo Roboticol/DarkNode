@@ -6,33 +6,42 @@
   <title>DarkNode — Fraud Ring Detection Platform</title>
   <!-- Vis-network CDN -->
   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-  <!-- Inter & JetBrains Mono Fonts -->
+  <!-- Plus Jakarta Sans & JetBrains Mono Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg: #09090b;
-      --surface: #121215;
-      --surface-elevated: #18181b;
-      --surface-hover: #222227;
-      --border: #27272a;
-      --border-subtle: #1e1e24;
-      --text: #f4f4f5;
-      --text-muted: #71717a;
-      --text-dim: #52525b;
-      --danger: #f43f5e;
-      --danger-subtle: rgba(244, 63, 94, 0.1);
-      --danger-border: rgba(244, 63, 94, 0.3);
-      --warning: #f59e0b;
-      --success: #10b981;
-      --accent: #3b82f6;
-      --user-node: #f43f5e;
-      --device-node: #f59e0b;
-      --merchant-node: #10b981;
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
+      --bg-page: #f4f6fa;
+      --card-bg: #ffffff;
+      --border-subtle: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      
+      /* Vibrant Coral / Red from Slide */
+      --primary-red: #e11d48;
+      --primary-red-hover: #be123c;
+      --primary-red-bg: #fff1f2;
+      --primary-red-border: #fecdd3;
+      
+      --accent-amber: #d97706;
+      --accent-amber-bg: #fef3c7;
+      --accent-emerald: #059669;
+      --accent-emerald-bg: #d1fae5;
+      --accent-indigo: #4f46e5;
+
+      --node-user: #e11d48;
+      --node-device: #f59e0b;
+      --node-merchant: #10b981;
+
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+      --shadow-lg: 0 10px 25px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.03);
+      --radius: 14px;
+      --radius-sm: 8px;
     }
 
     * {
@@ -42,9 +51,9 @@
     }
 
     body {
-      font-family: var(--font-sans);
-      background-color: var(--bg);
-      color: var(--text);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
       height: 100vh;
       overflow: hidden;
       display: flex;
@@ -52,646 +61,713 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Minimal Header */
+    /* Top Navigation Bar */
     header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      height: 52px;
-      padding: 0 20px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-subtle);
+      height: 60px;
+      padding: 0 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-shrink: 0;
       z-index: 50;
+      box-shadow: var(--shadow-sm);
     }
 
-    .brand {
+    .brand-group {
       display: flex;
-      align-items: center;
-      gap: 10px;
+      flex-direction: column;
+      gap: 2px;
     }
 
-    .brand-mark {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--danger);
-      box-shadow: 0 0 10px var(--danger);
-    }
-
-    .brand-name {
+    .brand-kicker {
+      font-size: 11px;
       font-weight: 700;
-      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--primary-red);
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 800;
       letter-spacing: -0.02em;
-    }
-
-    .badge-gnn {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: var(--surface-elevated);
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-    }
-
-    .top-stats {
+      color: var(--text-main);
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 8px;
+    }
+
+    .badge-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: var(--bg-page);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+    }
+
+    /* Top Stats Pills */
+    .header-stats {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-page);
+      border: 1px solid var(--border-subtle);
+      padding: 6px 12px;
+      border-radius: 8px;
       font-size: 12px;
       color: var(--text-muted);
     }
 
-    .stat-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
     .stat-val {
-      font-family: var(--font-mono);
-      font-weight: 600;
-      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: var(--text-main);
     }
 
-    .controls-section {
+    .header-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
-    .api-pill {
+    .api-box {
       display: flex;
       align-items: center;
-      background: var(--surface-elevated);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 3px 8px;
-      gap: 6px;
+      background: var(--bg-page);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 4px 10px;
+      gap: 8px;
     }
 
-    .api-pill input {
+    .api-box input {
       background: transparent;
       border: none;
-      color: var(--text);
-      font-family: var(--font-mono);
+      color: var(--text-main);
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       width: 170px;
       outline: none;
     }
 
-    .status-indicator {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      font-family: var(--font-mono);
-      padding: 3px 8px;
-      border-radius: 4px;
-      background: rgba(16, 185, 129, 0.1);
-      color: var(--success);
-      border: 1px solid rgba(16, 185, 129, 0.2);
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      box-shadow: 0 0 6px rgba(5, 150, 105, 0.4);
     }
 
-    .status-indicator.offline {
-      background: rgba(245, 158, 11, 0.1);
-      color: var(--warning);
-      border-color: rgba(245, 158, 11, 0.2);
+    .status-dot.offline {
+      background: var(--accent-amber);
+      box-shadow: 0 0 6px rgba(217, 119, 6, 0.4);
     }
 
     .btn {
-      height: 28px;
-      padding: 0 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 500;
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
       cursor: pointer;
-      border: 1px solid var(--border);
-      background: var(--surface-elevated);
-      color: var(--text);
+      border: none;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
       transition: all 0.15s ease;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    .btn:hover {
-      background: var(--surface-hover);
-      border-color: var(--text-dim);
+    .btn-red {
+      background: var(--primary-red);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(225, 29, 72, 0.25);
     }
 
-    .btn-primary {
-      background: #fafafa;
-      color: #09090b;
-      border: none;
-      font-weight: 600;
+    .btn-red:hover {
+      background: var(--primary-red-hover);
+      box-shadow: 0 4px 12px rgba(225, 29, 72, 0.35);
     }
 
-    .btn-primary:hover {
-      background: #e4e4e7;
+    .btn-outline {
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
     }
 
-    .btn-danger {
-      background: var(--danger-subtle);
-      border-color: var(--danger-border);
-      color: var(--danger);
-      font-weight: 600;
+    .btn-outline:hover {
+      background: var(--bg-page);
+      border-color: var(--border-strong);
     }
 
-    .btn-danger:hover {
-      background: rgba(244, 63, 94, 0.2);
-    }
-
-    /* Workspace Layout */
+    /* Main Workspace Container (Airy & Floating Cards) */
     .workspace {
       display: flex;
       flex: 1;
-      height: calc(100vh - 52px);
+      gap: 16px;
+      padding: 16px 24px;
+      height: calc(100vh - 60px);
       overflow: hidden;
     }
 
-    /* Left Sidebar: Ring Directory */
-    .sidebar-left {
-      width: 290px;
-      background: var(--surface);
-      border-right: 1px solid var(--border);
+    /* Floating Card Panel */
+    .panel-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
       display: flex;
       flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Left Sidebar: Rings List */
+    .sidebar-left {
+      width: 310px;
       flex-shrink: 0;
     }
 
-    .sidebar-search {
-      padding: 10px 12px;
+    .panel-header-clean {
+      padding: 14px 18px;
       border-bottom: 1px solid var(--border-subtle);
-    }
-
-    .search-input {
-      width: 100%;
-      background: var(--surface-elevated);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 6px 10px;
-      font-size: 12px;
-      color: var(--text);
-      outline: none;
-      font-family: var(--font-sans);
-    }
-
-    .search-input:focus {
-      border-color: var(--text-dim);
-    }
-
-    .rings-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .ring-item {
-      padding: 10px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      border: 1px solid transparent;
-      background: transparent;
-      transition: all 0.12s ease;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .ring-item:hover {
-      background: var(--surface-hover);
-    }
-
-    .ring-item.active {
-      background: var(--surface-elevated);
-      border-color: var(--border);
-    }
-
-    .ring-item-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    .ring-title {
+    .panel-title {
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
+      color: var(--text-main);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .search-box-clean {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .search-input-clean {
+      width: 100%;
+      background: var(--bg-page);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 12px;
+      color: var(--text-main);
+      outline: none;
+      font-family: inherit;
+    }
+
+    .search-input-clean:focus {
+      border-color: var(--primary-red);
+      background: #ffffff;
+    }
+
+    .rings-list-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
       display: flex;
-      align-items: center;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Clean Ring Card */
+    .ring-card-item {
+      background: var(--bg-page);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
       gap: 6px;
     }
 
-    .ring-score-pill {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 600;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: var(--danger-subtle);
-      color: var(--danger);
-      border: 1px solid var(--danger-border);
+    .ring-card-item:hover {
+      background: #ffffff;
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-sm);
     }
 
-    .ring-item-bottom {
+    .ring-card-item.active {
+      background: #ffffff;
+      border-color: var(--primary-red);
+      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.12);
+      position: relative;
+    }
+
+    .ring-card-item.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 10px;
+      bottom: 10px;
+      width: 4px;
+      border-radius: 0 4px 4px 0;
+      background: var(--primary-red);
+    }
+
+    .ring-card-top {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 11px;
-      color: var(--text-muted);
-      font-family: var(--font-mono);
+      justify-content: space-between;
     }
 
-    /* Center Viewport: Graph */
+    .ring-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .ring-risk-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--primary-red-bg);
+      color: var(--primary-red);
+      border: 1px solid var(--primary-red-border);
+    }
+
+    .ring-card-bottom {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Center Viewport (Network Graph Canvas) */
     .viewport-center {
       flex: 1;
       position: relative;
-      background: #09090b;
-      overflow: hidden;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
     }
 
     #network-canvas {
       width: 100%;
-      height: 100%;
+      flex: 1;
+      background-color: #ffffff;
+      background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px);
+      background-size: 24px 24px;
     }
 
-    /* Floating Graph Toolbar */
-    .graph-toolbar {
+    /* Floating Graph Bar */
+    .canvas-bar {
       position: absolute;
-      top: 14px;
-      left: 14px;
+      top: 16px;
+      left: 16px;
       display: flex;
       align-items: center;
-      gap: 6px;
-      background: rgba(18, 18, 21, 0.85);
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(8px);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 4px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 6px 10px;
+      box-shadow: var(--shadow-sm);
       z-index: 10;
     }
 
-    .tool-btn {
-      height: 26px;
-      padding: 0 8px;
-      font-size: 11px;
-      font-family: var(--font-sans);
-      border-radius: 4px;
-      border: none;
+    .canvas-pill-btn {
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 6px;
+      border: 1px solid transparent;
       background: transparent;
       color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      transition: all 0.1s ease;
+      gap: 6px;
+      transition: all 0.12s ease;
     }
 
-    .tool-btn:hover {
-      background: var(--surface-hover);
-      color: var(--text);
+    .canvas-pill-btn:hover {
+      background: var(--bg-page);
+      color: var(--text-main);
     }
 
-    .tool-btn.active {
-      background: var(--surface-hover);
-      color: var(--text);
-      font-weight: 600;
+    .canvas-pill-btn.active {
+      background: var(--bg-page);
+      border-color: var(--border-subtle);
+      color: var(--text-main);
     }
 
-    .graph-legend {
+    /* Legend Floating Pill */
+    .canvas-legend {
       position: absolute;
-      bottom: 14px;
-      left: 14px;
+      bottom: 60px;
+      left: 16px;
       display: flex;
       align-items: center;
       gap: 14px;
-      background: rgba(18, 18, 21, 0.85);
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(8px);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 6px 12px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 8px 14px;
+      box-shadow: var(--shadow-sm);
       font-size: 11px;
+      font-weight: 600;
       color: var(--text-muted);
       z-index: 10;
     }
 
-    .legend-item {
+    .legend-indicator {
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    .legend-dot {
-      width: 8px;
-      height: 8px;
+    .legend-circle {
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
     }
 
-    /* Right Inspector Panel */
-    .sidebar-right {
-      width: 320px;
-      background: var(--surface);
-      border-left: 1px solid var(--border);
+    /* Bottom Slide Banner ("Key detail" banner from Screenshot 2) */
+    .key-detail-banner {
+      background: var(--primary-red-bg);
+      border-top: 1px solid var(--primary-red-border);
+      padding: 10px 18px;
+      font-size: 12px;
+      color: #9f1239;
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .key-detail-banner strong {
+      font-weight: 700;
+      color: var(--primary-red);
+    }
+
+    /* Right Sidebar: Evidence & Signals Panel */
+    .sidebar-right {
+      width: 340px;
       flex-shrink: 0;
       overflow-y: auto;
     }
 
-    .panel-header {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border-subtle);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .panel-header h2 {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .panel-content {
-      padding: 16px;
+    .inspector-content {
+      padding: 18px;
       display: flex;
       flex-direction: column;
       gap: 16px;
     }
 
-    /* Threat Score Card */
-    .threat-card {
-      background: var(--surface-elevated);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px;
+    /* Hero Score Box (Matching Slide's red box) */
+    .hero-risk-box {
+      background: linear-gradient(135deg, var(--primary-red), #be123c);
+      color: #ffffff;
+      border-radius: 12px;
+      padding: 18px;
       display: flex;
-      align-items: baseline;
+      align-items: center;
       justify-content: space-between;
+      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.25);
     }
 
-    .threat-score-large {
-      font-family: var(--font-mono);
-      font-size: 32px;
-      font-weight: 700;
-      color: var(--danger);
+    .hero-score-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 34px;
+      font-weight: 800;
       line-height: 1;
     }
 
-    .threat-label {
+    .hero-score-sub {
       font-size: 11px;
-      color: var(--text-muted);
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      opacity: 0.85;
+      margin-top: 4px;
     }
 
-    /* Signals Grid */
-    .signals-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    .hero-rank-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4px 10px;
+      border-radius: 20px;
     }
 
-    .signal-row {
-      background: var(--surface-elevated);
+    /* Clean Signal Rows */
+    .signals-card-group {
+      background: var(--bg-page);
       border: 1px solid var(--border-subtle);
-      border-radius: 6px;
-      padding: 8px 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      border-radius: 10px;
+      overflow: hidden;
     }
 
-    .signal-name {
+    .signal-item-row {
+      padding: 11px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .signal-item-row:last-child {
+      border-bottom: none;
+    }
+
+    .signal-label-text {
       font-size: 12px;
+      font-weight: 500;
       color: var(--text-muted);
     }
 
-    .signal-num {
-      font-family: var(--font-mono);
+    .signal-metric-val {
+      font-family: 'JetBrains Mono', monospace;
       font-size: 12px;
-      font-weight: 600;
-      color: var(--text);
+      font-weight: 700;
+      color: var(--text-main);
     }
 
-    /* Account Chips */
-    .section-title {
+    /* User Chips */
+    .accounts-block-title {
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
       margin-bottom: 8px;
     }
 
-    .chips-wrap {
+    .user-chips-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px;
+      gap: 6px;
     }
 
-    .user-chip {
-      font-family: var(--font-mono);
+    .chip-account {
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      padding: 3px 7px;
-      border-radius: 4px;
-      background: var(--surface-elevated);
-      border: 1px solid var(--border);
-      color: var(--text);
-      cursor: pointer;
-      transition: all 0.1s ease;
-    }
-
-    .user-chip:hover {
-      border-color: var(--danger);
-      color: var(--danger);
-    }
-
-    /* Action Buttons */
-    .actions-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    /* Minimal Toast */
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: var(--surface-elevated);
-      border: 1px solid var(--border);
-      padding: 10px 16px;
+      font-weight: 600;
+      padding: 5px 10px;
       border-radius: 6px;
+      background: var(--bg-page);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+
+    .chip-account:hover {
+      background: #ffffff;
+      border-color: var(--primary-red);
+      color: var(--primary-red);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Clean Toast */
+    .toast-popup {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--text-main);
+      color: #ffffff;
+      padding: 12px 18px;
+      border-radius: 8px;
       font-size: 12px;
+      font-weight: 600;
       display: none;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      box-shadow: var(--shadow-lg);
     }
 
-    .toast-dot {
-      width: 6px;
-      height: 6px;
+    .toast-dot-glow {
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
-      background: var(--success);
+      background: var(--accent-emerald);
     }
   </style>
 </head>
 <body>
 
-  <!-- Minimal Header -->
+  <!-- Top Header Navigation -->
   <header>
-    <div class="brand">
-      <div class="brand-mark"></div>
-      <div class="brand-name">DarkNode</div>
-      <span class="badge-gnn">MPNN GNN</span>
+    <div class="brand-group">
+      <span class="brand-kicker">Fraud Intelligence & Network Analytics</span>
+      <div class="brand-title">
+        DarkNode
+        <span class="badge-pill">GNN MPNN Engine</span>
+      </div>
     </div>
 
-    <!-- Quick Stats -->
-    <div class="top-stats">
-      <div class="stat-item">
-        <span>Users:</span>
+    <!-- Header Stats -->
+    <div class="header-stats">
+      <div class="stat-pill">
+        <span>Users Evaluated:</span>
         <span class="stat-val" id="stat-users">1,000</span>
       </div>
-      <div class="stat-item">
+      <div class="stat-pill">
         <span>Transactions:</span>
         <span class="stat-val" id="stat-txs">13,680</span>
       </div>
-      <div class="stat-item">
-        <span>Rings:</span>
-        <span class="stat-val" id="stat-rings">0</span>
+      <div class="stat-pill">
+        <span>Fraud Rings Caught:</span>
+        <span class="stat-val" id="stat-rings" style="color: var(--primary-red);">0</span>
       </div>
     </div>
 
     <!-- Controls -->
-    <div class="controls-section">
-      <div class="status-indicator" id="status-pill">
-        <span id="status-text">Connecting...</span>
+    <div class="header-actions">
+      <div class="api-box">
+        <div class="status-dot" id="status-dot"></div>
+        <input type="text" id="api-url" value="http://localhost:8000" placeholder="http://localhost:8000">
       </div>
 
-      <div class="api-pill">
-        <input type="text" id="api-url" value="http://localhost:8000" placeholder="API endpoint">
-      </div>
-
-      <button class="btn btn-primary" onclick="fetchRings()">
-        Analyze
+      <button class="btn btn-red" onclick="fetchRings()">
+        Run Analysis
       </button>
     </div>
   </header>
 
-  <!-- Workspace -->
+  <!-- Spacious Workspace (3 Floating Cards) -->
   <div class="workspace">
 
-    <!-- Left: Rings Directory -->
-    <div class="sidebar-left">
-      <div class="sidebar-search">
-        <input type="text" class="search-input" id="search-filter" placeholder="Filter rings..." oninput="filterRings()">
+    <!-- Card 1: Left Rings Directory -->
+    <div class="panel-card sidebar-left">
+      <div class="panel-header-clean">
+        <span class="panel-title">Detected Rings</span>
+        <span class="badge-pill" id="rings-count-badge">0 total</span>
       </div>
-      <div class="rings-list" id="rings-container">
+      <div class="search-box-clean">
+        <input type="text" class="search-input-clean" id="search-filter" placeholder="Filter by Ring ID or User..." oninput="filterRings()">
+      </div>
+      <div class="rings-list-scroll" id="rings-container">
         <!-- Injected rings -->
       </div>
     </div>
 
-    <!-- Center: Interactive Vis-Network Viewport -->
-    <div class="viewport-center">
-      <!-- Toolbar -->
-      <div class="graph-toolbar">
-        <button class="tool-btn" onclick="resetGraphView()">Fit</button>
-        <button class="tool-btn" id="physics-toggle" onclick="togglePhysics()">Physics: On</button>
-        <span style="color: var(--border); font-size: 10px;">|</span>
-        <button class="tool-btn active" id="filter-user" onclick="toggleNodeFilter('user')">Users</button>
-        <button class="tool-btn active" id="filter-device" onclick="toggleNodeFilter('device')">Devices</button>
-        <button class="tool-btn active" id="filter-merchant" onclick="toggleNodeFilter('merchant')">Merchants</button>
+    <!-- Card 2: Center Viewport (Clean Network Graph) -->
+    <div class="panel-card viewport-center">
+      <!-- Floating Toolbar -->
+      <div class="canvas-bar">
+        <button class="canvas-pill-btn active" onclick="resetGraphView()">Fit Screen</button>
+        <button class="canvas-pill-btn" id="physics-toggle" onclick="togglePhysics()">Physics: On</button>
+        <span style="color: var(--border-subtle);">|</span>
+        <button class="canvas-pill-btn active" id="filter-user" onclick="toggleFilter('user')">Ring Users</button>
+        <button class="canvas-pill-btn active" id="filter-device" onclick="toggleFilter('device')">Devices</button>
+        <button class="canvas-pill-btn active" id="filter-merchant" onclick="toggleFilter('merchant')">Merchants</button>
       </div>
 
+      <!-- Graph Canvas -->
       <div id="network-canvas"></div>
 
-      <!-- Legend -->
-      <div class="graph-legend">
-        <div class="legend-item">
-          <div class="legend-dot" style="background: var(--user-node);"></div>
-          <span>Ring Member</span>
+      <!-- Clean Floating Legend -->
+      <div class="canvas-legend">
+        <div class="legend-indicator">
+          <div class="legend-circle" style="background: var(--node-user);"></div>
+          <span>Ring Member (User)</span>
         </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background: var(--device-node);"></div>
+        <div class="legend-indicator">
+          <div class="legend-circle" style="background: var(--node-device);"></div>
           <span>Shared Device</span>
         </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background: var(--merchant-node);"></div>
+        <div class="legend-indicator">
+          <div class="legend-circle" style="background: var(--node-merchant);"></div>
           <span>Merchant</span>
         </div>
       </div>
+
+      <!-- Slide-Style Key Insight Banner at bottom -->
+      <div class="key-detail-banner">
+        <strong>Key architectural detail:</strong>
+        <span>The Heterogeneous MPNN evaluates multi-hop graph topology and microsecond burst velocity, eliminating 58% of rule-based false alarms.</span>
+      </div>
     </div>
 
-    <!-- Right: Inspector & Reason Signals -->
-    <div class="sidebar-right">
-      <div class="panel-header">
-        <h2 id="inspector-title">Ring Inspector</h2>
-        <span class="badge-gnn" id="inspector-badge">#--</span>
+    <!-- Card 3: Right Inspector & Evidence Panel -->
+    <div class="panel-card sidebar-right">
+      <div class="panel-header-clean">
+        <span class="panel-title" id="inspector-heading">Ring Evidence</span>
+        <span class="badge-pill" id="inspector-badge">#--</span>
       </div>
 
-      <div class="panel-content">
-        <!-- Threat Card -->
-        <div class="threat-card">
+      <div class="inspector-content">
+        <!-- Hero Threat Score Card (Rose/Red Gradient from slide) -->
+        <div class="hero-risk-box">
           <div>
-            <div class="threat-label">Composite Risk</div>
-            <div class="threat-score-large" id="card-threat-score">--</div>
+            <div class="hero-score-val" id="threat-score-num">--</div>
+            <div class="hero-score-sub">Threat Risk Score</div>
           </div>
-          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);" id="card-rank">
+          <div class="hero-rank-badge" id="threat-rank-pill">
             RANK #--
           </div>
         </div>
 
         <!-- Evidence Signals -->
         <div>
-          <div class="section-title">Evidence & Reason Signals</div>
-          <div class="signals-grid">
-            <div class="signal-row">
-              <span class="signal-name">Shared Device Ratio</span>
-              <span class="signal-num" id="sig-device">0%</span>
+          <div class="accounts-block-title">Behavioral Reason Signals</div>
+          <div class="signals-card-group">
+            <div class="signal-item-row">
+              <span class="signal-label-text">Shared Device Concentration</span>
+              <span class="signal-metric-val" id="sig-device">0%</span>
             </div>
-            <div class="signal-row">
-              <span class="signal-name">Shared IP Pairs</span>
-              <span class="signal-num" id="sig-ip">0 pairs</span>
+            <div class="signal-item-row">
+              <span class="signal-label-text">Shared IP Interconnections</span>
+              <span class="signal-metric-val" id="sig-ip">0 pairs</span>
             </div>
-            <div class="signal-row">
-              <span class="signal-name">Transaction Velocity</span>
-              <span class="signal-num" id="sig-vel">0 tx/hr</span>
+            <div class="signal-item-row">
+              <span class="signal-label-text">Transaction Burst Velocity</span>
+              <span class="signal-metric-val" id="sig-vel">0 tx/hr</span>
             </div>
-            <div class="signal-row">
-              <span class="signal-name">GNN Fraud Confidence</span>
-              <span class="signal-num" id="sig-gnn">0.00</span>
+            <div class="signal-item-row">
+              <span class="signal-label-text">GNN Fraud Confidence</span>
+              <span class="signal-metric-val" id="sig-gnn">0.00</span>
             </div>
-            <div class="signal-row">
-              <span class="signal-name">Rapid / Burst Accounts</span>
-              <span class="signal-num" id="sig-fresh">0</span>
+            <div class="signal-item-row">
+              <span class="signal-label-text">Rapid Burst Accounts</span>
+              <span class="signal-metric-val" id="sig-fresh">0 accounts</span>
             </div>
           </div>
         </div>
 
-        <!-- Members -->
+        <!-- Member Accounts -->
         <div>
-          <div class="section-title">Member Accounts (<span id="members-count">0</span>)</div>
-          <div class="chips-wrap" id="members-chips">
-            <!-- Injected user chips -->
+          <div class="accounts-block-title">Identified Syndicate Members (<span id="members-count">0</span>)</div>
+          <div class="user-chips-grid" id="members-chips">
+            <!-- Account Chips -->
           </div>
         </div>
 
-        <!-- Actions -->
-        <div class="actions-stack">
-          <button class="btn btn-danger" style="height: 34px;" id="freeze-btn" onclick="freezeRing()">
-            Freeze Ring Accounts
+        <!-- Compliance & Export Actions -->
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+          <button class="btn btn-red" id="freeze-btn" style="height: 38px;" onclick="simulateFreeze()">
+            Freeze Ring Accounts (Simulation)
           </button>
-          <button class="btn" style="height: 32px;" onclick="exportRingJson()">
-            Export Ring Data (JSON)
+          <button class="btn btn-outline" style="height: 36px;" onclick="exportJson()">
+            Export Ring Dossier (JSON)
           </button>
         </div>
       </div>
@@ -699,21 +775,21 @@
 
   </div>
 
-  <!-- Toast -->
-  <div class="toast" id="toast">
-    <div class="toast-dot"></div>
-    <span id="toast-message">Action confirmed.</span>
+  <!-- Toast Alert -->
+  <div class="toast-popup" id="toast">
+    <div class="toast-dot-glow"></div>
+    <span id="toast-text">Action executed successfully.</span>
   </div>
 
   <script>
     let network = null;
     let allRings = [];
-    let activeRingIndex = 0;
-    let physicsEnabled = true;
-    let nodeFilters = { user: true, device: true, merchant: true };
+    let activeIndex = 0;
+    let physicsState = true;
+    let activeFilters = { user: true, device: true, merchant: true };
 
-    // High-fidelity fallback for offline / demo mode
-    const FALLBACK_DATA = [
+    // High-fidelity fallback dataset for instant offline loading
+    const FALLBACK_RINGS = [
       {
         ring_id: 3,
         rank: 1,
@@ -739,18 +815,18 @@
             { id: "merchant_12", label: "Merchant 12", group: "merchant" }
           ],
           edges: [
-            { from: "user_0", to: "device_799", label: "uses" },
-            { from: "user_1", to: "device_799", label: "uses" },
-            { from: "user_2", to: "device_799", label: "uses" },
-            { from: "user_3", to: "device_799", label: "uses" },
-            { from: "user_4", to: "device_799", label: "uses" },
-            { from: "user_5", to: "device_799", label: "uses" },
-            { from: "user_6", to: "device_799", label: "uses" },
-            { from: "user_7", to: "device_799", label: "uses" },
-            { from: "user_0", to: "user_1", label: "shared_ip" },
-            { from: "user_1", to: "user_2", label: "shared_ip" },
-            { from: "user_2", to: "user_3", label: "shared_ip" },
-            { from: "user_0", to: "merchant_12", label: "burst_tx" }
+            { from: "user_0", to: "device_799", relation: "shared_device" },
+            { from: "user_1", to: "device_799", relation: "shared_device" },
+            { from: "user_2", to: "device_799", relation: "shared_device" },
+            { from: "user_3", to: "device_799", relation: "shared_device" },
+            { from: "user_4", to: "device_799", relation: "shared_device" },
+            { from: "user_5", to: "device_799", relation: "shared_device" },
+            { from: "user_6", to: "device_799", relation: "shared_device" },
+            { from: "user_7", to: "device_799", relation: "shared_device" },
+            { from: "user_0", to: "user_1", relation: "shared_ip" },
+            { from: "user_1", to: "user_2", relation: "shared_ip" },
+            { from: "user_2", to: "user_3", relation: "shared_ip" },
+            { from: "user_0", to: "merchant_12", relation: "transaction" }
           ]
         }
       },
@@ -774,11 +850,11 @@
             { id: "device_790", label: "Device 790", group: "device" }
           ],
           edges: [
-            { from: "user_72", to: "device_790", label: "uses" },
-            { from: "user_73", to: "device_790", label: "uses" },
-            { from: "user_74", to: "device_790", label: "uses" },
-            { from: "user_75", to: "device_790", label: "uses" },
-            { from: "user_72", to: "user_73", label: "shared_ip" }
+            { from: "user_72", to: "device_790", relation: "shared_device" },
+            { from: "user_73", to: "device_790", relation: "shared_device" },
+            { from: "user_74", to: "device_790", relation: "shared_device" },
+            { from: "user_75", to: "device_790", relation: "shared_device" },
+            { from: "user_72", to: "user_73", relation: "shared_ip" }
           ]
         }
       }
@@ -786,11 +862,7 @@
 
     async function fetchRings() {
       const url = document.getElementById("api-url").value.trim().replace(/\/$/, "");
-      const pill = document.getElementById("status-pill");
-      const text = document.getElementById("status-text");
-
-      text.innerText = "Analyzing...";
-      pill.classList.remove("offline");
+      const dot = document.getElementById("status-dot");
 
       try {
         const res = await fetch(`${url}/analyze`, {
@@ -807,17 +879,15 @@
           document.getElementById("stat-users").innerText = data.metadata.num_users?.toLocaleString() || "1,000";
           document.getElementById("stat-txs").innerText = data.metadata.total_transactions?.toLocaleString() || "13,680";
         }
-
-        text.innerText = "Live API";
-        pill.classList.remove("offline");
-      } catch (e) {
-        console.warn("Backend unavailable, loading bundled simulation data:", e);
-        allRings = FALLBACK_DATA;
-        text.innerText = "Demo Cache";
-        pill.classList.add("offline");
+        dot.classList.remove("offline");
+      } catch (err) {
+        console.warn("Backend unavailable, loading simulation data:", err);
+        allRings = FALLBACK_RINGS;
+        dot.classList.add("offline");
       }
 
       document.getElementById("stat-rings").innerText = allRings.length;
+      document.getElementById("rings-count-badge").innerText = `${allRings.length} total`;
       renderRingsList(allRings);
       if (allRings.length > 0) {
         selectRing(0);
@@ -829,62 +899,66 @@
       container.innerHTML = "";
 
       rings.forEach((ring, index) => {
-        const item = document.createElement("div");
-        item.className = `ring-item ${index === activeRingIndex ? 'active' : ''}`;
-        item.onclick = () => selectRing(index);
+        const card = document.createElement("div");
+        card.className = `ring-card-item ${index === activeIndex ? 'active' : ''}`;
+        card.onclick = () => selectRing(index);
 
-        item.innerHTML = `
-          <div class="ring-item-top">
-            <span class="ring-title">
-              Ring #${ring.ring_id}
-            </span>
-            <span class="ring-score-pill">${(ring.score * 100).toFixed(1)}%</span>
+        card.innerHTML = `
+          <div class="ring-card-top">
+            <span class="ring-label">Syndicate Ring #${ring.ring_id}</span>
+            <span class="ring-risk-tag">${(ring.score * 100).toFixed(1)}% RISK</span>
           </div>
-          <div class="ring-item-bottom">
-            <span>${ring.member_count} users</span>
-            <span>${ring.shared_device_pct}% dev</span>
-            <span>${Math.round(ring.transaction_velocity)} tx/h</span>
+          <div class="ring-card-bottom">
+            <span>👥 ${ring.member_count} users</span>
+            <span>📱 ${ring.shared_device_pct}% dev</span>
+            <span>⚡ ${Math.round(ring.transaction_velocity)} tx/h</span>
           </div>
         `;
-        container.appendChild(item);
+        container.appendChild(card);
       });
     }
 
     function filterRings() {
-      const q = document.getElementById("search-filter").value.toLowerCase();
+      const query = document.getElementById("search-filter").value.toLowerCase();
       const filtered = allRings.filter(r => 
-        `ring #${r.ring_id}`.toLowerCase().includes(q) ||
-        r.members.some(m => String(m).includes(q))
+        `ring #${r.ring_id}`.toLowerCase().includes(query) ||
+        r.members.some(m => String(m).includes(query))
       );
       renderRingsList(filtered);
     }
 
     function selectRing(index) {
-      activeRingIndex = index;
+      activeIndex = index;
       const ring = allRings[index];
       if (!ring) return;
 
-      // Update sidebar active selection
-      const items = document.querySelectorAll(".ring-item");
-      items.forEach((it, i) => it.classList.toggle("active", i === index));
+      // Update Active States
+      const cards = document.querySelectorAll(".ring-card-item");
+      cards.forEach((c, i) => c.classList.toggle("active", i === index));
 
       // Update Inspector Panel
-      document.getElementById("inspector-title").innerText = `Fraud Ring #${ring.ring_id}`;
+      document.getElementById("inspector-heading").innerText = `Syndicate #${ring.ring_id}`;
       document.getElementById("inspector-badge").innerText = `RANK #${ring.rank || index + 1}`;
-      document.getElementById("card-threat-score").innerText = `${(ring.score * 100).toFixed(1)}%`;
-      document.getElementById("card-rank").innerText = `RANK #${ring.rank || index + 1}`;
+      document.getElementById("threat-score-num").innerText = `${(ring.score * 100).toFixed(1)}%`;
+      document.getElementById("threat-rank-pill").innerText = `RANK #${ring.rank || index + 1}`;
 
       document.getElementById("sig-device").innerText = `${ring.shared_device_pct}%`;
       document.getElementById("sig-ip").innerText = `${ring.shared_ip_pairs} pairs`;
       document.getElementById("sig-vel").innerText = `${ring.transaction_velocity} tx/hr`;
       document.getElementById("sig-gnn").innerText = ring.avg_model_score.toFixed(3);
-      document.getElementById("sig-fresh").innerText = `${ring.fresh_account_count}`;
+      document.getElementById("sig-fresh").innerText = `${ring.fresh_account_count} accounts`;
       document.getElementById("members-count").innerText = ring.member_count;
 
-      // Render user chips
-      const chipsContainer = document.getElementById("members-chips");
-      chipsContainer.innerHTML = ring.members.map(u => `
-        <span class="user-chip" onclick="focusNode('user_${u}')">User ${u}</span>
+      // Reset freeze button
+      const freezeBtn = document.getElementById("freeze-btn");
+      freezeBtn.innerText = "Freeze Ring Accounts (Simulation)";
+      freezeBtn.disabled = false;
+      freezeBtn.style.opacity = "1";
+
+      // Render Account Chips
+      const chipsBox = document.getElementById("members-chips");
+      chipsBox.innerHTML = ring.members.map(m => `
+        <span class="chip-account" onclick="focusOnNode('user_${m}')">User ${m}</span>
       `).join("");
 
       // Render Graph
@@ -895,28 +969,28 @@
       const container = document.getElementById("network-canvas");
       if (!graphData || !graphData.nodes) return;
 
-      // Filter nodes based on active toolbar toggles
-      const visibleNodes = graphData.nodes.filter(n => nodeFilters[n.group] !== false);
-      const visibleNodeIds = new Set(visibleNodes.map(n => n.id));
-      const visibleEdges = (graphData.edges || []).filter(e => visibleNodeIds.has(e.from) && visibleNodeIds.has(e.to));
+      // Filter Nodes
+      const visibleNodes = graphData.nodes.filter(n => activeFilters[n.group] !== false);
+      const visibleIds = new Set(visibleNodes.map(n => n.id));
+      const visibleEdges = (graphData.edges || []).filter(e => visibleIds.has(e.from) && visibleIds.has(e.to));
 
       const nodes = new vis.DataSet(visibleNodes.map(n => {
-        let color = "#f43f5e";
+        let color = "#e11d48";
         let shape = "dot";
-        let size = 16;
+        let size = 20;
 
         if (n.group === "user") {
-          color = "#f43f5e";
+          color = "#e11d48"; // Vibrant Coral Red
           shape = "dot";
-          size = 18;
+          size = 22;
         } else if (n.group === "device") {
-          color = "#f59e0b";
+          color = "#f59e0b"; // Clean Amber
           shape = "diamond";
-          size = 20;
+          size = 24;
         } else if (n.group === "merchant") {
-          color = "#10b981";
+          color = "#10b981"; // Emerald
           shape = "triangle";
-          size = 16;
+          size = 20;
         }
 
         return {
@@ -924,34 +998,79 @@
           label: n.label,
           color: {
             background: color,
-            border: "#27272a",
-            highlight: { background: "#ffffff", border: color }
+            border: "#ffffff",
+            highlight: { background: "#0f172a", border: color }
           },
-          borderWidth: 1.5,
+          borderWidth: 2,
           shape: shape,
           size: size,
-          font: { color: "#d4d4d8", size: 11, face: "Inter" }
+          font: {
+            color: "#0f172a",
+            size: 12,
+            face: "Plus Jakarta Sans",
+            bold: { color: "#0f172a", size: 12 }
+          },
+          shadow: { enabled: true, color: "rgba(15, 23, 42, 0.12)", size: 6, x: 0, y: 3 }
         };
       }));
 
-      const edges = new vis.DataSet(visibleEdges.map(e => ({
-        from: e.from,
-        to: e.to,
-        label: e.label || "",
-        color: { color: "#3f3f46", highlight: "#f43f5e" },
-        font: { color: "#71717a", size: 9, face: "JetBrains Mono" },
-        smooth: { type: "continuous" }
-      })));
+      // NOTE: We deliberately do NOT put static text labels on edges!
+      // This prevents the messy overlapping text scribble seen earlier and makes the network airy and clean.
+      // Instead, edges are color-coded and show details on hover.
+      const edges = new vis.DataSet(visibleEdges.map(e => {
+        let edgeColor = "#cbd5e1";
+        let dashes = false;
+        let width = 1.5;
+        let tooltip = "Interaction Link";
+
+        if (e.label === "shared_ip" || e.relation === "shared_ip") {
+          edgeColor = "#f43f5e";
+          dashes = [5, 5];
+          width = 2;
+          tooltip = "Shared IP Cluster";
+        } else if (e.label === "shared_device" || e.relation === "shared_device") {
+          edgeColor = "#f59e0b";
+          width = 2;
+          tooltip = "Shared Device Hardware";
+        } else if (e.label === "transaction" || e.label === "burst_tx" || e.relation === "transaction") {
+          edgeColor = "#94a3b8";
+          width = 1.2;
+          tooltip = "Merchant Transaction";
+        }
+
+        return {
+          from: e.from,
+          to: e.to,
+          color: { color: edgeColor, highlight: "#e11d48", hover: "#e11d48" },
+          dashes: dashes,
+          width: width,
+          title: tooltip,
+          smooth: { type: "continuous", roundness: 0.2 }
+        };
+      }));
 
       const data = { nodes, edges };
+      
+      // Spacious, relaxed physics configuration (giving nodes space to breathe)
       const options = {
         physics: {
-          enabled: physicsEnabled,
+          enabled: physicsState,
           solver: "forceAtlas2Based",
-          forceAtlas2Based: { gravitationalConstant: -40, centralGravity: 0.01, springLength: 90, springConstant: 0.06 },
-          stabilization: { iterations: 100 }
+          forceAtlas2Based: {
+            gravitationalConstant: -260, // Strong repulsion pushes nodes cleanly apart
+            centralGravity: 0.006,        // Gentle central gravity avoids tightly forcing together
+            springLength: 200,            // Long airy springs so labels never collide
+            springConstant: 0.04,
+            damping: 0.2
+          },
+          stabilization: { iterations: 140 }
         },
-        interaction: { hover: true, tooltipDelay: 100 }
+        interaction: {
+          hover: true,
+          tooltipDelay: 100,
+          zoomView: true,
+          dragView: true
+        }
       };
 
       if (network) network.destroy();
@@ -959,65 +1078,64 @@
 
       network.on("click", function(params) {
         if (params.nodes.length > 0) {
-          const clickedId = params.nodes[0];
-          showToast(`Focused: ${clickedId}`);
+          showToast(`Focused node: ${params.nodes[0]}`);
         }
       });
     }
 
     function resetGraphView() {
-      if (network) network.fit({ animation: { duration: 400 } });
+      if (network) network.fit({ animation: { duration: 400, easingFunction: "easeInOutQuad" } });
     }
 
     function togglePhysics() {
-      physicsEnabled = !physicsEnabled;
-      document.getElementById("physics-toggle").innerText = `Physics: ${physicsEnabled ? 'On' : 'Off'}`;
-      if (network) network.setOptions({ physics: { enabled: physicsEnabled } });
+      physicsState = !physicsState;
+      document.getElementById("physics-toggle").innerText = `Physics: ${physicsState ? 'On' : 'Off'}`;
+      if (network) network.setOptions({ physics: { enabled: physicsState } });
     }
 
-    function toggleNodeFilter(type) {
-      nodeFilters[type] = !nodeFilters[type];
+    function toggleFilter(type) {
+      activeFilters[type] = !activeFilters[type];
       const btn = document.getElementById(`filter-${type}`);
-      btn.classList.toggle("active", nodeFilters[type]);
-      const currentRing = allRings[activeRingIndex];
+      btn.classList.toggle("active", activeFilters[type]);
+      const currentRing = allRings[activeIndex];
       if (currentRing) renderGraph(currentRing.graph);
     }
 
-    function focusNode(nodeId) {
+    function focusOnNode(nodeId) {
       if (!network) return;
       network.focus(nodeId, {
-        scale: 1.3,
+        scale: 1.25,
         animation: { duration: 500, easingFunction: "easeInOutQuad" }
       });
       network.selectNodes([nodeId]);
     }
 
-    function freezeRing() {
-      const ring = allRings[activeRingIndex];
+    function simulateFreeze() {
+      const ring = allRings[activeIndex];
       if (!ring) return;
       const btn = document.getElementById("freeze-btn");
-      btn.innerText = "Accounts Frozen";
-      btn.style.opacity = "0.6";
+      btn.innerText = "Accounts Suspended (Simulation)";
       btn.disabled = true;
-      showToast(`Frozen ${ring.member_count} accounts in Ring #${ring.ring_id}`);
+      btn.style.opacity = "0.7";
+      showToast(`Simulation: Frozen ${ring.member_count} accounts in Syndicate #${ring.ring_id}`);
     }
 
-    function exportRingJson() {
-      const ring = allRings[activeRingIndex];
+    function exportJson() {
+      const ring = allRings[activeIndex];
       if (!ring) return;
       const blob = new Blob([JSON.stringify(ring, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `darknode_ring_${ring.ring_id}.json`;
+      a.download = `darknode_syndicate_${ring.ring_id}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast(`Exported Ring #${ring.ring_id} payload`);
+      showToast(`Exported Ring #${ring.ring_id} dossier.`);
     }
 
-    function showToast(msg) {
+    function showToast(text) {
       const toast = document.getElementById("toast");
-      document.getElementById("toast-message").innerText = msg;
+      document.getElementById("toast-text").innerText = text;
       toast.style.display = "flex";
       setTimeout(() => { toast.style.display = "none"; }, 3500);
     }
