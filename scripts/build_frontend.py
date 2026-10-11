@@ -8,6 +8,7 @@
 """
 
 import json
+import math
 from pathlib import Path
 import networkx as nx
 
@@ -21,14 +22,56 @@ with open(fallback_path, "r", encoding="utf-8") as f:
 fallback_rings = json.loads(fallback_data)
 organic_layouts = {}
 for idx, r in enumerate(fallback_rings):
-    G = nx.Graph()
-    for n in r['graph']['nodes']:
-        G.add_node(n['id'], group=n['group'])
-    for e in r['graph']['edges']:
-        w = 2.5 if e.get('relation') == 'shared_ip' else (1.5 if e.get('relation') == 'shared_device' else 1.0)
-        G.add_edge(e['from'], e['to'], weight=w)
-    pos = nx.spring_layout(G, k=1.3, iterations=300, seed=42 + idx * 7)
-    organic_layouts[idx] = {k: {'x': round(v[0] * 185, 1), 'y': round(v[1] * 185, 1)} for k, v in pos.items()}
+    nodes = r['graph']['nodes']
+    user_nodes = [n for n in nodes if n['group'] == 'user']
+    dev_nodes = [n for n in nodes if n['group'] == 'device']
+    merch_nodes = [n for n in nodes if n['group'] == 'merchant']
+    other_nodes = [n for n in nodes if n['group'] not in ('user', 'device', 'merchant')]
+
+    positions = {}
+
+    # 1. Central Mule Hub placed at (0, 0)
+    center_idx = 6 if len(user_nodes) > 6 else 0
+    positions[user_nodes[center_idx]['id']] = {'x': 0.0, 'y': 0.0}
+
+    # 2. Outer Core Users (7 nodes) distributed in spacious ring
+    other_users = [u for i, u in enumerate(user_nodes) if i != center_idx]
+    nU = len(other_users)
+    for i, u in enumerate(other_users):
+        ang = 2 * math.pi * i / max(1, nU) - math.pi / 2
+        positions[u['id']] = {
+            'x': round(135 * math.cos(ang), 1),
+            'y': round(120 * math.sin(ang), 1)
+        }
+
+    # 3. Merchants (4 nodes) in perimeter diamond
+    merch_angles = [-math.pi / 2 - 0.1, -math.pi / 6, math.pi / 2, 5 * math.pi / 6]
+    for i, m in enumerate(merch_nodes):
+        ang = merch_angles[i % len(merch_angles)]
+        positions[m['id']] = {
+            'x': round(195 * math.cos(ang), 1),
+            'y': round(185 * math.sin(ang), 1)
+        }
+
+    # 4. Hardware Devices (5 nodes) in 5-pointed perimeter star
+    dev_angles = [-math.pi / 2 + 0.25, -math.pi / 6 - 0.15, math.pi / 4, 3 * math.pi / 4, -5 * math.pi / 6 + 0.1]
+    for i, d in enumerate(dev_nodes):
+        ang = dev_angles[i % len(dev_angles)]
+        positions[d['id']] = {
+            'x': round(265 * math.cos(ang), 1),
+            'y': round(245 * math.sin(ang), 1)
+        }
+
+    # 5. Auxiliary nodes
+    nO = len(other_nodes)
+    for i, o in enumerate(other_nodes):
+        ang = 2 * math.pi * i / max(1, nO)
+        positions[o['id']] = {
+            'x': round(210 * math.cos(ang), 1),
+            'y': round(210 * math.sin(ang), 1)
+        }
+
+    organic_layouts[idx] = positions
 
 organic_layouts_json = json.dumps(organic_layouts)
 
@@ -510,6 +553,9 @@ html_template = """<!DOCTYPE html>
       left: 0;
       width: 100% !important;
       height: 100% !important;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     /* Floating Graph Bar */
@@ -1688,9 +1734,7 @@ html_template = """<!DOCTYPE html>
     function fitGraphView(animate = true) {
       if (!network) return;
       network.fit({
-        animation: animate ? { duration: 320, easingFunction: "easeInOutQuad" } : false,
-        maxZoomLevel: 0.86,
-        minZoomLevel: 0.25
+        animation: animate ? { duration: 300, easingFunction: "easeInOutQuad" } : false
       });
     }
 
@@ -1751,9 +1795,9 @@ html_template = """<!DOCTYPE html>
       globeRafPending = false;
       if (!network || !network.body || !network.body.nodes) return;
 
-      // Smooth interpolation towards target yaw/pitch for fluid 60-120 FPS
-      currentYaw += (targetYaw - currentYaw) * 0.7;
-      currentPitch += (targetPitch - currentPitch) * 0.7;
+      // Snappy and fluid interpolation towards target yaw/pitch (60-120 FPS)
+      currentYaw += (targetYaw - currentYaw) * 0.85;
+      currentPitch += (targetPitch - currentPitch) * 0.85;
 
       const cosYaw = Math.cos(currentYaw);
       const sinYaw = Math.sin(currentYaw);
@@ -1895,12 +1939,6 @@ html_template = """<!DOCTYPE html>
         targetPitch = currentPitch;
         container.style.cursor = "grabbing";
 
-        network.setOptions({
-          physics: { enabled: false },
-          interaction: { dragView: false, dragNodes: false }
-        });
-        network.stopSimulation();
-
         e.preventDefault();
       });
 
@@ -1929,23 +1967,6 @@ html_template = """<!DOCTYPE html>
         if (c) {
           c.style.cursor = globeModeActive ? "grab" : "";
         }
-        if (network) {
-          network.setOptions({
-            interaction: {
-              dragView: !globeModeActive,
-              dragNodes: !globeModeActive,
-              zoomView: true
-            }
-          });
-        }
-        if (currentNodesDataSet && network && network.body && network.body.nodes) {
-          const finalUpdates = [];
-          for (const id in baseNodes3D) {
-            const visNode = network.body.nodes[id];
-            if (visNode) finalUpdates.push({ id, x: visNode.x, y: visNode.y });
-          }
-          if (finalUpdates.length > 0) currentNodesDataSet.update(finalUpdates);
-        }
         updateGlobeIndicator();
       });
     }
@@ -1965,37 +1986,52 @@ html_template = """<!DOCTYPE html>
       const otherNodes = visibleNodes.filter(n => n.group !== "user" && n.group !== "device" && n.group !== "merchant");
 
       const positions = {};
-      // 1. Core Mule Users in compact cluster (radius 48-68px)
-      const nU = Math.max(1, userNodes.length);
-      userNodes.forEach((u, i) => {
-        const ang = (2 * Math.PI * i) / nU;
-        const r = 58 * (0.85 + (i % 3) * 0.2);
-        positions[u.id] = { x: Math.round(r * Math.cos(ang) * 10) / 10, y: Math.round(r * Math.sin(ang) * 10) / 10 };
+
+      // 1. Central Mule Hub placed at (0, 0)
+      const centerIdx = userNodes.length > 6 ? 6 : 0;
+      if (userNodes.length > 0) {
+        positions[userNodes[centerIdx].id] = { x: 0.0, y: 0.0 };
+      }
+
+      // 2. Outer Core Users (7 nodes) distributed in spacious ring
+      const otherUsers = userNodes.filter((_, i) => i !== centerIdx);
+      const nU = Math.max(1, otherUsers.length);
+      otherUsers.forEach((u, i) => {
+        const ang = (2 * Math.PI * i) / nU - Math.PI / 2;
+        positions[u.id] = {
+          x: Math.round(135 * scale * Math.cos(ang) * 10) / 10,
+          y: Math.round(120 * scale * Math.sin(ang) * 10) / 10
+        };
       });
 
-      // 2. Hardware Devices distributed symmetrically in star perimeter (radius 175-195px)
-      const nD = Math.max(1, devNodes.length);
-      devNodes.forEach((d, i) => {
-        const ang = Math.PI / 2 + (2 * Math.PI * i) / nD;
-        const r = 180 + (i % 2 === 1 ? 12 : -12);
-        positions[d.id] = { x: Math.round(r * Math.cos(ang) * 10) / 10, y: Math.round(r * Math.sin(ang) * 10) / 10 };
-      });
-
-      // 3. Merchants clustered at top and bottom (radius 105-125px)
-      const nM = Math.max(1, merchNodes.length);
+      // 3. Merchants (4 nodes) in perimeter diamond
+      const merchAngles = [-Math.PI / 2 - 0.1, -Math.PI / 6, Math.PI / 2, (5 * Math.PI) / 6];
       merchNodes.forEach((m, i) => {
-        const baseAng = (i % 2 === 0) ? -Math.PI / 2 : Math.PI / 2;
-        const angOffset = ((Math.floor(i / 2) - 0.5) * 0.5);
-        const ang = baseAng + angOffset;
-        const r = 112 + (i % 3) * 10;
-        positions[m.id] = { x: Math.round(r * Math.cos(ang) * 10) / 10, y: Math.round(r * Math.sin(ang) * 10) / 10 };
+        const ang = merchAngles[i % merchAngles.length];
+        positions[m.id] = {
+          x: Math.round(195 * scale * Math.cos(ang) * 10) / 10,
+          y: Math.round(185 * scale * Math.sin(ang) * 10) / 10
+        };
       });
 
-      // 4. Other auxiliary nodes
+      // 4. Hardware Devices (5 nodes) in 5-pointed perimeter star
+      const devAngles = [-Math.PI / 2 + 0.25, -Math.PI / 6 - 0.15, Math.PI / 4, (3 * Math.PI) / 4, (-5 * Math.PI) / 6 + 0.1];
+      devNodes.forEach((d, i) => {
+        const ang = devAngles[i % devAngles.length];
+        positions[d.id] = {
+          x: Math.round(265 * scale * Math.cos(ang) * 10) / 10,
+          y: Math.round(245 * scale * Math.sin(ang) * 10) / 10
+        };
+      });
+
+      // 5. Auxiliary nodes
       const nO = Math.max(1, otherNodes.length);
       otherNodes.forEach((o, i) => {
         const ang = (2 * Math.PI * i) / nO;
-        positions[o.id] = { x: Math.round(145 * Math.cos(ang) * 10) / 10, y: Math.round(145 * Math.sin(ang) * 10) / 10 };
+        positions[o.id] = {
+          x: Math.round(210 * scale * Math.cos(ang) * 10) / 10,
+          y: Math.round(210 * scale * Math.sin(ang) * 10) / 10
+        };
       });
 
       return positions;
@@ -2019,7 +2055,7 @@ html_template = """<!DOCTYPE html>
 
       // 2. Fallback to balanced dynamic organic solver if custom graph
       if (!rawPositions) {
-        rawPositions = computeDynamicOrganicLayout(graphData, scale);
+        rawPositions = computeDynamicOrganicLayout(graphData, 1.0);
       }
 
       // 3. Apply scale, face rotation (for run analysis animation), and collision resolution
@@ -2043,10 +2079,10 @@ html_template = """<!DOCTYPE html>
         };
       }
 
-      // 4. Collision relaxation pass (Guarantees zero overlap, min distance >= 44px)
+      // 4. Collision relaxation pass (Guarantees zero overlap, min distance >= 52px)
       const keys = Object.keys(positions);
-      const minDistance = 44.0;
-      for (let iter = 0; iter < 18; iter++) {
+      const minDistance = 52.0;
+      for (let iter = 0; iter < 15; iter++) {
         for (let i = 0; i < keys.length; i++) {
           for (let j = i + 1; j < keys.length; j++) {
             const k1 = keys[i], k2 = keys[j];
@@ -2059,8 +2095,10 @@ html_template = """<!DOCTYPE html>
               const overlap = (minDistance - d) / 2.0;
               const nx = (dx / d) * overlap;
               const ny = (dy / d) * overlap;
-              p1.x -= nx; p1.y -= ny;
-              p2.x += nx; p2.y += ny;
+              p1.x = Math.round((p1.x - nx) * 10) / 10;
+              p1.y = Math.round((p1.y - ny) * 10) / 10;
+              p2.x = Math.round((p2.x + nx) * 10) / 10;
+              p2.y = Math.round((p2.y + ny) * 10) / 10;
             }
           }
         }
@@ -2439,20 +2477,17 @@ html_template = """<!DOCTYPE html>
           enabled: physicsState,
           solver: "forceAtlas2Based",
           forceAtlas2Based: {
-            gravitationalConstant: -160,
-            centralGravity: 0.015,
+            gravitationalConstant: -350,
+            centralGravity: 0.003,
             springLength: currentSpringLength,
-            springConstant: 0.05,
-            damping: 0.65,
-            avoidOverlap: 0.2
+            springConstant: 0.008,
+            damping: 0.75,
+            avoidOverlap: 0.8
           },
           stabilization: {
-            enabled: true,
-            iterations: 120,
-            updateInterval: 25,
-            fit: false
+            enabled: false
           },
-          maxVelocity: 35,
+          maxVelocity: 30,
           minVelocity: 0.75
         },
         interaction: {
@@ -2461,7 +2496,7 @@ html_template = """<!DOCTYPE html>
           zoomView: true,
           dragView: !globeModeActive,
           dragNodes: !globeModeActive,
-          zoomSpeed: 1.0, // Standard responsive zoom speed
+          zoomSpeed: 0.8,
           navigationButtons: false,
           keyboard: false
         }
@@ -2477,16 +2512,14 @@ html_template = """<!DOCTYPE html>
         fitGraphView(false);
         setup3DCoordinates(initialPositions);
 
-        network.once("stabilizationIterationsDone", function() {
-          if (network) {
-            fitGraphView();
-            setup3DCoordinates(network.getPositions());
-            network.stopSimulation();
-            if (!physicsState) {
-              network.setOptions({ physics: { enabled: false } });
-            }
-          }
-        });
+        if (!physicsState) {
+          network.stopSimulation();
+          network.setOptions({ physics: { enabled: false } });
+        } else {
+          setTimeout(() => {
+            if (network && physicsState) network.stopSimulation();
+          }, 400);
+        }
 
         network.on("stabilized", function() {
           if (network) network.stopSimulation();
@@ -2511,22 +2544,22 @@ html_template = """<!DOCTYPE html>
         });
 
         // =========================================================================
-        // CONSTANT SCREEN TEXT SIZE & VISIBILITY AT ALL ZOOM LEVELS (CACHED)
+        // CONSTANT SCREEN TEXT SIZE & VISIBILITY AT ALL ZOOM LEVELS (HIGH-PERF GPU)
         // =========================================================================
         const labelWidthCache = {};
         network.on("afterDrawing", function(ctx) {
+          if (!network || !network.body || !network.body.nodes) return;
           ctx.save();
           ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-          const positions = network.getPositions();
           ctx.font = "600 11px 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
 
           for (const node of currentVisibleNodes) {
-            const pos = positions[node.id];
-            if (!pos) continue;
-            const domPos = network.canvasToDOM({ x: pos.x, y: pos.y });
+            const visNode = network.body.nodes[node.id];
+            if (!visNode) continue;
+            const domPos = network.canvasToDOM({ x: visNode.x, y: visNode.y });
 
             // Skip drawing if outside viewport
             if (domPos.x < -60 || domPos.x > container.clientWidth + 60 ||
@@ -2536,23 +2569,26 @@ html_template = """<!DOCTYPE html>
 
             const labelText = node.label;
             const yOffset = (node.group === "device" ? 22 : 18);
-            const textX = domPos.x;
-            const textY = domPos.y + yOffset;
+            const textX = Math.round(domPos.x);
+            const textY = Math.round(domPos.y + yOffset);
 
             let textWidth = labelWidthCache[labelText];
             if (textWidth === undefined) {
-              textWidth = ctx.measureText(labelText).width;
+              textWidth = Math.ceil(ctx.measureText(labelText).width);
               labelWidthCache[labelText] = textWidth;
             }
 
+            const rx = Math.round(textX - textWidth / 2 - 5);
+            const ry = Math.round(textY - 8);
+            const rw = textWidth + 10;
+            const rh = 16;
+
             ctx.fillStyle = "rgba(17, 18, 22, 0.92)";
-            ctx.beginPath();
-            ctx.roundRect(textX - textWidth / 2 - 5, textY - 8, textWidth + 10, 16, 4);
-            ctx.fill();
+            ctx.fillRect(rx, ry, rw, rh);
 
             ctx.strokeStyle = node.group === "user" ? "rgba(250, 204, 21, 0.4)" : (node.group === "device" ? "rgba(56, 189, 248, 0.4)" : "rgba(52, 211, 153, 0.4)");
             ctx.lineWidth = 0.8;
-            ctx.stroke();
+            ctx.strokeRect(rx, ry, rw, rh);
 
             ctx.fillStyle = node.group === "user" ? "#facc15" : (node.group === "device" ? "#38bdf8" : "#34d399");
             ctx.fillText(labelText, textX, textY);
@@ -2750,7 +2786,11 @@ html_template = """<!DOCTYPE html>
               enabled: true,
               forceAtlas2Based: {
                 springLength: currentSpringLength,
-                gravitationalConstant: -160
+                gravitationalConstant: -350,
+                centralGravity: 0.003,
+                springConstant: 0.008,
+                damping: 0.75,
+                avoidOverlap: 0.8
               }
             }
           });
@@ -2778,15 +2818,15 @@ html_template = """<!DOCTYPE html>
               enabled: true,
               solver: "forceAtlas2Based",
               forceAtlas2Based: {
-                gravitationalConstant: -160,
-                centralGravity: 0.015,
+                gravitationalConstant: -350,
+                centralGravity: 0.003,
                 springLength: currentSpringLength,
-                springConstant: 0.05,
-                damping: 0.65,
-                avoidOverlap: 0.2
+                springConstant: 0.008,
+                damping: 0.75,
+                avoidOverlap: 0.8
               },
               minVelocity: 0.75,
-              maxVelocity: 35
+              maxVelocity: 30
             }
           });
           network.startSimulation();
@@ -2797,7 +2837,7 @@ html_template = """<!DOCTYPE html>
         } else {
           network.stopSimulation();
           network.setOptions({ physics: { enabled: false } });
-          showToast("Physics: Off (Real Model Layout Locked)");
+          showToast("Physics: Off (Model Layout Locked)");
         }
       }
     }
