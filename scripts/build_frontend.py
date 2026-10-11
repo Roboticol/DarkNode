@@ -9,6 +9,7 @@
 
 import json
 from pathlib import Path
+import networkx as nx
 
 fallback_path = Path("data/fallback_rings.json")
 if not fallback_path.exists():
@@ -16,6 +17,20 @@ if not fallback_path.exists():
 
 with open(fallback_path, "r", encoding="utf-8") as f:
     fallback_data = f.read()
+
+fallback_rings = json.loads(fallback_data)
+organic_layouts = {}
+for idx, r in enumerate(fallback_rings):
+    G = nx.Graph()
+    for n in r['graph']['nodes']:
+        G.add_node(n['id'], group=n['group'])
+    for e in r['graph']['edges']:
+        w = 2.5 if e.get('relation') == 'shared_ip' else (1.5 if e.get('relation') == 'shared_device' else 1.0)
+        G.add_edge(e['from'], e['to'], weight=w)
+    pos = nx.spring_layout(G, k=2.0, iterations=300, seed=42 + idx * 7)
+    organic_layouts[idx] = {k: {'x': round(v[0] * 300, 1), 'y': round(v[1] * 300, 1)} for k, v in pos.items()}
+
+organic_layouts_json = json.dumps(organic_layouts)
 
 html_template = """<!DOCTYPE html>
 <html lang="en">
@@ -1217,9 +1232,15 @@ html_template = """<!DOCTYPE html>
     <div class="panel-card viewport-center">
       <!-- Floating Toolbar -->
       <div class="canvas-bar">
-        <button class="canvas-pill-btn active" onclick="resetGraphView()">
+        <button class="canvas-pill-btn active" onclick="resetGraphView()" title="Fit entire model in view">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
           Fit View
+        </button>
+        <button class="canvas-pill-btn" onclick="zoomIn()" title="Zoom In (+)">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <button class="canvas-pill-btn" onclick="zoomOut()" title="Zoom Out (-)">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
         <button class="canvas-pill-btn" id="spread-btn" onclick="spreadGraph()">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
@@ -1848,14 +1869,13 @@ html_template = """<!DOCTYPE html>
       container.dataset.rotListenersAttached = "true";
 
       container.addEventListener("contextmenu", (e) => {
-        if (globeModeActive || e.altKey || e.shiftKey) {
+        if (globeModeActive) {
           e.preventDefault();
         }
       });
 
       container.addEventListener("mousedown", (e) => {
-        const isTrigger = globeModeActive || e.altKey || e.button === 2;
-        if (!isTrigger || !network) return;
+        if (!globeModeActive || !network) return;
 
         isGlobeDragging = true;
         dragStartX = e.clientX;
@@ -1873,8 +1893,7 @@ html_template = """<!DOCTYPE html>
         network.stopSimulation();
 
         e.preventDefault();
-        e.stopPropagation();
-      }, true);
+      });
 
       window.addEventListener("mousemove", (e) => {
         if (!isGlobeDragging) return;
@@ -1905,7 +1924,8 @@ html_template = """<!DOCTYPE html>
           network.setOptions({
             interaction: {
               dragView: !globeModeActive,
-              dragNodes: !globeModeActive
+              dragNodes: !globeModeActive,
+              zoomView: true
             }
           });
         }
@@ -1923,77 +1943,101 @@ html_template = """<!DOCTYPE html>
 
     // =========================================================================
     // REAL MODEL TOPOLOGICAL LAYOUT COMPUTATION
-    // Guaranteed open, spacious, non-overlapping syndicate topology (like SS1 & SS2)
-    // Works 100% deterministically whether Physics is On or Off!
+    // 100% Organic Syndicate Topology (Identical across Physics: On and Physics: Off)
+    // Precomputed force equilibrium + Dynamic Organic Solver
     // =========================================================================
-    function computeModelLayout(graphData, faceAngle = 0, springLength = 260) {
-      const scale = springLength / 260;
-      const rUser = 140 * scale;
-      const rDev = 295 * scale;
-      const rMerch = 230 * scale;
+    const PRECOMPUTED_ORGANIC_LAYOUTS = __ORGANIC_LAYOUTS_JSON__;
 
+    function computeDynamicOrganicLayout(graphData, scale = 1.0) {
       const visibleNodes = (graphData.nodes || []).filter(n => activeFilters[n.group] !== false);
-      const visibleIds = new Set(visibleNodes.map(n => n.id));
-      const visibleEdges = (graphData.edges || []).filter(e => visibleIds.has(e.from) && visibleIds.has(e.to));
-
       const userNodes = visibleNodes.filter(n => n.group === "user");
-      const deviceNodes = visibleNodes.filter(n => n.group === "device");
-      const merchantNodes = visibleNodes.filter(n => n.group === "merchant");
+      const devNodes = visibleNodes.filter(n => n.group === "device");
+      const merchNodes = visibleNodes.filter(n => n.group === "merchant");
       const otherNodes = visibleNodes.filter(n => n.group !== "user" && n.group !== "device" && n.group !== "merchant");
 
       const positions = {};
-      const userAngles = {};
-
-      // 1. Core Mule User Loop (Open Polygon / Circular Ring)
+      // 1. Core Mule Users in compact cluster (radius 70-110px)
       const nU = Math.max(1, userNodes.length);
       userNodes.forEach((u, i) => {
-        const ang = (2 * Math.PI * i) / nU + faceAngle;
-        userAngles[u.id] = ang;
-        positions[u.id] = {
-          x: Math.round(rUser * Math.cos(ang) * 10) / 10,
-          y: Math.round(rUser * Math.sin(ang) * 10) / 10
-        };
+        const ang = (2 * Math.PI * i) / nU;
+        const r = 85 * (0.85 + (i % 3) * 0.2);
+        positions[u.id] = { x: Math.round(r * Math.cos(ang) * 10) / 10, y: Math.round(r * Math.sin(ang) * 10) / 10 };
       });
 
-      // 2. Peripheral Nodes (Devices & Merchants radiating outward along connected users)
-      const periphConfigs = [
-        { list: deviceNodes, baseR: rDev, angSpread: 0.42, rJitter: 30.0 },
-        { list: merchantNodes, baseR: rMerch, angSpread: 0.35, rJitter: 20.0 },
-        { list: otherNodes, baseR: 260 * scale, angSpread: 0.35, rJitter: 15.0 }
-      ];
+      // 2. Hardware Devices distributed symmetrically in star perimeter (radius 270-300px)
+      const nD = Math.max(1, devNodes.length);
+      devNodes.forEach((d, i) => {
+        const ang = Math.PI / 2 + (2 * Math.PI * i) / nD;
+        const r = 285 + (i % 2 === 1 ? 15 : -15);
+        positions[d.id] = { x: Math.round(r * Math.cos(ang) * 10) / 10, y: Math.round(r * Math.sin(ang) * 10) / 10 };
+      });
 
-      periphConfigs.forEach(cfg => {
-        const nP = cfg.list.length;
-        cfg.list.forEach((p, j) => {
-          const conn = visibleEdges.filter(e => e.from === p.id || e.to === p.id).map(e => e.from === p.id ? e.to : e.from);
-          const connU = conn.filter(uid => userAngles[uid] !== undefined);
+      // 3. Merchants clustered at top and bottom (radius 155-185px)
+      const nM = Math.max(1, merchNodes.length);
+      merchNodes.forEach((m, i) => {
+        const baseAng = (i % 2 === 0) ? -Math.PI / 2 : Math.PI / 2;
+        const angOffset = ((Math.floor(i / 2) - 0.5) * 0.55);
+        const ang = baseAng + angOffset;
+        const r = 165 + (i % 3) * 15;
+        positions[m.id] = { x: Math.round(r * Math.cos(ang) * 10) / 10, y: Math.round(r * Math.sin(ang) * 10) / 10 };
+      });
 
-          let finalAng;
-          if (connU.length > 0) {
-            let sinSum = 0, cosSum = 0;
-            connU.forEach(uid => {
-              sinSum += Math.sin(userAngles[uid]);
-              cosSum += Math.cos(userAngles[uid]);
-            });
-            const avgAng = Math.atan2(sinSum, cosSum);
-            const spreadOff = (j - (nP - 1) / 2) * cfg.angSpread;
-            finalAng = avgAng + spreadOff;
-          } else {
-            finalAng = (2 * Math.PI * j) / Math.max(1, nP) + faceAngle + 0.45;
+      // 4. Other auxiliary nodes
+      const nO = Math.max(1, otherNodes.length);
+      otherNodes.forEach((o, i) => {
+        const ang = (2 * Math.PI * i) / nO;
+        positions[o.id] = { x: Math.round(230 * Math.cos(ang) * 10) / 10, y: Math.round(230 * Math.sin(ang) * 10) / 10 };
+      });
+
+      return positions;
+    }
+
+    function computeModelLayout(graphData, faceAngle = 0, springLength = 260) {
+      const scale = springLength / 260;
+      let rawPositions = null;
+
+      // 1. Match precomputed organic layout by active ring or node list
+      if (allRings[activeIndex] && allRings[activeIndex].graph === graphData && PRECOMPUTED_ORGANIC_LAYOUTS[activeIndex]) {
+        rawPositions = PRECOMPUTED_ORGANIC_LAYOUTS[activeIndex];
+      } else {
+        for (let idx = 0; idx < allRings.length; idx++) {
+          if (allRings[idx] && allRings[idx].graph === graphData && PRECOMPUTED_ORGANIC_LAYOUTS[idx]) {
+            rawPositions = PRECOMPUTED_ORGANIC_LAYOUTS[idx];
+            break;
           }
+        }
+      }
 
-          const dist = cfg.baseR + (j % 2 === 1 ? cfg.rJitter : -cfg.rJitter * 0.5);
-          positions[p.id] = {
-            x: Math.round(dist * Math.cos(finalAng) * 10) / 10,
-            y: Math.round(dist * Math.sin(finalAng) * 10) / 10
-          };
-        });
-      });
+      // 2. Fallback to balanced dynamic organic solver if custom graph
+      if (!rawPositions) {
+        rawPositions = computeDynamicOrganicLayout(graphData, scale);
+      }
 
-      // 3. Collision Resolution Pass (Guarantees zero node overlap, min distance >= 52px)
+      // 3. Apply scale, face rotation (for run analysis animation), and collision resolution
+      const positions = {};
+      const cosA = Math.cos(faceAngle);
+      const sinA = Math.sin(faceAngle);
+
+      for (const node of (graphData.nodes || [])) {
+        const id = node.id;
+        const p = rawPositions[id] || { x: 0, y: 0 };
+        const sx = p.x * scale;
+        const sy = p.y * scale;
+
+        // Smooth planar rotation for model face changing
+        const rx = sx * cosA - sy * sinA;
+        const ry = sx * sinA + sy * cosA;
+
+        positions[id] = {
+          x: Math.round(rx * 10) / 10,
+          y: Math.round(ry * 10) / 10
+        };
+      }
+
+      // 4. Collision relaxation pass (Guarantees zero overlap, min distance >= 55px)
       const keys = Object.keys(positions);
-      const minDistance = 52.0;
-      for (let iter = 0; iter < 25; iter++) {
+      const minDistance = 55.0;
+      for (let iter = 0; iter < 18; iter++) {
         for (let i = 0; i < keys.length; i++) {
           for (let j = i + 1; j < keys.length; j++) {
             const k1 = keys[i], k2 = keys[j];
@@ -2006,10 +2050,8 @@ html_template = """<!DOCTYPE html>
               const overlap = (minDistance - d) / 2.0;
               const nx = (dx / d) * overlap;
               const ny = (dy / d) * overlap;
-              p1.x -= nx;
-              p1.y -= ny;
-              p2.x += nx;
-              p2.y += ny;
+              p1.x -= nx; p1.y -= ny;
+              p2.x += nx; p2.y += ny;
             }
           }
         }
@@ -2388,26 +2430,29 @@ html_template = """<!DOCTYPE html>
           enabled: physicsState,
           solver: "forceAtlas2Based",
           forceAtlas2Based: {
-            gravitationalConstant: -420,
-            centralGravity: 0.003,
+            gravitationalConstant: -160,
+            centralGravity: 0.015,
             springLength: currentSpringLength,
-            springConstant: 0.035,
-            damping: 0.45,
-            avoidOverlap: 1.0
+            springConstant: 0.05,
+            damping: 0.65,
+            avoidOverlap: 0.2
           },
           stabilization: {
             enabled: true,
             iterations: 120,
-            updateInterval: 25
-          }
+            updateInterval: 25,
+            fit: false
+          },
+          maxVelocity: 35,
+          minVelocity: 0.75
         },
         interaction: {
           hover: true,
           tooltipDelay: 80,
           zoomView: true,
-          dragView: true,
-          dragNodes: true,
-          zoomSpeed: 0.5, // Standard, common, normal zoom speed across all trackpads and mice
+          dragView: !globeModeActive,
+          dragNodes: !globeModeActive,
+          zoomSpeed: 1.0, // Standard responsive zoom speed
           navigationButtons: false,
           keyboard: false
         }
@@ -2423,26 +2468,43 @@ html_template = """<!DOCTYPE html>
         network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
         setup3DCoordinates(initialPositions);
 
-        if (physicsState) {
-          network.once("stabilizationIterationsDone", function() {
+        network.once("stabilizationIterationsDone", function() {
+          if (network) {
             network.fit({ animation: { duration: 250, easingFunction: "easeInOutQuad" } });
             setup3DCoordinates(network.getPositions());
-          });
-        } else {
-          network.stopSimulation();
-          network.setOptions({ physics: { enabled: false } });
-        }
+            network.stopSimulation();
+            if (!physicsState) {
+              network.setOptions({ physics: { enabled: false } });
+            }
+          }
+        });
 
-        // Update 3D base positions if user drags an individual node in standard mode
+        network.on("stabilized", function() {
+          if (network) network.stopSimulation();
+        });
+
+        network.on("dragStart", function(params) {
+          if (params.nodes && params.nodes.length > 0 && physicsState && !globeModeActive) {
+            network.startSimulation();
+          }
+        });
+
+        // Update 3D base positions and stop simulation after drag
         network.on("dragEnd", function(params) {
+          if (physicsState && !globeModeActive) {
+            setTimeout(() => {
+              if (network && physicsState) network.stopSimulation();
+            }, 600);
+          }
           if (params.nodes && params.nodes.length > 0 && !isGlobeDragging && !globeModeActive) {
             setup3DCoordinates(network.getPositions());
           }
         });
 
         // =========================================================================
-        // CONSTANT SCREEN TEXT SIZE & VISIBILITY AT ALL ZOOM LEVELS
+        // CONSTANT SCREEN TEXT SIZE & VISIBILITY AT ALL ZOOM LEVELS (CACHED)
         // =========================================================================
+        const labelWidthCache = {};
         network.on("afterDrawing", function(ctx) {
           ctx.save();
           ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -2468,7 +2530,12 @@ html_template = """<!DOCTYPE html>
             const textX = domPos.x;
             const textY = domPos.y + yOffset;
 
-            const textWidth = ctx.measureText(labelText).width;
+            let textWidth = labelWidthCache[labelText];
+            if (textWidth === undefined) {
+              textWidth = ctx.measureText(labelText).width;
+              labelWidthCache[labelText] = textWidth;
+            }
+
             ctx.fillStyle = "rgba(17, 18, 22, 0.92)";
             ctx.beginPath();
             ctx.roundRect(textX - textWidth / 2 - 5, textY - 8, textWidth + 10, 16, 4);
@@ -2559,6 +2626,10 @@ html_template = """<!DOCTYPE html>
         setup3DCoordinates(targetPositions);
         if (physicsState) {
           network.setOptions({ physics: { enabled: true } });
+          network.startSimulation();
+          setTimeout(() => {
+            if (network && physicsState) network.stopSimulation();
+          }, 500);
         } else {
           network.setOptions({ physics: { enabled: false } });
           network.stopSimulation();
@@ -2670,10 +2741,14 @@ html_template = """<!DOCTYPE html>
               enabled: true,
               forceAtlas2Based: {
                 springLength: currentSpringLength,
-                gravitationalConstant: currentSpringLength === 380 ? -620 : -420
+                gravitationalConstant: -160
               }
             }
           });
+          network.startSimulation();
+          setTimeout(() => {
+            if (network && physicsState) network.stopSimulation();
+          }, 500);
         } else {
           network.stopSimulation();
           network.setOptions({ physics: { enabled: false } });
@@ -2694,16 +2769,21 @@ html_template = """<!DOCTYPE html>
               enabled: true,
               solver: "forceAtlas2Based",
               forceAtlas2Based: {
-                gravitationalConstant: -420,
-                centralGravity: 0.003,
+                gravitationalConstant: -160,
+                centralGravity: 0.015,
                 springLength: currentSpringLength,
-                springConstant: 0.035,
-                damping: 0.45,
-                avoidOverlap: 1.0
-              }
+                springConstant: 0.05,
+                damping: 0.65,
+                avoidOverlap: 0.2
+              },
+              minVelocity: 0.75,
+              maxVelocity: 35
             }
           });
           network.startSimulation();
+          setTimeout(() => {
+            if (network && physicsState) network.stopSimulation();
+          }, 600);
           showToast("Physics: On (Simulation Active)");
         } else {
           network.stopSimulation();
@@ -2862,7 +2942,7 @@ Action Recommendation: Coordinated mule syndicate detected. Initiate credential 
 </html>
 """
 
-output_html = html_template.replace("__FALLBACK_JSON__", fallback_data)
+output_html = html_template.replace("__FALLBACK_JSON__", fallback_data).replace("__ORGANIC_LAYOUTS_JSON__", organic_layouts_json)
 with open("web/index.html", "w", encoding="utf-8") as f:
     f.write(output_html)
 
