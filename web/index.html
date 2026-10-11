@@ -498,6 +498,60 @@
       height: 100% !important;
     }
 
+    /* GNN Scanning Wave Effect for Ring Transitions */
+    .canvas-scan-beam {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, rgba(250, 204, 21, 0.9), rgba(56, 189, 248, 0.9), transparent);
+      box-shadow: 0 0 15px rgba(250, 204, 21, 0.6), 0 0 30px rgba(56, 189, 248, 0.4);
+      pointer-events: none;
+      z-index: 12;
+      opacity: 0;
+    }
+
+    .canvas-scan-beam.scanning {
+      animation: scanBeamSweep 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes scanBeamSweep {
+      0% { top: 0%; opacity: 0; }
+      20% { opacity: 0.95; }
+      80% { opacity: 0.95; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    /* HUD Subgraph Extracted Badge */
+    .gnn-hud-badge {
+      position: absolute;
+      top: 56px;
+      left: 14px;
+      background: rgba(17, 18, 22, 0.92);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--yellow-border);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--yellow-primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 15;
+      box-shadow: var(--shadow-card);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      transform: translateY(-4px);
+    }
+
+    .gnn-hud-badge.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     /* Floating Graph Bar */
     .canvas-bar {
       position: absolute;
@@ -1259,18 +1313,12 @@
           <span id="physics-label">Physics: On</span>
         </button>
         <span style="color: var(--border-subtle);">|</span>
-        <button class="canvas-pill-btn" id="rotate-mode-btn" onclick="toggleRotateMode()" title="Toggle manual cursor rotation (or drag holding Shift / Alt / Right-Click)">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-          <span id="rotate-mode-label">Rotate: Off</span>
+        <button class="canvas-pill-btn" id="globe-mode-btn" onclick="toggleGlobeMode()" title="Rotate model manually like a 3D globe using cursor (click + drag horizontally or vertically)">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <span id="globe-mode-label">3D Globe: Off</span>
         </button>
-        <button class="canvas-pill-btn" onclick="nudgeRotation(-30)" title="Rotate counter-clockwise 30°">
-          ↶ -30°
-        </button>
-        <button class="canvas-pill-btn" onclick="nudgeRotation(30)" title="Rotate clockwise 30°">
-          ↷ +30°
-        </button>
-        <button class="canvas-pill-btn" id="reset-rot-btn" onclick="resetRotation()" title="Reset rotation to 0°" style="display: none;">
-          Reset 0°
+        <button class="canvas-pill-btn" id="reset-globe-btn" onclick="resetGlobeView()" title="Reset 3D Globe orientation to default view" style="display: none;">
+          Reset Globe
         </button>
         <span style="color: var(--border-subtle);">|</span>
         <button class="canvas-pill-btn active" id="filter-user" onclick="toggleFilter('user')">Users</button>
@@ -1280,6 +1328,8 @@
 
       <!-- Graph Canvas Container (Guaranteed non-collapsing) -->
       <div class="canvas-outer">
+        <div class="canvas-scan-beam" id="scan-beam"></div>
+        <div class="gnn-hud-badge" id="gnn-scan-hud"></div>
         <div id="network-canvas"></div>
       </div>
 
@@ -1533,8 +1583,8 @@
               <div>Click <span class="shortcut-badge">Spread Out</span> on top canvas bar for open layout</div>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
-              <span>Rotate Graph</span>
-              <div>Click <span class="shortcut-badge">Rotate: On</span> or hold <span class="shortcut-badge">Shift / Alt / Right-Click</span> and drag cursor</div>
+              <span>3D Globe Rotation</span>
+              <div>Click <span class="shortcut-badge">3D Globe: On</span> or hold <span class="shortcut-badge">Shift / Alt / Right-Click</span> and drag cursor horizontally/vertically</div>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0;">
               <span>Entity Filters</span>
@@ -1679,17 +1729,18 @@
     let currentTierFilter = 'all';
     let inspectedNodeId = null;
 
-    // Graph Rotation State (Autonomous scan on Run Analysis + Manual cursor rotation)
+    // 3D Globe Trackball Rotation State (Manual Cursor-Only Rotation)
     let currentNodesDataSet = null;
-    let baseNodePositions = {};
+    let baseNodes3D = {}; // { id: { x0: number, y0: number, z0: number, origSize: number } }
     let currentGraphCentroid = { x: 0, y: 0 };
-    let currentRotationAngle = 0; // in radians
-    let rotateModeActive = false;
-    let isRotating = false;
-    let startMouseAngle = 0;
-    let startGraphAngle = 0;
-    let triggerIntroRotation = false;
-    let rotAnimTimer = null;
+    let currentYaw = 0; // Horizontal rotation around Y-axis (radians)
+    let currentPitch = 0; // Vertical rotation around X-axis (radians)
+    let globeModeActive = false;
+    let isGlobeDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let dragStartYaw = 0;
+    let dragStartPitch = 0;
 
     function calculateCentroid(positions) {
       let sumX = 0, sumY = 0, count = 0;
@@ -1703,103 +1754,136 @@
       return count > 0 ? { x: sumX / count, y: sumY / count } : { x: 0, y: 0 };
     }
 
-    function applyGraphRotation(theta) {
-      currentRotationAngle = theta;
-      if (!currentNodesDataSet || Object.keys(baseNodePositions).length === 0) return;
+    function setup3DCoordinates(positions) {
+      baseNodes3D = {};
+      currentGraphCentroid = calculateCentroid(positions);
+      currentYaw = 0;
+      currentPitch = 0;
+      updateGlobeIndicator();
 
-      const cos = Math.cos(theta);
-      const sin = Math.sin(theta);
+      const ids = Object.keys(positions);
+      if (ids.length === 0) return;
+
+      // Find max radius from centroid
+      let maxDist = 0;
+      for (const id of ids) {
+        const p = positions[id];
+        const dist = Math.hypot(p.x - currentGraphCentroid.x, p.y - currentGraphCentroid.y);
+        if (dist > maxDist) maxDist = dist;
+      }
+      const globeRadius = Math.max(160, maxDist * 1.05);
+
+      // Deterministically map each node into 3D spherical shell coordinates
+      ids.forEach((id, idx) => {
+        const p = positions[id];
+        const x0 = p.x - currentGraphCentroid.x;
+        const y0 = p.y - currentGraphCentroid.y;
+        const r2D = Math.hypot(x0, y0);
+
+        // Spherical depth: alternate front/back hemispheres so nodes form a rich 3D constellation
+        const hemisphere = (idx % 2 === 0) ? 1 : -1;
+        const sphereCap = Math.sqrt(Math.max(0, globeRadius * globeRadius - r2D * r2D));
+        const z0 = hemisphere * Math.min(sphereCap * 0.85, 180 + (idx % 3) * 25);
+
+        // Get original visual size if defined
+        const existingNode = currentNodesDataSet ? currentNodesDataSet.get(id) : null;
+        const origSize = existingNode && existingNode.size ? existingNode.size : (id.startsWith("user") ? 20 : (id.startsWith("dev") ? 22 : 18));
+
+        baseNodes3D[id] = { x0, y0, z0, origSize };
+      });
+    }
+
+    function projectAndApplyGlobeRotation() {
+      if (!currentNodesDataSet || Object.keys(baseNodes3D).length === 0) return;
+
+      const cosYaw = Math.cos(currentYaw);
+      const sinYaw = Math.sin(currentYaw);
+      const cosPitch = Math.cos(currentPitch);
+      const sinPitch = Math.sin(currentPitch);
+
+      // Camera focal distance for realistic perspective
+      const fov = 750;
       const updates = [];
 
-      for (const id in baseNodePositions) {
-        const base = baseNodePositions[id];
-        if (!base) continue;
-        const dx = base.x - currentGraphCentroid.x;
-        const dy = base.y - currentGraphCentroid.y;
+      for (const id in baseNodes3D) {
+        const node = baseNodes3D[id];
+        // 1. Rotate around Y-axis (Yaw - horizontal spin)
+        const x1 = node.x0 * cosYaw + node.z0 * sinYaw;
+        const z1 = -node.x0 * sinYaw + node.z0 * cosYaw;
+
+        // 2. Rotate around X-axis (Pitch - vertical tilt)
+        const y2 = node.y0 * cosPitch - z1 * sinPitch;
+        const z2 = node.y0 * sinPitch + z1 * cosPitch;
+
+        // 3. Perspective projection
+        // Nodes closer (positive z2) scale up, nodes farther (negative z2) scale down
+        const perspectiveScale = fov / (fov + z2);
+        const screenX = currentGraphCentroid.x + x1 * perspectiveScale;
+        const screenY = currentGraphCentroid.y + y2 * perspectiveScale;
+
+        // Projected size (foreground nodes are larger and background nodes recede)
+        const projectedSize = Math.max(10, Math.min(34, Math.round(node.origSize * perspectiveScale)));
+
         updates.push({
           id: id,
-          x: currentGraphCentroid.x + dx * cos - dy * sin,
-          y: currentGraphCentroid.y + dx * sin + dy * cos
+          x: screenX,
+          y: screenY,
+          size: projectedSize
         });
       }
 
       currentNodesDataSet.update(updates);
-      updateRotationIndicator();
+      updateGlobeIndicator();
     }
 
-    function updateRotationIndicator() {
-      const resetBtn = document.getElementById("reset-rot-btn");
-      if (!resetBtn) return;
-      const deg = Math.round((currentRotationAngle * 180 / Math.PI) % 360);
-      const normalizedDeg = (deg + 360) % 360;
-      if (normalizedDeg !== 0) {
-        resetBtn.style.display = "inline-flex";
-        resetBtn.innerText = `Reset (${normalizedDeg}°)`;
-      } else {
-        resetBtn.style.display = "none";
-      }
-    }
-
-    function resetRotation() {
-      if (rotAnimTimer) cancelAnimationFrame(rotAnimTimer);
-      applyGraphRotation(0);
-    }
-
-    function nudgeRotation(degDelta) {
-      if (rotAnimTimer) cancelAnimationFrame(rotAnimTimer);
-      const radDelta = degDelta * Math.PI / 180;
-      applyGraphRotation(currentRotationAngle + radDelta);
-    }
-
-    function animateGraphIntroRotation(duration = 1050) {
-      if (!currentNodesDataSet || Object.keys(baseNodePositions).length === 0) return;
-      if (rotAnimTimer) cancelAnimationFrame(rotAnimTimer);
-
-      const startAngle = -Math.PI * 2; // Full 360-degree orbital revolution
-      const endAngle = 0;
-      const startTime = performance.now();
-
-      function tick(now) {
-        const elapsed = now - startTime;
-        const progress = Math.min(1, elapsed / duration);
-        // easeOutCubic: starts dynamically, settles gently
-        const ease = 1 - Math.pow(1 - progress, 3);
-        const angle = startAngle + (endAngle - startAngle) * ease;
-        applyGraphRotation(angle);
-
-        if (progress < 1) {
-          rotAnimTimer = requestAnimationFrame(tick);
-        } else {
-          applyGraphRotation(0);
-          rotAnimTimer = null;
-        }
-      }
-      rotAnimTimer = requestAnimationFrame(tick);
-    }
-
-    function toggleRotateMode() {
-      rotateModeActive = !rotateModeActive;
-      const btn = document.getElementById("rotate-mode-btn");
-      const label = document.getElementById("rotate-mode-label");
+    function toggleGlobeMode() {
+      globeModeActive = !globeModeActive;
+      const btn = document.getElementById("globe-mode-btn");
+      const label = document.getElementById("globe-mode-label");
       const canvasContainer = document.getElementById("network-canvas");
 
-      if (btn) btn.classList.toggle("active", rotateModeActive);
-      if (label) label.innerText = `Rotate: ${rotateModeActive ? 'On' : 'Off'}`;
+      if (btn) btn.classList.toggle("active", globeModeActive);
+      if (label) label.innerText = `3D Globe: ${globeModeActive ? 'On' : 'Off'}`;
 
       if (canvasContainer) {
-        canvasContainer.style.cursor = rotateModeActive ? "grab" : "";
+        canvasContainer.style.cursor = globeModeActive ? "grab" : "";
       }
 
       if (network) {
         network.setOptions({
           interaction: {
-            dragView: !rotateModeActive,
-            dragNodes: !rotateModeActive
+            dragView: !globeModeActive,
+            dragNodes: !globeModeActive
           }
         });
       }
 
-      showToast(`Manual Rotation ${rotateModeActive ? 'Active — Drag cursor anywhere on canvas to rotate' : 'Disabled'}`);
+      showToast(`3D Globe Mode ${globeModeActive ? 'Enabled — Drag cursor horizontally or vertically to spin the model' : 'Disabled'}`);
+    }
+
+    function resetGlobeView() {
+      currentYaw = 0;
+      currentPitch = 0;
+      projectAndApplyGlobeRotation();
+      if (network) {
+        network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+      }
+      showToast("Reset 3D Globe orientation to default view");
+    }
+
+    function updateGlobeIndicator() {
+      const resetBtn = document.getElementById("reset-globe-btn");
+      if (!resetBtn) return;
+      const yawDeg = Math.round((currentYaw * 180 / Math.PI) % 360);
+      const pitchDeg = Math.round((currentPitch * 180 / Math.PI) % 360);
+      const isRotated = Math.abs(yawDeg) > 1 || Math.abs(pitchDeg) > 1;
+
+      if (isRotated) {
+        resetBtn.style.display = "inline-flex";
+        resetBtn.innerText = `Reset 3D (${yawDeg}°, ${pitchDeg}°)`;
+      } else {
+        resetBtn.style.display = "none";
+      }
     }
 
     function initCanvasRotationListeners() {
@@ -1809,22 +1893,21 @@
 
       container.addEventListener("contextmenu", (e) => {
         // Prevent default context menu so right-click can be used for rotation
-        e.preventDefault();
+        if (globeModeActive || e.altKey || e.shiftKey) {
+          e.preventDefault();
+        }
       });
 
       container.addEventListener("mousedown", (e) => {
-        const shouldRotate = rotateModeActive || e.shiftKey || e.altKey || e.button === 2;
-        if (!shouldRotate || !network) return;
+        // Rotate if globe mode is active, or if holding Alt / right mouse button
+        const isTrigger = globeModeActive || e.altKey || e.button === 2;
+        if (!isTrigger || !network) return;
 
-        if (rotAnimTimer) cancelAnimationFrame(rotAnimTimer);
-
-        const domCenter = network.canvasToDOM(currentGraphCentroid);
-        const dx = e.clientX - domCenter.x;
-        const dy = e.clientY - domCenter.y;
-
-        startMouseAngle = Math.atan2(dy, dx);
-        startGraphAngle = currentRotationAngle;
-        isRotating = true;
+        isGlobeDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        dragStartYaw = currentYaw;
+        dragStartPitch = currentPitch;
         container.style.cursor = "grabbing";
 
         network.setOptions({ interaction: { dragView: false, dragNodes: false } });
@@ -1834,33 +1917,62 @@
       }, true);
 
       window.addEventListener("mousemove", (e) => {
-        if (!isRotating || !network) return;
+        if (!isGlobeDragging) return;
 
-        const domCenter = network.canvasToDOM(currentGraphCentroid);
-        const dx = e.clientX - domCenter.x;
-        const dy = e.clientY - domCenter.y;
-        const currentMouseAngle = Math.atan2(dy, dx);
-        const delta = currentMouseAngle - startMouseAngle;
+        const deltaX = e.clientX - dragStartX;
+        const deltaY = e.clientY - dragStartY;
 
-        applyGraphRotation(startGraphAngle + delta);
+        // Sensitivity: 0.007 radians per pixel
+        currentYaw = dragStartYaw + deltaX * 0.007;
+
+        // Pitch is clamped to prevent upside-down gimbal flipping (-75deg to +75deg)
+        const maxPitch = (75 * Math.PI) / 180;
+        const rawPitch = dragStartPitch - deltaY * 0.007;
+        currentPitch = Math.max(-maxPitch, Math.min(maxPitch, rawPitch));
+
+        projectAndApplyGlobeRotation();
       });
 
       window.addEventListener("mouseup", (e) => {
-        if (!isRotating) return;
-        isRotating = false;
+        if (!isGlobeDragging) return;
+        isGlobeDragging = false;
         const c = document.getElementById("network-canvas");
         if (c) {
-          c.style.cursor = rotateModeActive ? "grab" : "";
+          c.style.cursor = globeModeActive ? "grab" : "";
         }
         if (network) {
           network.setOptions({
             interaction: {
-              dragView: !rotateModeActive,
-              dragNodes: !rotateModeActive
+              dragView: !globeModeActive,
+              dragNodes: !globeModeActive
             }
           });
         }
       });
+    }
+
+    // Logical GNN Scanning Animation Trigger
+    function triggerScanAnimation(ringId, memberCount, devicePct) {
+      const beam = document.getElementById("scan-beam");
+      const hud = document.getElementById("gnn-scan-hud");
+
+      if (beam) {
+        beam.classList.remove("scanning");
+        void beam.offsetWidth;
+        beam.classList.add("scanning");
+      }
+
+      if (hud) {
+        hud.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>GNN Subgraph Inferred • Ring #${ringId} (${memberCount} USR • ${devicePct}% DEV)</span>
+        `;
+        hud.classList.add("visible");
+        clearTimeout(hud._hideTimeout);
+        hud._hideTimeout = setTimeout(() => {
+          hud.classList.remove("visible");
+        }, 1600);
+      }
     }
 
     let scoreAnimTimer = null;
@@ -1894,7 +2006,6 @@
     }
 
     async function fetchRings() {
-      triggerIntroRotation = true;
       const url = document.getElementById("api-url").value.trim().replace(/\/$/, "");
       const dot = document.getElementById("status-dot");
       const label = document.getElementById("status-label");
@@ -2066,6 +2177,9 @@
       activeIndex = index;
       const ring = allRings[index];
       if (!ring) return;
+
+      // Trigger GNN subgraph scanning wave + HUD indicator
+      triggerScanAnimation(ring.ring_id, ring.member_count, ring.shared_device_pct);
 
       // Update Active States
       const cards = document.querySelectorAll(".ring-card-item");
@@ -2246,7 +2360,6 @@
 
       if (network) network.destroy();
       currentNodesDataSet = nodes;
-      currentRotationAngle = 0;
       network = new vis.Network(container, data, options);
 
       initCanvasRotationListeners();
@@ -2255,34 +2368,13 @@
       network.once("stabilizationIterationsDone", function() {
         network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
         network.stopSimulation();
-
-        baseNodePositions = network.getPositions();
-        currentGraphCentroid = calculateCentroid(baseNodePositions);
-        currentRotationAngle = 0;
-        updateRotationIndicator();
-
-        if (triggerIntroRotation) {
-          triggerIntroRotation = false;
-          animateGraphIntroRotation(1050);
-        }
+        setup3DCoordinates(network.getPositions());
       });
 
-      // Update unrotated base positions if user drags an individual node
+      // Update 3D base positions if user drags an individual node in standard mode
       network.on("dragEnd", function(params) {
-        if (params.nodes && params.nodes.length > 0 && !isRotating) {
-          const currentPos = network.getPositions();
-          const cos = Math.cos(-currentRotationAngle);
-          const sin = Math.sin(-currentRotationAngle);
-          baseNodePositions = {};
-          for (const id in currentPos) {
-            const p = currentPos[id];
-            const dx = p.x - currentGraphCentroid.x;
-            const dy = p.y - currentGraphCentroid.y;
-            baseNodePositions[id] = {
-              x: currentGraphCentroid.x + dx * cos - dy * sin,
-              y: currentGraphCentroid.y + dx * sin + dy * cos
-            };
-          }
+        if (params.nodes && params.nodes.length > 0 && !isGlobeDragging && !globeModeActive) {
+          setup3DCoordinates(network.getPositions());
         }
       });
 
@@ -2339,7 +2431,7 @@
 
       // Click node to open deep inspector
       network.on("click", function(params) {
-        if (rotateModeActive) return;
+        if (globeModeActive) return;
         if (params.nodes.length > 0) {
           showNodeInspector(params.nodes[0]);
         } else {
@@ -2410,7 +2502,7 @@
     }
 
     function resetGraphView() {
-      resetRotation();
+      resetGlobeView();
       if (network) network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
     }
 
@@ -2450,10 +2542,7 @@
         setTimeout(() => {
           if (network) {
             network.stopSimulation();
-            baseNodePositions = network.getPositions();
-            currentGraphCentroid = calculateCentroid(baseNodePositions);
-            currentRotationAngle = 0;
-            updateRotationIndicator();
+            setup3DCoordinates(network.getPositions());
           }
         }, 1200);
       }
