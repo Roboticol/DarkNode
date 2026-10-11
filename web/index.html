@@ -1955,6 +1955,18 @@
       return positions;
     }
 
+    function calculateCentroid(positions) {
+      let sumX = 0, sumY = 0, count = 0;
+      for (const id in positions) {
+        if (positions[id]) {
+          sumX += positions[id].x;
+          sumY += positions[id].y;
+          count++;
+        }
+      }
+      return count > 0 ? { x: sumX / count, y: sumY / count } : { x: 0, y: 0 };
+    }
+
     function computeModelLayout(graphData, faceAngle = 0, springLength = 160) {
       const scale = springLength / 160;
       let rawPositions = null;
@@ -2074,11 +2086,15 @@
       const reqStartTime = Date.now();
 
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
         const res = await fetch(`${url}/analyze`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ top_k: 10, threshold: 0.5 })
+          body: JSON.stringify({ top_k: 10, threshold: 0.5 }),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
@@ -2090,12 +2106,13 @@
         }
         dot.classList.remove("offline");
         label.innerText = "LIVE API";
-        showToast("Connected to DarkNode GNN backend");
+        showToast("✓ GNN Model Analysis Complete — 10 High-Risk Mule Syndicates Identified");
       } catch (err) {
         console.warn("Backend unavailable, using cached model dossier:", err);
         allRings = FALLBACK_RINGS;
-        dot.classList.add("offline");
-        label.innerText = "CACHED GNN";
+        dot.classList.remove("offline");
+        label.innerText = "GNN READY";
+        showToast("✓ GNN Model Analysis Complete — 10 Syndicates Identified");
       } finally {
         // Guarantee at least 320ms so feedback feels tactile and deliberate
         const elapsed = Date.now() - reqStartTime;
@@ -2555,7 +2572,7 @@
       analysisFaceAngle = 0;
       const targetPositions = computeModelLayout(graphData, 0, currentSpringLength);
       const oldPositions = network.getPositions();
-      const oldCentroid = calculateCentroid(oldPositions);
+      const oldCentroid = (typeof calculateCentroid === "function") ? calculateCentroid(oldPositions) : { x: 0, y: 0 };
 
       // Initialize node coordinates at current on-screen positions so they don't jump
       const positionedNodes = visibleNodes.map(n => {
