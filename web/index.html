@@ -9360,13 +9360,17 @@
       const freezeBtn = document.getElementById("freeze-btn");
       const isFrozen = frozenRings.has(ring.ring_id);
       if (isFrozen) {
-        freezeBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Accounts Suspended (Simulation)`;
-        freezeBtn.disabled = true;
-        freezeBtn.style.opacity = "0.7";
+        freezeBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Accounts Suspended (Click to Reactivate)`;
+        freezeBtn.disabled = false;
+        freezeBtn.style.opacity = "1";
+        freezeBtn.style.background = "#ef4444";
+        freezeBtn.style.color = "#ffffff";
       } else {
         freezeBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Freeze Ring Accounts (Simulation)`;
         freezeBtn.disabled = false;
         freezeBtn.style.opacity = "1";
+        freezeBtn.style.background = "var(--yellow-primary)";
+        freezeBtn.style.color = "#111215";
       }
 
       // Render Account Chips
@@ -9706,25 +9710,18 @@
     function simulateFreeze() {
       const ring = allRings[activeIndex];
       if (!ring) return;
-      frozenRings.add(ring.ring_id);
 
-      const btn = document.getElementById("freeze-btn");
-      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Accounts Suspended (Simulation)`;
-      btn.disabled = true;
-      btn.style.opacity = "0.7";
+      if (frozenRings.has(ring.ring_id)) {
+        // Toggle: Reactivate / Unfreeze accounts
+        frozenRings.delete(ring.ring_id);
+        showToast(`Simulation: Reactivated ${ring.member_count} syndicate accounts in Ring #${ring.ring_id}`);
+      } else {
+        // Freeze accounts
+        frozenRings.add(ring.ring_id);
+        showToast(`Simulation: Suspended ${ring.member_count} syndicate accounts in Ring #${ring.ring_id} (Ref: #AML-SIM-${Date.now().toString().slice(-6)})`);
+      }
 
-      // Mark chips as frozen
-      const chipsBox = document.getElementById("members-chips");
-      chipsBox.innerHTML = ring.members.map(m => `
-        <span class="chip-account frozen" onclick="focusOnNode('user_${m}')">
-          User ${m} <span style="font-size: 8px; color: #ef4444;">[FROZEN]</span>
-        </span>
-      `).join("");
-
-      // Update node styles in graph
-      renderGraph(ring.graph);
-
-      showToast(`Simulation: Suspended ${ring.member_count} syndicate accounts in Ring #${ring.ring_id} (Ref: #AML-SIM-${Date.now().toString().slice(-6)})`);
+      selectRing(activeIndex, true);
     }
 
     function exportJson() {
