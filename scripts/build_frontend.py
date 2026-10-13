@@ -1378,9 +1378,9 @@ html_template = """<!DOCTYPE html>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
           <span id="spread-label">Spread Out</span>
         </button>
-        <button class="canvas-pill-btn" id="physics-toggle" onclick="togglePhysics()">
+        <button class="canvas-pill-btn active" id="physics-toggle" onclick="togglePhysics()">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          <span id="physics-label">Physics: Off</span>
+          <span id="physics-label">Physics: On</span>
         </button>
         <span style="color: var(--border-subtle);">|</span>
         <button class="canvas-pill-btn active" id="filter-user" onclick="toggleFilter('user')">Users</button>
@@ -1754,7 +1754,7 @@ html_template = """<!DOCTYPE html>
     let allRings = [];
     let activeIndex = 0;
     let currentTierFilter = 'all';
-    let physicsState = false;
+    let physicsState = true;
     let currentSpringLength = 260;
     let activeFilters = { user: true, device: true, merchant: true };
     let currentVisibleNodes = [];
@@ -2137,13 +2137,6 @@ html_template = """<!DOCTYPE html>
 
       // Only re-render graph if the ring actually changed or forced
       if (!network || currentRenderedRingId !== ring.ring_id || forceRerender) {
-        if (!physicsState) {
-          isSpinningEnabled = true;
-          const spinBtn = document.getElementById("spin-btn");
-          const spinLbl = document.getElementById("spin-label");
-          if (spinBtn) spinBtn.classList.add("active");
-          if (spinLbl) spinLbl.innerText = "Orbit Spin: On";
-        }
         renderGraph(ring.graph);
         currentRenderedRingId = ring.ring_id;
       }
@@ -2293,24 +2286,8 @@ html_template = """<!DOCTYPE html>
             clearTimeout(dragSettleTimeout);
             dragSettleTimeout = null;
           }
-          // Enable elastic spring physics while actively stretching and dragging nodes!
-          if (!physicsState) {
-            network.setOptions({
-              physics: {
-                enabled: true,
-                solver: "forceAtlas2Based",
-                forceAtlas2Based: {
-                  gravitationalConstant: (currentSpringLength === 380 ? -620 : -460),
-                  centralGravity: 0.002,
-                  springLength: currentSpringLength,
-                  springConstant: 0.035,
-                  damping: 0.35,
-                  avoidOverlap: 1.0
-                }
-              }
-            });
-            network.startSimulation();
-          }
+          // Always ensure simulation is running during drag for live elastic spring stretching!
+          network.startSimulation();
         } else {
           // Canvas pan
           isUserInteracting = true;
@@ -2324,9 +2301,8 @@ html_template = """<!DOCTYPE html>
             if (network) {
               if (!physicsState) {
                 network.stopSimulation();
-                network.setOptions({ physics: { enabled: false } });
-                recomputePolarFromCurrentPositions();
               }
+              recomputePolarFromCurrentPositions();
               isUserInteracting = false;
               lastFrameTime = performance.now();
             }
@@ -2343,7 +2319,6 @@ html_template = """<!DOCTYPE html>
         network.fit({ animation: { duration: 250, easingFunction: "easeInOutQuad" } });
         if (!physicsState) {
           network.stopSimulation();
-          network.setOptions({ physics: { enabled: false } });
         } else {
           network.startSimulation();
         }
@@ -2605,18 +2580,6 @@ html_template = """<!DOCTYPE html>
       if (lbl) lbl.innerText = `Orbit Spin: ${isSpinningEnabled ? 'On' : 'Off'}`;
 
       if (isSpinningEnabled) {
-        // If Physics Mode is currently ON, turn it OFF so they do not conflict
-        if (physicsState) {
-          physicsState = false;
-          const pBtn = document.getElementById("physics-toggle");
-          const pLbl = document.getElementById("physics-label");
-          if (pBtn) pBtn.classList.remove("active");
-          if (pLbl) pLbl.innerText = "Physics: Off";
-          if (network) {
-            network.stopSimulation();
-            network.setOptions({ physics: { enabled: false } });
-          }
-        }
         if (!activeNodesDataSet && network) {
           activeNodesDataSet = network.body.data.nodes;
         }
@@ -2674,7 +2637,6 @@ html_template = """<!DOCTYPE html>
           if (network) {
             if (!physicsState) {
               network.stopSimulation();
-              network.setOptions({ physics: { enabled: false } });
             }
             recomputePolarFromCurrentPositions();
             isUserInteracting = false;
@@ -2688,50 +2650,20 @@ html_template = """<!DOCTYPE html>
       physicsState = !physicsState;
       const label = document.getElementById("physics-label");
       const btn = document.getElementById("physics-toggle");
-      label.innerText = `Physics: ${physicsState ? 'On' : 'Off'}`;
+      if (label) label.innerText = `Physics: ${physicsState ? 'On' : 'Off'}`;
       if (btn) btn.classList.toggle("active", physicsState);
 
       if (network) {
         if (physicsState) {
-          // If Orbit Spin is active, pause it cleanly so live physics takes over
-          if (isSpinningEnabled) {
-            isSpinningEnabled = false;
-            const spinBtn = document.getElementById("spin-btn");
-            const spinLbl = document.getElementById("spin-label");
-            if (spinBtn) spinBtn.classList.remove("active");
-            if (spinLbl) spinLbl.innerText = "Orbit Spin: Off";
-          }
           isUserInteracting = false;
-          network.setOptions({
-            physics: {
-              enabled: true,
-              solver: "forceAtlas2Based",
-              forceAtlas2Based: {
-                gravitationalConstant: (currentSpringLength === 380 ? -620 : -460),
-                centralGravity: 0.005,
-                springLength: currentSpringLength,
-                springConstant: 0.035,
-                damping: 0.25,
-                avoidOverlap: 1.0
-              }
-            }
-          });
           network.startSimulation();
           showToast("Live Physics Mode enabled: Dynamic force-directed simulation active");
         } else {
           network.stopSimulation();
-          network.setOptions({ physics: { enabled: false } });
           recomputePolarFromCurrentPositions();
           isUserInteracting = false;
           lastFrameTime = performance.now();
-          // Resume Orbit Spin when Physics is turned off
-          isSpinningEnabled = true;
-          const spinBtn = document.getElementById("spin-btn");
-          const spinLbl = document.getElementById("spin-label");
-          if (spinBtn) spinBtn.classList.add("active");
-          if (spinLbl) spinLbl.innerText = "Orbit Spin: On";
-          if (!spinAnimFrameId) startSpinLoop();
-          showToast("Physics Mode paused: Orbit rotation & float resumed");
+          showToast("Physics simulation paused");
         }
       }
     }
