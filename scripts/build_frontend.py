@@ -31,13 +31,17 @@ html_template = """<!DOCTYPE html>
   <title>DarkNode — Fraud Syndicate Graph Intelligence</title>
   <!-- Vis-network CDN -->
   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-  <!-- Plus Jakarta Sans & JetBrains Mono Fonts -->
+  <!-- Inter & JetBrains Mono - Official Enterprise UI Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
   <style>
     :root {
+      /* Official Enterprise Typography Stack */
+      --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', Arial, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
       /* Deep Neutral Dark Charcoal Theme (#191a1b) */
       --bg-base: #131415;
       --bg-panel: #191a1b;
@@ -78,14 +82,16 @@ html_template = """<!DOCTYPE html>
     }
 
     body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       background-color: var(--bg-base);
       color: var(--text-main);
       height: 100vh;
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      text-rendering: optimizeLegibility;
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     /* Top Navigation Bar */
@@ -218,11 +224,13 @@ html_template = """<!DOCTYPE html>
     }
 
     .badge-pill {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 8px;
+      font-feature-settings: "tnum" 1;
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      padding: 2.5px 8px;
       border-radius: 6px;
       background: var(--bg-card);
       color: var(--yellow-primary);
@@ -253,9 +261,10 @@ html_template = """<!DOCTYPE html>
     }
 
     .stat-val {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
-      font-weight: 700;
+      font-feature-settings: "tnum" 1;
+      font-weight: 600;
       color: var(--text-main);
     }
 
@@ -318,7 +327,7 @@ html_template = """<!DOCTYPE html>
       padding: 0 14px;
       border-radius: 7px;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
       border: none;
       display: inline-flex;
@@ -326,7 +335,7 @@ html_template = """<!DOCTYPE html>
       justify-content: center;
       gap: 6px;
       transition: all 0.15s ease;
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: var(--font-sans);
     }
 
     .btn-yellow {
@@ -418,9 +427,9 @@ html_template = """<!DOCTYPE html>
     .dataset-tab-btn {
       flex: 1;
       height: 30px;
-      font-size: 11px;
-      font-weight: 700;
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11.5px;
+      font-weight: 600;
+      font-family: var(--font-sans);
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
       border-radius: 6px;
@@ -472,11 +481,12 @@ html_template = """<!DOCTYPE html>
 
     .tier-tab-btn {
       flex: 1;
-      height: 25px;
-      font-size: 10.5px;
-      font-weight: 700;
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      height: 26px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
       border-radius: 6px;
@@ -602,10 +612,11 @@ html_template = """<!DOCTYPE html>
     }
 
     .suggestion-tag {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
-      font-size: 9.5px;
-      font-weight: 700;
+      font-feature-settings: "tnum" 1;
+      font-size: 10px;
+      font-weight: 600;
       padding: 2px 6px;
       border-radius: 4px;
       background: var(--bg-input);
@@ -671,17 +682,21 @@ html_template = """<!DOCTYPE html>
     }
 
     .ring-label {
-      font-size: 12px;
-      font-weight: 700;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
       color: var(--text-main);
     }
 
     .ring-risk-tag {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
-      font-size: 10.5px;
-      font-weight: 700;
-      padding: 2px 6px;
+      font-feature-settings: "tnum" 1;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      padding: 2.5px 7px;
       border-radius: 5px;
       background: var(--yellow-bg);
       color: var(--yellow-primary);
@@ -700,8 +715,9 @@ html_template = """<!DOCTYPE html>
       display: flex;
       align-items: center;
       gap: 4px;
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
       font-weight: 600;
     }
 
@@ -920,9 +936,10 @@ html_template = """<!DOCTYPE html>
     }
 
     .inspect-val {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
-      font-weight: 700;
+      font-feature-settings: "tnum" 1;
+      font-weight: 600;
       color: var(--text-main);
     }
 
@@ -1027,10 +1044,11 @@ html_template = """<!DOCTYPE html>
       right: -4px;
       background: var(--yellow-primary);
       color: #131415;
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
-      font-size: 10px;
-      font-weight: 800;
+      font-feature-settings: "tnum" 1;
+      font-size: 10.5px;
+      font-weight: 700;
       min-width: 16px;
       height: 16px;
       border-radius: 8px;
@@ -1193,10 +1211,11 @@ html_template = """<!DOCTYPE html>
     }
 
     .notif-item-time {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
-      font-size: 9.5px;
-      font-weight: 600;
+      font-feature-settings: "tnum" 1;
+      font-size: 10px;
+      font-weight: 500;
       color: var(--text-dim);
     }
 
@@ -1503,10 +1522,11 @@ html_template = """<!DOCTYPE html>
     }
 
     .hero-score-val {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
       font-size: 30px;
-      font-weight: 800;
+      font-weight: 700;
       line-height: 1;
       color: var(--yellow-primary);
     }
@@ -1521,10 +1541,11 @@ html_template = """<!DOCTYPE html>
     }
 
     .hero-rank-badge {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
-      font-size: 10.5px;
-      font-weight: 700;
+      font-feature-settings: "tnum" 1;
+      font-size: 11px;
+      font-weight: 600;
       padding: 3px 8px;
       border-radius: 5px;
       background: var(--yellow-bg);
@@ -1581,9 +1602,10 @@ html_template = """<!DOCTYPE html>
     }
 
     .signal-metric-val {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
-      font-weight: 700;
+      font-feature-settings: "tnum" 1;
+      font-weight: 600;
       color: var(--text-main);
     }
 
@@ -1601,9 +1623,10 @@ html_template = """<!DOCTYPE html>
     }
 
     .chip-account {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
-      font-size: 10.5px;
+      font-feature-settings: "tnum" 1;
+      font-size: 11px;
       font-weight: 600;
       padding: 3px 8px;
       border-radius: 5px;
@@ -1866,9 +1889,10 @@ html_template = """<!DOCTYPE html>
 
     .bench-kpi-title {
       font-size: 10px;
-      font-weight: 800;
+      font-weight: 700;
       color: var(--text-muted);
       letter-spacing: 0.05em;
+      text-transform: uppercase;
     }
 
     .bench-compare-row {
@@ -1883,26 +1907,29 @@ html_template = """<!DOCTYPE html>
     }
 
     .bench-score-dim {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
       font-size: 18px;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-muted);
     }
 
     .bench-score-bright {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
       font-size: 22px;
-      font-weight: 800;
+      font-weight: 700;
       color: var(--yellow-primary);
     }
 
     .bench-delta-tag {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-variant-numeric: tabular-nums;
-      font-size: 10.5px;
-      font-weight: 700;
+      font-feature-settings: "tnum" 1;
+      font-size: 11px;
+      font-weight: 600;
       padding: 2px 7px;
       border-radius: 5px;
       background: var(--yellow-bg);
@@ -2505,7 +2532,7 @@ html_template = """<!DOCTYPE html>
             <div>
               <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
                 <label>SPRING REPULSION DISTANCE</label>
-                <span id="spring-len-val" style="font-family: 'Plus Jakarta Sans', sans-serif; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--yellow-primary);">260px</span>
+                <span id="spring-len-val" style="font-family: var(--font-sans); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--yellow-primary);">260px</span>
               </div>
               <input type="range" id="spring-slider" min="180" max="420" step="20" value="260" style="width: 100%; accent-color: var(--yellow-primary); cursor: pointer;" oninput="onSpringSliderChange(this.value)">
             </div>
@@ -3960,7 +3987,7 @@ html_template = """<!DOCTYPE html>
         ctx.setTransform(1, 0, 0, 1, 0, 0);
 
         const positions = network.getPositions();
-        ctx.font = "600 11px 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.font = "600 11.5px 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
