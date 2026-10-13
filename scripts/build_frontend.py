@@ -2355,7 +2355,7 @@ html_template = """<!DOCTYPE html>
 
       // Once layout stabilizes, fit perfectly to frame and stop simulation for zero jitter
       network.once("stabilizationIterationsDone", function() {
-        network.fit({ animation: { duration: 250, easingFunction: "easeInOutQuad" } });
+        fitGraphToScreen(true);
         network.stopSimulation();
         if (!physicsState) {
           network.setOptions({ physics: { enabled: false } });
@@ -2566,6 +2566,48 @@ html_template = """<!DOCTYPE html>
       recomputePolarFromCurrentPositions();
     }
 
+    function fitGraphToScreen(smooth = true) {
+      if (!network) return;
+      const container = document.getElementById("network-canvas");
+      if (!container) return;
+
+      const positions = network.getPositions();
+      const nodeIds = Object.keys(positions);
+      if (nodeIds.length === 0) {
+        network.fit({ animation: smooth ? { duration: 250, easingFunction: "easeInOutQuad" } : false });
+        return;
+      }
+
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (const id of nodeIds) {
+        const p = positions[id];
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.y > maxY) maxY = p.y;
+      }
+
+      const w = Math.max(100, maxX - minX);
+      const h = Math.max(100, maxY - minY);
+      const cx = (minX + maxX) / 2;
+      const cy = (minY + maxY) / 2;
+
+      // Available viewing area ensuring top nodes clear floating toolbar (60px) and bottom nodes clear legend (50px)
+      const canvasW = container.clientWidth || 800;
+      const canvasH = container.clientHeight || 600;
+
+      const availW = Math.max(200, canvasW - 90);
+      const availH = Math.max(200, canvasH - 120);
+
+      const targetScale = Math.min(availW / w, availH / h, 1.0);
+
+      network.moveTo({
+        position: { x: cx, y: cy },
+        scale: targetScale,
+        animation: smooth ? { duration: 250, easingFunction: "easeInOutQuad" } : false
+      });
+    }
+
     function startSpinLoop() {
       if (spinAnimFrameId) cancelAnimationFrame(spinAnimFrameId);
 
@@ -2637,7 +2679,7 @@ html_template = """<!DOCTYPE html>
     function resetGraphView() {
       if (network) {
         isUserInteracting = true;
-        network.fit({ animation: { duration: 250, easingFunction: "easeInOutQuad" } });
+        fitGraphToScreen(true);
         showToast("Framed network graph to viewport");
         setTimeout(() => {
           recomputePolarFromCurrentPositions();
@@ -2681,6 +2723,7 @@ html_template = """<!DOCTYPE html>
             } else {
               network.setOptions({ physics: { enabled: true } });
             }
+            fitGraphToScreen(true);
             recomputePolarFromCurrentPositions();
             isUserInteracting = false;
             lastFrameTime = performance.now();
@@ -2930,7 +2973,7 @@ html_template = """<!DOCTYPE html>
     window.addEventListener("resize", () => {
       if (network) {
         network.redraw();
-        network.fit();
+        fitGraphToScreen(false);
       }
     });
 
