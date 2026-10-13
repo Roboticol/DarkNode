@@ -292,8 +292,8 @@ html_template = """<!DOCTYPE html>
     }
 
     .status-dot.active-infer {
-      background: #38bdf8;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+      background: var(--yellow-primary);
+      box-shadow: 0 0 10px rgba(250, 204, 21, 0.9);
     }
 
     .status-text {
@@ -908,8 +908,8 @@ html_template = """<!DOCTYPE html>
       position: absolute;
       top: -4px;
       right: -4px;
-      background: #ef4444;
-      color: #ffffff;
+      background: var(--yellow-primary);
+      color: #131415;
       font-family: 'JetBrains Mono', monospace;
       font-size: 9px;
       font-weight: 800;
@@ -921,7 +921,7 @@ html_template = """<!DOCTYPE html>
       justify-content: center;
       padding: 0 3px;
       border: 1.5px solid #191a1b;
-      box-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
+      box-shadow: 0 0 8px rgba(250, 204, 21, 0.7);
       transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
     }
 
@@ -1051,8 +1051,9 @@ html_template = """<!DOCTYPE html>
     }
 
     .notif-icon-col.info {
-      background: rgba(56, 189, 248, 0.15);
-      color: #38bdf8;
+      background: var(--yellow-bg);
+      color: var(--yellow-primary);
+      border: 1px solid var(--yellow-border);
     }
 
     .notif-body-col {
@@ -4115,17 +4116,11 @@ html_template = """<!DOCTYPE html>
           glowEl.style.backgroundColor = "#34d399";
           glowEl.style.boxShadow = "0 0 8px rgba(52, 211, 153, 0.8)";
         }
-      } else if (type === "warning") {
+      } else {
         toast.style.borderLeftColor = "var(--yellow-primary)";
         if (glowEl) {
           glowEl.style.backgroundColor = "var(--yellow-primary)";
-          glowEl.style.boxShadow = "0 0 8px rgba(250, 204, 21, 0.8)";
-        }
-      } else {
-        toast.style.borderLeftColor = "#38bdf8";
-        if (glowEl) {
-          glowEl.style.backgroundColor = "#38bdf8";
-          glowEl.style.boxShadow = "0 0 8px rgba(56, 189, 248, 0.8)";
+          glowEl.style.boxShadow = "0 0 10px rgba(250, 204, 21, 0.9)";
         }
       }
 
