@@ -699,22 +699,69 @@
       color: var(--yellow-primary);
     }
 
+    /* Floating Entity Filter Bar (Top Right) */
+    .canvas-filter-bar {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(25, 26, 27, 0.94);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 5px 8px;
+      box-shadow: var(--shadow-card);
+      z-index: 10;
+    }
+
+    #filter-user {
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      border-radius: 6px;
+    }
+
     #filter-user.active {
-      background: var(--bg-card);
-      border-color: rgba(250, 204, 21, 0.5);
-      color: var(--node-user);
+      background: rgba(25, 26, 27, 0.9);
+      border-color: #facc15;
+      color: #facc15;
+    }
+
+    #filter-user.active:hover {
+      box-shadow: 0 0 8px rgba(250, 204, 21, 0.25);
+    }
+
+    #filter-device {
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      border-radius: 6px;
     }
 
     #filter-device.active {
-      background: var(--bg-card);
-      border-color: rgba(56, 189, 248, 0.5);
-      color: var(--node-device);
+      background: rgba(25, 26, 27, 0.9);
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+
+    #filter-device.active:hover {
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
+    }
+
+    #filter-merchant {
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      border-radius: 6px;
     }
 
     #filter-merchant.active {
-      background: var(--bg-card);
-      border-color: rgba(52, 211, 153, 0.5);
-      color: var(--node-merchant);
+      background: rgba(25, 26, 27, 0.9);
+      border-color: #34d399;
+      color: #34d399;
+    }
+
+    #filter-merchant.active:hover {
+      box-shadow: 0 0 8px rgba(52, 211, 153, 0.25);
     }
 
     /* Floating Node Inspector Card */
@@ -1850,10 +1897,13 @@
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           <span id="physics-label">Physics: On</span>
         </button>
-        <span style="color: var(--border-subtle);">|</span>
-        <button class="canvas-pill-btn active" id="filter-user" onclick="toggleFilter('user')">Users</button>
-        <button class="canvas-pill-btn active" id="filter-device" onclick="toggleFilter('device')">Devices</button>
-        <button class="canvas-pill-btn active" id="filter-merchant" onclick="toggleFilter('merchant')">Merchants</button>
+      </div>
+
+      <!-- Floating Entity Filter Bar (Top Right) -->
+      <div class="canvas-filter-bar">
+        <button class="canvas-pill-btn active" id="filter-user" onclick="toggleFilter('user')" title="Toggle Syndicate Member Accounts">Users</button>
+        <button class="canvas-pill-btn active" id="filter-device" onclick="toggleFilter('device')" title="Toggle Shared Hardware Devices">Devices</button>
+        <button class="canvas-pill-btn active" id="filter-merchant" onclick="toggleFilter('merchant')" title="Toggle Target Merchant Terminals">Merchants</button>
       </div>
 
       <!-- Interactive Node Inspector Floating Card -->
