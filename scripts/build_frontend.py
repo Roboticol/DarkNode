@@ -2286,8 +2286,13 @@ html_template = """<!DOCTYPE html>
             clearTimeout(dragSettleTimeout);
             dragSettleTimeout = null;
           }
-          // Always ensure simulation is running during drag for live elastic spring stretching!
-          network.startSimulation();
+          if (physicsState) {
+            network.setOptions({ physics: { enabled: true } });
+            network.startSimulation();
+          } else {
+            network.stopSimulation();
+            network.setOptions({ physics: { enabled: false } });
+          }
         } else {
           // Canvas pan
           isUserInteracting = true;
@@ -2296,17 +2301,19 @@ html_template = """<!DOCTYPE html>
 
       network.on("dragEnd", function(params) {
         if (params.nodes && params.nodes.length > 0) {
-          // Let the elastic springs settle into the new stretched shape
           dragSettleTimeout = setTimeout(() => {
             if (network) {
+              network.stopSimulation();
               if (!physicsState) {
-                network.stopSimulation();
+                network.setOptions({ physics: { enabled: false } });
+              } else {
+                network.setOptions({ physics: { enabled: true } });
               }
               recomputePolarFromCurrentPositions();
               isUserInteracting = false;
               lastFrameTime = performance.now();
             }
-          }, 150);
+          }, 80);
         } else {
           // Pan ended
           isUserInteracting = false;
@@ -2317,10 +2324,11 @@ html_template = """<!DOCTYPE html>
       // Once layout stabilizes, fit perfectly to frame and stop simulation for zero jitter
       network.once("stabilizationIterationsDone", function() {
         network.fit({ animation: { duration: 250, easingFunction: "easeInOutQuad" } });
+        network.stopSimulation();
         if (!physicsState) {
-          network.stopSimulation();
+          network.setOptions({ physics: { enabled: false } });
         } else {
-          network.startSimulation();
+          network.setOptions({ physics: { enabled: true } });
         }
         initAndStartSpinAnimation(nodes);
       });
@@ -2533,7 +2541,7 @@ html_template = """<!DOCTYPE html>
         spinAnimFrameId = requestAnimationFrame(spinTick);
 
         if (!isSpinningEnabled || !network || !activeNodesDataSet) return;
-        if (isUserInteracting || physicsState) {
+        if (isUserInteracting) {
           lastFrameTime = now;
           return;
         }
@@ -2635,8 +2643,11 @@ html_template = """<!DOCTYPE html>
         showToast(isWide ? "Expanding cluster springs (Wide Layout)..." : "Restoring compact cluster springs...");
         setTimeout(() => {
           if (network) {
+            network.stopSimulation();
             if (!physicsState) {
-              network.stopSimulation();
+              network.setOptions({ physics: { enabled: false } });
+            } else {
+              network.setOptions({ physics: { enabled: true } });
             }
             recomputePolarFromCurrentPositions();
             isUserInteracting = false;
@@ -2655,15 +2666,22 @@ html_template = """<!DOCTYPE html>
 
       if (network) {
         if (physicsState) {
-          isUserInteracting = false;
+          network.setOptions({ physics: { enabled: true } });
           network.startSimulation();
+          setTimeout(() => {
+            if (network && !isUserInteracting) {
+              network.stopSimulation();
+              recomputePolarFromCurrentPositions();
+            }
+          }, 250);
           showToast("Live Physics Mode enabled: Dynamic force-directed simulation active");
         } else {
           network.stopSimulation();
+          network.setOptions({ physics: { enabled: false } });
           recomputePolarFromCurrentPositions();
           isUserInteracting = false;
           lastFrameTime = performance.now();
-          showToast("Physics simulation paused");
+          showToast("Physics simulation paused (Static node drag mode)");
         }
       }
     }
