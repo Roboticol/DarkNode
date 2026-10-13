@@ -1370,6 +1370,10 @@ html_template = """<!DOCTYPE html>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
           Fit View
         </button>
+        <button class="canvas-pill-btn active" id="spin-btn" onclick="toggleSpinAnimation()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          <span id="spin-label">Orbit Spin: On</span>
+        </button>
         <button class="canvas-pill-btn" id="spread-btn" onclick="spreadGraph()">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
           <span id="spread-label">Spread Out</span>
@@ -2064,6 +2068,24 @@ html_template = """<!DOCTYPE html>
 
     let currentRenderedRingId = null;
 
+    let spinAnimFrameId = null;
+    let isSpinningEnabled = true;
+    let isUserInteracting = false;
+    let nodePolarData = {};
+    let accumulatedRotation = 0;
+    let activeNodesDataSet = null;
+    let spinStartTime = performance.now();
+    let lastFrameTime = performance.now();
+
+    function hashString(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0;
+      }
+      return Math.abs(hash);
+    }
+
     function selectRing(index, forceRerender = false) {
       activeIndex = index;
       const ring = allRings[index];
@@ -2098,7 +2120,7 @@ html_template = """<!DOCTYPE html>
         freezeBtn.style.background = "#ef4444";
         freezeBtn.style.color = "#ffffff";
       } else {
-        freezeBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Freeze Ring Accounts (Simulation)`;
+        freezeBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Freeze Syndicate Accounts`;
         freezeBtn.disabled = false;
         freezeBtn.style.opacity = "1";
         freezeBtn.style.background = "var(--yellow-primary)";
@@ -2115,6 +2137,10 @@ html_template = """<!DOCTYPE html>
 
       // Only re-render graph if the ring actually changed or forced
       if (!network || currentRenderedRingId !== ring.ring_id || forceRerender) {
+        if (spinAnimFrameId) {
+          cancelAnimationFrame(spinAnimFrameId);
+          spinAnimFrameId = null;
+        }
         renderGraph(ring.graph);
         currentRenderedRingId = ring.ring_id;
       }
@@ -2245,13 +2271,35 @@ html_template = """<!DOCTYPE html>
         }
       };
 
+      if (spinAnimFrameId) {
+        cancelAnimationFrame(spinAnimFrameId);
+        spinAnimFrameId = null;
+      }
+      activeNodesDataSet = nodes;
+
       if (network) network.destroy();
       network = new vis.Network(container, data, options);
+
+      // User interaction handlers for smooth drag/zoom without hanging
+      network.on("dragStart", function() {
+        isUserInteracting = true;
+      });
+
+      network.on("dragEnd", function() {
+        recalculatePolarCoordinates();
+        isUserInteracting = false;
+        lastFrameTime = performance.now();
+      });
 
       // Once layout stabilizes, fit perfectly to frame and stop simulation for zero jitter
       network.once("stabilizationIterationsDone", function() {
         network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
         network.stopSimulation();
+        // Zero physics computation during animation to prevent any possible visual hanging
+        network.setOptions({ physics: { enabled: false } });
+        setTimeout(() => {
+          initAndStartSpinAnimation(nodes);
+        }, 360);
       });
 
       // Constant screen text size & high-contrast visibility at all zoom levels
@@ -2381,8 +2429,126 @@ html_template = """<!DOCTYPE html>
       showToast(`Copied identifier: ${inspectedNodeId}`);
     }
 
+    function initAndStartSpinAnimation(nodesDataSet) {
+      activeNodesDataSet = nodesDataSet;
+      if (spinAnimFrameId) {
+        cancelAnimationFrame(spinAnimFrameId);
+        spinAnimFrameId = null;
+      }
+
+      if (!network) return;
+      const positions = network.getPositions();
+      let cx = 0, cy = 0, count = 0;
+      for (const id in positions) {
+        cx += positions[id].x;
+        cy += positions[id].y;
+        count++;
+      }
+      if (count > 0) { cx /= count; cy /= count; }
+
+      nodePolarData = {};
+      for (const id in positions) {
+        const dx = positions[id].x - cx;
+        const dy = positions[id].y - cy;
+        const radius = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx);
+        const h = hashString(id);
+        const phase = (h % 1000) / 1000 * Math.PI * 2;
+        nodePolarData[id] = {
+          radius: radius,
+          initialAngle: angle,
+          phase: phase,
+          cx: cx,
+          cy: cy
+        };
+      }
+
+      accumulatedRotation = 0;
+      spinStartTime = performance.now();
+      lastFrameTime = performance.now();
+      startSpinLoop();
+    }
+
+    function recalculatePolarCoordinates() {
+      if (!network) return;
+      const positions = network.getPositions();
+      for (const id in positions) {
+        if (nodePolarData[id]) {
+          const p = nodePolarData[id];
+          const dx = positions[id].x - p.cx;
+          const dy = positions[id].y - p.cy;
+          p.radius = Math.sqrt(dx * dx + dy * dy);
+          p.initialAngle = Math.atan2(dy, dx) - accumulatedRotation;
+        }
+      }
+    }
+
+    function startSpinLoop() {
+      if (spinAnimFrameId) cancelAnimationFrame(spinAnimFrameId);
+
+      function spinTick(now) {
+        spinAnimFrameId = requestAnimationFrame(spinTick);
+
+        if (!isSpinningEnabled || !network || !activeNodesDataSet) return;
+        if (isUserInteracting) {
+          lastFrameTime = now;
+          return;
+        }
+
+        const dt = (now - lastFrameTime) * 0.001;
+        lastFrameTime = now;
+
+        // Cap dt to prevent massive jumps when switching browser tabs
+        if (dt > 0.1) return;
+
+        // Smooth rotation speed: ~0.06 rad/s (1 revolution every ~100s)
+        accumulatedRotation += dt * 0.06;
+        const t = (now - spinStartTime) * 0.001;
+
+        const updates = [];
+        for (const id in nodePolarData) {
+          const p = nodePolarData[id];
+          const theta = p.initialAngle + accumulatedRotation;
+
+          // Harmonic floating micro-motion (subtle vertical & horizontal undulation)
+          const floatY = Math.sin(t * 1.15 + p.phase) * 3.2;
+          const floatX = Math.cos(t * 0.85 + p.phase * 1.3) * 2.2;
+
+          updates.push({
+            id: id,
+            x: p.cx + p.radius * Math.cos(theta) + floatX,
+            y: p.cy + p.radius * Math.sin(theta) + floatY
+          });
+        }
+
+        if (updates.length > 0) {
+          activeNodesDataSet.update(updates);
+        }
+      }
+
+      spinAnimFrameId = requestAnimationFrame(spinTick);
+    }
+
+    function toggleSpinAnimation() {
+      isSpinningEnabled = !isSpinningEnabled;
+      const btn = document.getElementById("spin-btn");
+      const lbl = document.getElementById("spin-label");
+      if (btn) btn.classList.toggle("active", isSpinningEnabled);
+      if (lbl) lbl.innerText = `Orbit Spin: ${isSpinningEnabled ? 'On' : 'Off'}`;
+      showToast(`Orbit rotation & float: ${isSpinningEnabled ? 'Active' : 'Paused'}`);
+      lastFrameTime = performance.now();
+    }
+
     function resetGraphView() {
-      if (network) network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+      if (network) {
+        isUserInteracting = true;
+        network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+        setTimeout(() => {
+          recalculatePolarCoordinates();
+          isUserInteracting = false;
+          lastFrameTime = performance.now();
+        }, 380);
+      }
     }
 
     function spreadGraph() {
@@ -2393,6 +2559,7 @@ html_template = """<!DOCTYPE html>
       btn.classList.toggle("active", currentSpringLength === 380);
 
       if (network) {
+        isUserInteracting = true;
         network.setOptions({
           physics: {
             enabled: true,
@@ -2401,7 +2568,13 @@ html_template = """<!DOCTYPE html>
         });
         network.startSimulation();
         setTimeout(() => {
-          if (network) network.stopSimulation();
+          if (network) {
+            network.stopSimulation();
+            network.setOptions({ physics: { enabled: false } });
+            recalculatePolarCoordinates();
+            isUserInteracting = false;
+            lastFrameTime = performance.now();
+          }
         }, 1200);
       }
     }
@@ -2412,11 +2585,15 @@ html_template = """<!DOCTYPE html>
       label.innerText = `Physics: ${physicsState ? 'On' : 'Off'}`;
       if (network) {
         if (physicsState) {
+          isUserInteracting = true;
           network.setOptions({ physics: { enabled: true } });
           network.startSimulation();
         } else {
           network.stopSimulation();
           network.setOptions({ physics: { enabled: false } });
+          recalculatePolarCoordinates();
+          isUserInteracting = false;
+          lastFrameTime = performance.now();
         }
       }
     }
