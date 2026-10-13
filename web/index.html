@@ -98,13 +98,30 @@
       font-weight: 800;
       letter-spacing: -0.02em;
       color: var(--text-main);
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      display: inline-block;
+      line-height: 1;
+    }
+
+    @keyframes nodeLightEffect {
+      0%, 25% {
+        color: #ffffff;
+        text-shadow: none;
+      }
+      42%, 78% {
+        color: var(--yellow-primary);
+        text-shadow: 0 0 6px rgba(250, 204, 21, 0.65), 0 0 12px rgba(250, 204, 21, 0.35);
+      }
+      92%, 100% {
+        color: #ffffff;
+        text-shadow: none;
+      }
     }
 
     .brand-title span.kicker {
-      color: var(--yellow-primary);
+      color: #ffffff;
+      display: inline-block;
+      font-weight: 800;
+      animation: nodeLightEffect 4.5s ease-in-out infinite;
     }
 
     .badge-pill {
@@ -1172,10 +1189,8 @@
         <!-- Raw Network Graph Node Glyph -->
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#131415" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><line x1="12" y1="9" x2="19" y2="6.5"/><line x1="12" y1="15" x2="5" y2="17.5"/></svg>
       </div>
-      <div class="brand-title">
-        Dark <span class="kicker">Node</span>
-        <span class="badge-pill">GNN-MPNN</span>
-      </div>
+      <div class="brand-title">Dark<span class="kicker">Node</span></div>
+      <span class="badge-pill">GNN-MPNN</span>
     </div>
 
     <!-- Header Stats -->
