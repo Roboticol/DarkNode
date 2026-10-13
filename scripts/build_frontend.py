@@ -16,6 +16,13 @@ if not fallback_path.exists():
 with open(fallback_path, "r", encoding="utf-8") as f:
     fallback_data = f.read()
 
+real_aml_path = Path("data/real_aml_rings.json")
+if not real_aml_path.exists():
+    raise FileNotFoundError("data/real_aml_rings.json not found")
+
+with open(real_aml_path, "r", encoding="utf-8") as f:
+    real_aml_data = f.read()
+
 html_template = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -396,6 +403,60 @@ html_template = """<!DOCTYPE html>
       color: var(--text-main);
       text-transform: uppercase;
       letter-spacing: 0.05em;
+    }
+
+    /* Dataset Mode Switcher in Left Sidebar (Actual Data vs Real AML Data) */
+    .dataset-switcher-row {
+      display: flex;
+      gap: 6px;
+      padding: 0 12px 10px 12px;
+      background: var(--bg-panel);
+    }
+
+    .dataset-tab-btn {
+      flex: 1;
+      height: 30px;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .dataset-tab-btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-strong);
+      color: var(--text-main);
+    }
+
+    .dataset-tab-btn.active {
+      background: rgba(250, 204, 21, 0.14);
+      border-color: var(--yellow-primary);
+      color: var(--yellow-primary);
+      box-shadow: 0 0 12px rgba(250, 204, 21, 0.16);
+    }
+
+    .ring-subtitle-tag {
+      font-size: 10px;
+      font-weight: 600;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 4px;
+      padding: 2px 6px;
+      margin: 3px 0 6px 0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow: hidden;
     }
 
     /* Risk Tier Filters in Left Sidebar */
@@ -1888,12 +1949,6 @@ html_template = """<!DOCTYPE html>
 
     <!-- Controls -->
     <div class="header-actions">
-      <!-- Real AML Data Modal Button -->
-      <button class="btn btn-outline" onclick="openRealDataModal()" title="View Source-Verified Real AML Data, FATF/FinCEN Guidelines & Elliptic Benchmark">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        Real AML Data
-      </button>
-
       <!-- Benchmark Modal Button -->
       <button class="btn btn-outline" onclick="openBenchmarkModal()" title="View Empirical Model Benchmarks vs Bank Rules">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
@@ -1945,6 +2000,18 @@ html_template = """<!DOCTYPE html>
       <div class="panel-header-clean">
         <span class="panel-title">Detected Syndicates</span>
         <span class="badge-pill" id="rings-count-badge">10 total</span>
+      </div>
+
+      <!-- 2-Section Dataset Switcher: Actual Data (Default) vs Real AML Data -->
+      <div class="dataset-switcher-row">
+        <button class="dataset-tab-btn active" id="dataset-tab-actual" onclick="switchDatasetSection('actual')" title="Default Dataset: Actual GNN Simulation Graph Data">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+          <span>Actual Data (Default)</span>
+        </button>
+        <button class="dataset-tab-btn" id="dataset-tab-real" onclick="switchDatasetSection('real')" title="Source-Verified Real AML Dataset (FATF/FinCEN Typologies, Verified Banks & Devices)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Real AML Data</span>
+        </button>
       </div>
 
       <!-- Risk Tier Filter Tabs with Real Logic -->
@@ -2133,6 +2200,16 @@ html_template = """<!DOCTYPE html>
       </div>
 
       <div class="inspector-content">
+        <!-- Dedicated Typology Card (shown for Real AML Data section) -->
+        <div id="typology-card-box" style="display: none; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+            <span style="font-size: 10px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em;" id="typology-code">FIN-2023-A001</span>
+            <span style="font-size: 9px; font-weight: 600; color: var(--text-dim);" id="typology-fatf">FATF R.16</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 3px;" id="typology-name">Funnel Accounts / Smurfing</div>
+          <div style="font-size: 10px; color: var(--text-muted); line-height: 1.4;" id="typology-desc">Structured cash deposits across mule accounts consolidated via immediate transfers.</div>
+        </div>
+
         <!-- Hero Threat Score Card -->
         <div class="hero-risk-box">
           <div>
@@ -2490,15 +2567,15 @@ html_template = """<!DOCTYPE html>
                 </button>
               </div>
 
-              <!-- Option 4: Real-World AML Data & Regulatory Standards -->
+              <!-- Option 4: Real-World AML Data Section -->
               <div class="doc-subcard">
                 <div class="doc-subcard-icon" style="color: #10b981; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25);">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 </div>
-                <div class="doc-subcard-title">Real AML Data & Standards</div>
-                <div class="doc-subcard-desc">Source-verified FATF/FinCEN money mule typologies, ISO 18245 MCC registry, Luhn IMEI specs, and Elliptic benchmark.</div>
-                <button class="btn btn-outline doc-subcard-btn" onclick="openRealDataModal()">
-                  Open Real AML Data
+                <div class="doc-subcard-title">Real AML Data Section</div>
+                <div class="doc-subcard-desc">Switch left sidebar to source-verified FATF/FinCEN money mule typologies, verified banks & device telemetry.</div>
+                <button class="btn btn-outline doc-subcard-btn" onclick="switchDatasetSection('real'); closeSettingsModal();">
+                  Switch to Real AML Data
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </button>
               </div>
@@ -2895,283 +2972,6 @@ html_template = """<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- Independent Modal 4: Source-Verified Real AML Data & Regulatory Standards -->
-  <div class="modal-backdrop" id="real-data-modal" onclick="closeRealDataModal(event)">
-    <div class="modal-window modal-wide" onclick="event.stopPropagation()">
-      <div class="modal-head">
-        <div class="modal-title-group">
-          <button class="modal-back-btn" onclick="backToSettingsModal()" title="Back to Settings" aria-label="Back to Settings">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          </button>
-          <div class="brand-logo-mark" style="width:24px; height:24px; background: #10b981;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#131415" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          </div>
-          <div>
-            <div class="modal-title">Source-Verified Real AML Financial Data & Regulatory Standards</div>
-            <div style="font-size: 10px; color: var(--text-dim); margin-top: 1px;">FATF 2023 SPECIFICATIONS • FINCEN ADVISORY FIN-2021-A003 • ISO 18245 MCC • ELLIPTIC BENCHMARK</div>
-          </div>
-        </div>
-        <button class="modal-close-btn" onclick="closeRealDataModal()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <!-- Section 1: Statutory Framework & Money Mule Typologies -->
-        <div class="guide-section">
-          <h3>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            1. Authoritative Regulatory Frameworks & Typologies
-          </h3>
-          <p>
-            Unlike synthetic simulation graphs, production Anti-Money Laundering (AML) models must be verified against official financial intelligence unit (FIU) standards. <strong>DarkNode</strong> structures financial entities and syndicates under four established international authorities:
-          </p>
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 8px;">
-            <div style="background: var(--bg-input); padding: 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-              <div style="font-size: 11px; font-weight: 700; color: #10b981; margin-bottom: 4px;">FATF 2023 MONEY MULE NETWORKS (SEC 4.2)</div>
-              <div style="font-size: 11.5px; color: var(--text-muted); line-height: 1.5;">
-                Documents hardware device multiplexing: a single physical hardware fingerprint (IMEI/MAC) recycled across disparate banking identities under mule herder orchestration.
-              </div>
-            </div>
-            <div style="background: var(--bg-input); padding: 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-              <div style="font-size: 11px; font-weight: 700; color: var(--yellow-primary); margin-bottom: 4px;">FINCEN ADVISORY FIN-2021-A003</div>
-              <div style="font-size: 11.5px; color: var(--text-muted); line-height: 1.5;">
-                Codifies high-velocity funnel and smurfing accounts: micro-deposits structured just below the $10,000 BSA threshold rapidly pooled and withdrawn within 15-minute bursts.
-              </div>
-            </div>
-            <div style="background: var(--bg-input); padding: 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-              <div style="font-size: 11px; font-weight: 700; color: #38bdf8; margin-bottom: 4px;">EGMONT GROUP FINANCIAL CRIME #14</div>
-              <div style="font-size: 11.5px; color: var(--text-muted); line-height: 1.5;">
-                Defines circular pass-through and rapid layering: cyclic transaction graphs (A &rarr; B &rarr; C &rarr; D &rarr; A) engineered to obscure beneficial ownership trails.
-              </div>
-            </div>
-            <div style="background: var(--bg-input); padding: 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-              <div style="font-size: 11px; font-weight: 700; color: #f87171; margin-bottom: 4px;">WOLFSBERG GROUP STANDARDS</div>
-              <div style="font-size: 11.5px; color: var(--text-muted); line-height: 1.5;">
-                Specifies quasi-cash merchant bust-out: immediate off-ramp cashouts via high-risk Virtual Asset Service Providers (VASPs, MCC 6051) or precious metals sinks.
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section 2: Verified Global Banking Institutions -->
-        <div class="guide-section">
-          <h3>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-            2. Source-Verified Global Banking Institutions & SWIFT/BIC Registry
-          </h3>
-          <p>
-            Bank account nodes in DarkNode represent real commercial financial institutions with official SWIFT Business Identifier Codes (BIC) and ABA routing numbers:
-          </p>
-          <div style="overflow-x: auto; margin-top: 8px;">
-            <table class="benchmark-table" style="font-size: 11.5px;">
-              <thead>
-                <tr>
-                  <th>Financial Institution</th>
-                  <th>Country</th>
-                  <th>SWIFT BIC</th>
-                  <th>ABA Routing / Clearing</th>
-                  <th>Masked Account Format</th>
-                  <th>KYC Due Diligence Tier</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="font-weight: 600; color: #f3f4f6;">JPMorgan Chase Bank, N.A.</td>
-                  <td>US</td>
-                  <td style="font-family: 'JetBrains Mono', monospace; color: var(--yellow-primary);">JPMCUS33</td>
-                  <td style="font-family: 'JetBrains Mono', monospace;">021000021</td>
-                  <td style="font-family: 'JetBrains Mono', monospace;">Chase ****4821</td>
-                  <td>Tier-2 Verified (Standard ID)</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: 600; color: #f3f4f6;">Bank of America, N.A.</td>
-                  <td>US</td>
-                  <td style="font-family: 'JetBrains Mono', monospace; color: var(--yellow-primary);">BOFAUS3N</td>
-                  <td style="font-family: 'JetBrains Mono', monospace;">051000017</td>
-                  <td style="font-family: 'JetBrains Mono', monospace;">BofA ****9119</td>
-                  <td>Tier-2 Verified (Biometric KYC)</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: 600; color: #f3f4f6;">Wells Fargo Bank, N.A.</td>
-                  <td>US</td>
-                  <td style="font-family: 'JetBrains Mono', monospace; color: var(--yellow-primary);">WELLUS44</td>
-                  <td style="font-family: 'JetBrains Mono', monospace;">121000249</td>
-                  <td style="font-family: 'JetBrains Mono', monospace;">Wells Fargo ****2288</td>
-                  <td>Tier-2 Verified (Standard ID)</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: 600; color: #f3f4f6;">Citibank, N.A.</td>
-                  <td>US</td>
-                  <td style="font-family: 'JetBrains Mono', monospace; color: var(--yellow-primary);">CITIUS33</td>
-                  <td style="font-family: 'JetBrains Mono', monospace;">021000089</td>
-                  <td style="font-family: 'JetBrains Mono', monospace;">Citi ****4025</td>
-                  <td>Tier-3 Enhanced Due Diligence</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: 600; color: #f3f4f6;">Barclays Bank PLC</td>
-                  <td>GB</td>
-                  <td style="font-family: 'JetBrains Mono', monospace; color: var(--yellow-primary);">BARCGB22</td>
-                  <td style="font-family: 'JetBrains Mono', monospace;">026002574</td>
-                  <td style="font-family: 'JetBrains Mono', monospace;">Barclays ****1102</td>
-                  <td>Tier-2 Verified (Standard ID)</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: 600; color: #f3f4f6;">State Bank of India</td>
-                  <td>IN</td>
-                  <td style="font-family: 'JetBrains Mono', monospace; color: var(--yellow-primary);">SBININBB</td>
-                  <td style="font-family: 'JetBrains Mono', monospace;">026009852</td>
-                  <td style="font-family: 'JetBrains Mono', monospace;">SBI ****2450</td>
-                  <td>Tier-2 Verified (Standard ID)</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: 600; color: #f3f4f6;">HDFC Bank Ltd</td>
-                  <td>IN</td>
-                  <td style="font-family: 'JetBrains Mono', monospace; color: var(--yellow-primary);">HDFCINBB</td>
-                  <td style="font-family: 'JetBrains Mono', monospace;">026011475</td>
-                  <td style="font-family: 'JetBrains Mono', monospace;">HDFC ****5931</td>
-                  <td>Tier-1 Fast Register (Mule Risk)</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Section 3: ISO 18245 Merchant Category Codes -->
-        <div class="guide-section">
-          <h3>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-            3. ISO 18245 Merchant Category Codes (MCC) for High-Risk Settlements
-          </h3>
-          <p>
-            Merchant terminals in DarkNode represent real high-risk settlement endpoints classified under ISO 18245 standards:
-          </p>
-          <div style="overflow-x: auto; margin-top: 8px;">
-            <table class="benchmark-table" style="font-size: 11.5px;">
-              <thead>
-                <tr>
-                  <th>Settlement Entity</th>
-                  <th>ISO 18245 MCC</th>
-                  <th>Category</th>
-                  <th>Regulatory Risk Tier</th>
-                  <th>Settlement Sink Mechanism</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="font-weight: 600; color: #f3f4f6;">Binance US Quasi-Cash Gateway</td>
-                  <td style="font-family: 'JetBrains Mono', monospace; color: #ef4444; font-weight: 700;">MCC 6051</td>
-                  <td>Cryptocurrency & Quasi-Cash</td>
-                  <td><span class="badge-pill" style="color:#ef4444; border-color: rgba(239,68,68,0.4);">CRITICAL</span></td>
-                  <td>Immediate Blockchain Off-Ramp Payout</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: 600; color: #f3f4f6;">Coinbase Institutional Liquidity</td>
-                  <td style="font-family: 'JetBrains Mono', monospace; color: #ef4444; font-weight: 700;">MCC 6051</td>
-                  <td>Cryptocurrency & Digital Assets</td>
-                  <td><span class="badge-pill" style="color:#ef4444; border-color: rgba(239,68,68,0.4);">CRITICAL</span></td>
-                  <td>Automated Off-ramp Wire Transfer</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: 600; color: #f3f4f6;">Crown Casino VIP Chip Cage</td>
-                  <td style="font-family: 'JetBrains Mono', monospace; color: #facc15; font-weight: 700;">MCC 7995</td>
-                  <td>Betting & Casino Gaming</td>
-                  <td><span class="badge-pill" style="color:#facc15; border-color: rgba(250,204,21,0.4);">HIGH</span></td>
-                  <td>Physical Counter Gaming Chips / Cash</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: 600; color: #f3f4f6;">Zurich Bullion & Gold Vault</td>
-                  <td style="font-family: 'JetBrains Mono', monospace; color: #facc15; font-weight: 700;">MCC 5094</td>
-                  <td>Precious Stones & Metals</td>
-                  <td><span class="badge-pill" style="color:#facc15; border-color: rgba(250,204,21,0.4);">HIGH</span></td>
-                  <td>Physical Gold Ingot Settlement</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: 600; color: #f3f4f6;">MicroCenter Electronics Wholesaler</td>
-                  <td style="font-family: 'JetBrains Mono', monospace; color: #38bdf8; font-weight: 700;">MCC 5732</td>
-                  <td>Consumer Electronics Hub</td>
-                  <td><span class="badge-pill" style="color:#38bdf8; border-color: rgba(56,189,248,0.4);">ELEVATED</span></td>
-                  <td>High-Value Hardware Asset Smurfing</td>
-                </tr>
-                <tr>
-                  <td style="font-weight: 600; color: #f3f4f6;">Payoneer Global Escrow P2P</td>
-                  <td style="font-family: 'JetBrains Mono', monospace; color: #38bdf8; font-weight: 700;">MCC 6012</td>
-                  <td>Financial Institution Merchandise</td>
-                  <td><span class="badge-pill" style="color:#38bdf8; border-color: rgba(56,189,248,0.4);">ELEVATED</span></td>
-                  <td>Cross-Border P2P Wire Obfuscation</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Section 4: Hardware Telemetry & Luhn IMEI Algorithm -->
-        <div class="guide-section">
-          <h3>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-            4. Physical Hardware Telemetry & Luhn-Valid IMEI Algorithm
-          </h3>
-          <p>
-            Shared device nodes implement realistic 15-digit International Mobile Equipment Identity (IMEI) numbers adhering to 3GPP standards with a valid Luhn checksum check digit (modulo 10):
-          </p>
-          <div style="background: var(--bg-input); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-subtle); font-size: 12px; font-family: 'JetBrains Mono', monospace; color: #e5e7eb; line-height: 1.6;">
-            <div>// IMEI Format: [TAC: 8 digits] + [Serial: 6 digits] + [Luhn Checksum: 1 digit]</div>
-            <div style="color: #38bdf8; margin-top: 4px;">• Apple iPhone 15 Pro Max   : TAC Prefix 35689110 (iOS 17.5.1)</div>
-            <div style="color: #38bdf8;">• Samsung Galaxy S24 Ultra   : TAC Prefix 35912809 (Android 14 / OneUI 6.1)</div>
-            <div style="color: #38bdf8;">• Google Pixel 8 Pro         : TAC Prefix 35418211 (Android 14 / GrapheneOS)</div>
-            <div style="color: #38bdf8;">• OnePlus 12 5G              : TAC Prefix 86419206 (OxygenOS 14.0)</div>
-          </div>
-        </div>
-
-        <!-- Section 5: Bank Secrecy Act (BSA) Structuring Rules -->
-        <div class="guide-section">
-          <h3>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            5. Bank Secrecy Act (BSA) Structuring Thresholds & Smurfing Patterns
-          </h3>
-          <p>
-            Under <strong>31 U.S.C. 5313</strong> and FinCEN regulations, financial institutions are federally mandated to file a Currency Transaction Report (CTR) for currency transactions exceeding <strong>$10,000.00</strong>.
-          </p>
-          <div style="background: var(--bg-input); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-subtle); font-size: 12px; line-height: 1.6; color: #e5e7eb;">
-            <div><strong>• Structuring Signature (Smurfing):</strong> Mule networks deliberately partition funds into transaction clusters valued between <span style="color: var(--yellow-primary); font-weight: 700;">$8,500.00 and $9,950.00</span> to avoid automatic CTR triggers.</div>
-            <div style="margin-top: 4px;"><strong>• Legitimate Commerce Contrast:</strong> Normal consumer transactions follow a log-normal distribution centered between <strong>$15.00 and $450.00</strong> with standard inter-day intervals.</div>
-          </div>
-        </div>
-
-        <!-- Section 6: MIT-IBM Watson AI Lab Elliptic Bitcoin AML Benchmark -->
-        <div class="guide-section">
-          <h3>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            6. MIT-IBM Watson AI Lab Elliptic Bitcoin AML Benchmark Integration
-          </h3>
-          <p>
-            DarkNode incorporates a native loader module for the <strong>Elliptic Dataset</strong> (Weber et al., 2019), the gold-standard open financial crime benchmark:
-          </p>
-          <div style="background: var(--bg-input); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-subtle); font-size: 12px; line-height: 1.6; color: #e5e7eb;">
-            <div><strong>• Dataset Scale:</strong> 203,769 Bitcoin transaction nodes & 234,355 directed payment edges across 49 time-steps.</div>
-            <div><strong>• Ground Truth:</strong> Class 1 (Illicit: ransomware, darknet, theft) vs. Class 2 (Licit: exchanges, miners, legal merchants).</div>
-            <div><strong>• DarkNode Loader:</strong> Available via <span style="font-family: 'JetBrains Mono', monospace; color: var(--yellow-primary);">src.data_processing.elliptic_dataset.EllipticDataLoader</span> to project raw transaction data into HeteroData graphs.</div>
-          </div>
-        </div>
-
-        <!-- Section 7: Telemetry & CLI Runner -->
-        <div class="guide-section">
-          <h3>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-            7. Full Terminal Telemetry Runner
-          </h3>
-          <p>
-            You can inspect the entire end-to-end model detection pipeline and real-world AML telemetry directly in your terminal at any time:
-          </p>
-          <div style="background: #111213; padding: 10px 14px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--yellow-primary); border: 1px solid var(--border-strong); display: flex; justify-content: space-between; align-items: center;">
-            <span>python scripts/demo_output.py</span>
-            <button class="btn btn-outline" style="height: 24px; font-size: 10px;" onclick="navigator.clipboard.writeText('python scripts/demo_output.py'); showToast('Copied CLI runner command to clipboard!');">Copy Command</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- Model Benchmark Modal -->
   <div class="modal-backdrop" id="benchmark-modal" onclick="closeBenchmarkModal(event)">
     <div class="modal-window" onclick="event.stopPropagation()">
@@ -3294,8 +3094,55 @@ html_template = """<!DOCTYPE html>
 
     const CRITICAL_CUTOFF = 0.814;
 
-    // Real fallback dataset extracted from trained GNN model
-    const FALLBACK_RINGS = __FALLBACK_JSON__;
+    // Dual Datasets: Actual Data (Default Simulation) & Real AML Data (FATF/FinCEN Typologies)
+    const ACTUAL_RINGS = __ACTUAL_RINGS_JSON__;
+    const REAL_AML_RINGS = __REAL_AML_RINGS_JSON__;
+    const FALLBACK_RINGS = ACTUAL_RINGS;
+    let currentDataset = 'actual'; // 'actual' (default) or 'real'
+    allRings = [...ACTUAL_RINGS];
+
+    function switchDatasetSection(type) {
+      if (currentDataset === type && allRings.length > 0) return;
+      currentDataset = type;
+
+      const tabActual = document.getElementById("dataset-tab-actual");
+      const tabReal = document.getElementById("dataset-tab-real");
+      if (tabActual && tabReal) {
+        tabActual.classList.toggle("active", type === 'actual');
+        tabReal.classList.toggle("active", type === 'real');
+      }
+
+      if (type === 'real') {
+        allRings = [...REAL_AML_RINGS];
+        showToast("Switched to Real AML Data: 12 source-verified syndicates with FATF/FinCEN typologies", "Real AML Dataset", "success");
+      } else {
+        allRings = [...ACTUAL_RINGS];
+        showToast("Switched to Actual Data (Default): 10 baseline GNN simulation syndicates", "Actual Dataset", "info");
+      }
+
+      // Update counters
+      const statRings = document.getElementById("stat-rings");
+      if (statRings) statRings.innerText = allRings.length;
+      const countBadge = document.getElementById("rings-count-badge");
+      if (countBadge) countBadge.innerText = `${allRings.length} total`;
+
+      const critCount = allRings.filter(r => r.score >= CRITICAL_CUTOFF).length;
+      const elevCount = allRings.filter(r => r.score < CRITICAL_CUTOFF).length;
+      const cntAll = document.getElementById("count-all");
+      const cntCrit = document.getElementById("count-critical");
+      const cntElev = document.getElementById("count-elevated");
+      if (cntAll) cntAll.innerText = allRings.length;
+      if (cntCrit) cntCrit.innerText = critCount;
+      if (cntElev) cntElev.innerText = elevCount;
+
+      activeIndex = 0;
+      currentRenderedRingId = null;
+      filterRings();
+      if (allRings.length > 0) {
+        selectRing(0, true);
+      }
+      updateSearchSuggestions();
+    }
 
     async function fetchRings() {
       const runBtn = document.getElementById("run-btn");
@@ -3333,7 +3180,11 @@ html_template = """<!DOCTYPE html>
 
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        allRings = data.rings || [];
+        const fetched = data.rings || [];
+        ACTUAL_RINGS.splice(0, ACTUAL_RINGS.length, ...fetched);
+        if (currentDataset === 'actual') {
+          allRings = [...ACTUAL_RINGS];
+        }
 
         const elapsed = Math.round(performance.now() - startTime);
 
@@ -3347,7 +3198,8 @@ html_template = """<!DOCTYPE html>
       } catch (err) {
         console.warn("Backend unavailable, using cached model dossier:", err);
         // Logical fallback: filter rings by threshold so sensitivity changes take effect
-        allRings = FALLBACK_RINGS.filter(r => r.avg_model_score >= (currentThresh - 0.15));
+        const baseSet = (currentDataset === 'real') ? REAL_AML_RINGS : ACTUAL_RINGS;
+        allRings = baseSet.filter(r => r.avg_model_score >= (currentThresh - 0.15));
         dot.classList.remove("active-infer");
         dot.classList.add("offline");
         label.innerText = "CACHED GNN";
@@ -3492,11 +3344,19 @@ html_template = """<!DOCTYPE html>
         card.className = `ring-card-item ${originalIndex === activeIndex ? 'active' : ''}`;
         card.onclick = () => selectRing(originalIndex);
 
+        const subtitleHtml = ring.subtitle ? `
+          <div class="ring-subtitle-tag" title="${ring.subtitle}">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink: 0;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${ring.subtitle}</span>
+          </div>
+        ` : '';
+
         card.innerHTML = `
           <div class="ring-card-top">
             <span class="ring-label">Syndicate Ring #${ring.ring_id}</span>
             <span class="ring-risk-tag">${(ring.score * 100).toFixed(1)}% RISK</span>
           </div>
+          ${subtitleHtml}
           <div class="ring-card-bottom">
             <span class="raw-stat-pill">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
@@ -3525,8 +3385,103 @@ html_template = """<!DOCTYPE html>
     }
 
     function showSearchSuggestions() {
+      updateSearchSuggestions();
       const dropdown = document.getElementById("search-suggestions");
       if (dropdown) dropdown.classList.add("open");
+    }
+
+    function updateSearchSuggestions() {
+      const dropdown = document.getElementById("search-suggestions");
+      if (!dropdown) return;
+
+      if (currentDataset === 'real') {
+        dropdown.innerHTML = `
+          <div class="suggestion-group-title">Source-Verified AML Rings</div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('Smurfing')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Smurfing / Funneling</span>
+            </div>
+            <span class="suggestion-tag risk-tag">82.9% Risk</span>
+          </div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('Layering')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Layering / Velocity</span>
+            </div>
+            <span class="suggestion-tag risk-tag">82.5% Risk</span>
+          </div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('Mule Network')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Device Multiplexing Mule</span>
+            </div>
+            <span class="suggestion-tag risk-tag">82.2% Risk</span>
+          </div>
+          <div class="suggestion-group-title" style="margin-top: 4px;">Verified Global Entities</div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('HDFC')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a8.38 8.38 0 0 1 13 0"/></svg>
+              <span>HDFC Bank Accounts</span>
+            </div>
+            <span class="suggestion-tag">Banking</span>
+          </div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('Coinbase')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+              <span>Coinbase (MCC 6051)</span>
+            </div>
+            <span class="suggestion-tag">Crypto</span>
+          </div>
+        `;
+      } else {
+        dropdown.innerHTML = `
+          <div class="suggestion-group-title">High Priority Rings</div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('Ring #3')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="12 6 12 12 16 14"/></svg>
+              <span>Ring #3</span>
+            </div>
+            <span class="suggestion-tag risk-tag">82.9% Risk</span>
+          </div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('Ring #8')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="12 6 12 12 16 14"/></svg>
+              <span>Ring #8</span>
+            </div>
+            <span class="suggestion-tag risk-tag">82.5% Risk</span>
+          </div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('Ring #6')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="12 6 12 12 16 14"/></svg>
+              <span>Ring #6</span>
+            </div>
+            <span class="suggestion-tag risk-tag">82.2% Risk</span>
+          </div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('Ring #2')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="12 6 12 12 16 14"/></svg>
+              <span>Ring #2</span>
+            </div>
+            <span class="suggestion-tag">80.8% Risk</span>
+          </div>
+          <div class="suggestion-group-title" style="margin-top: 4px;">Key Member Accounts</div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('User 0')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a8.38 8.38 0 0 1 13 0"/></svg>
+              <span>User 0</span>
+            </div>
+            <span class="suggestion-tag">Ring #3 Lead</span>
+          </div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('User 24')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a8.38 8.38 0 0 1 13 0"/></svg>
+              <span>User 24</span>
+            </div>
+            <span class="suggestion-tag">Ring #8 Lead</span>
+          </div>
+        `;
+      }
     }
 
     function hideSearchSuggestions() {
@@ -3576,9 +3531,16 @@ html_template = """<!DOCTYPE html>
         });
         if (memberMatches) return true;
 
+        if (r.subtitle && r.subtitle.toLowerCase().includes(query)) return true;
+        if (r.typology && (
+          (r.typology.name && r.typology.name.toLowerCase().includes(query)) ||
+          (r.typology.code && r.typology.code.toLowerCase().includes(query))
+        )) return true;
+
         if (r.graph && r.graph.nodes) {
           const nodeMatches = r.graph.nodes.some(n =>
-            n.label && n.label.toLowerCase().includes(query)
+            (n.label && n.label.toLowerCase().includes(query)) ||
+            (n.title && n.title.toLowerCase().includes(query))
           );
           if (nodeMatches) return true;
         }
@@ -3635,6 +3597,24 @@ html_template = """<!DOCTYPE html>
       document.getElementById("threat-score-num").innerText = `${(ring.score * 100).toFixed(1)}%`;
       document.getElementById("threat-rank-pill").innerText = `RANK #${ring.rank || index + 1}`;
 
+      // Typology Card display
+      const typoBox = document.getElementById("typology-card-box");
+      if (typoBox) {
+        if (ring.typology) {
+          typoBox.style.display = "block";
+          const codeEl = document.getElementById("typology-code");
+          if (codeEl) codeEl.innerText = ring.typology.code || "FATF/FINCEN";
+          const fatfEl = document.getElementById("typology-fatf");
+          if (fatfEl) fatfEl.innerText = ring.typology.fatf || "FATF Recommendation";
+          const nameEl = document.getElementById("typology-name");
+          if (nameEl) nameEl.innerText = ring.typology.name || ring.subtitle || "AML Syndicate Pattern";
+          const descEl = document.getElementById("typology-desc");
+          if (descEl) descEl.innerText = ring.typology.description || "";
+        } else {
+          typoBox.style.display = "none";
+        }
+      }
+
       document.getElementById("sig-device").innerText = `${ring.shared_device_pct}%`;
       document.getElementById("sig-ip").innerText = `${ring.shared_ip_pairs} pairs`;
       document.getElementById("sig-vel").innerText = `${ring.transaction_velocity} tx/hr`;
@@ -3664,11 +3644,20 @@ html_template = """<!DOCTYPE html>
 
       // Render Account Chips
       const chipsBox = document.getElementById("members-chips");
-      chipsBox.innerHTML = ring.members.map(m => `
-        <span class="chip-account ${isFrozen ? 'frozen' : ''}" onclick="focusOnNode('user_${m}')">
-          User ${m} ${isFrozen ? '<span style="font-size: 8px; color: #ef4444;">[FROZEN]</span>' : ''}
-        </span>
-      `).join("");
+      chipsBox.innerHTML = ring.members.map(m => {
+        let label = `User ${m}`;
+        if (ring.graph && ring.graph.nodes) {
+          const userNode = ring.graph.nodes.find(n => n.id === `user_${m}`);
+          if (userNode && userNode.label && userNode.label.trim() !== '') {
+            label = userNode.label;
+          }
+        }
+        return `
+          <span class="chip-account ${isFrozen ? 'frozen' : ''}" onclick="focusOnNode('user_${m}')" title="Inspect user_${m}">
+            ${label} ${isFrozen ? '<span style="font-size: 8px; color: #ef4444;">[FROZEN]</span>' : ''}
+          </span>
+        `;
+      }).join("");
 
       // Only re-render graph if the ring actually changed or forced
       if (!network || currentRenderedRingId !== ring.ring_id || forceRerender) {
@@ -3970,7 +3959,7 @@ html_template = """<!DOCTYPE html>
       const gNode = ring ? (ring.graph.nodes || []).find(n => n.id === nodeId) : null;
       if (!gNode) return;
 
-      document.getElementById("inspect-id").innerText = gNode.label;
+      document.getElementById("inspect-id").innerText = gNode.actualLabel || gNode.label;
       const dot = document.getElementById("inspect-dot");
       const role = document.getElementById("inspect-role");
       const score = document.getElementById("inspect-score");
@@ -3980,22 +3969,42 @@ html_template = """<!DOCTYPE html>
       const connectedEdges = (ring.graph.edges || []).filter(e => e.from === nodeId || e.to === nodeId);
       deg.innerText = `${connectedEdges.length} connected hop${connectedEdges.length === 1 ? '' : 's'}`;
 
-      if (gNode.group === "user") {
-        const isFrozen = frozenRings.has(ring.ring_id);
-        dot.style.background = isFrozen ? "#ef4444" : "var(--node-user)";
-        role.innerText = "Syndicate Member Account";
-        score.innerText = `Threat Risk: ${(ring.score * 100).toFixed(1)}%`;
-        score.style.color = isFrozen ? "#ef4444" : "var(--yellow-primary)";
-      } else if (gNode.group === "device") {
-        dot.style.background = "var(--node-device)";
-        role.innerText = "Shared Hardware Device (IMEI/MAC)";
-        score.innerText = `Multiplexed by ${connectedEdges.length} Accounts`;
-        score.style.color = "var(--node-device)";
-      } else if (gNode.group === "merchant") {
-        dot.style.background = "var(--node-merchant)";
-        role.innerText = "Target Merchant Terminal";
-        score.innerText = `Velocity: ${Math.round(ring.transaction_velocity)} tx/hr`;
-        score.style.color = "var(--node-merchant)";
+      if (gNode.profile) {
+        if (gNode.group === "user") {
+          const isFrozen = frozenRings.has(ring.ring_id);
+          dot.style.background = isFrozen ? "#ef4444" : "var(--node-user)";
+          role.innerText = `${gNode.profile.bank_name} (${gNode.profile.swift_bic})`;
+          score.innerText = `${gNode.profile.name} • KYC: ${gNode.profile.kyc_tier}`;
+          score.style.color = isFrozen ? "#ef4444" : "var(--yellow-primary)";
+        } else if (gNode.group === "device") {
+          dot.style.background = "var(--node-device)";
+          role.innerText = `${gNode.profile.model} (${gNode.profile.os})`;
+          score.innerText = `IMEI: ${gNode.profile.imei_masked} • IP: ${gNode.profile.last_ip || 'Static'}`;
+          score.style.color = "var(--node-device)";
+        } else if (gNode.group === "merchant") {
+          dot.style.background = "var(--node-merchant)";
+          role.innerText = `${gNode.profile.category} (MCC ${gNode.profile.mcc})`;
+          score.innerText = `${gNode.profile.settlement_type} • Velocity: ${Math.round(ring.transaction_velocity)} tx/hr`;
+          score.style.color = "var(--node-merchant)";
+        }
+      } else {
+        if (gNode.group === "user") {
+          const isFrozen = frozenRings.has(ring.ring_id);
+          dot.style.background = isFrozen ? "#ef4444" : "var(--node-user)";
+          role.innerText = "Syndicate Member Account";
+          score.innerText = `Threat Risk: ${(ring.score * 100).toFixed(1)}%`;
+          score.style.color = isFrozen ? "#ef4444" : "var(--yellow-primary)";
+        } else if (gNode.group === "device") {
+          dot.style.background = "var(--node-device)";
+          role.innerText = "Shared Hardware Device (IMEI/MAC)";
+          score.innerText = `Multiplexed by ${connectedEdges.length} Accounts`;
+          score.style.color = "var(--node-device)";
+        } else if (gNode.group === "merchant") {
+          dot.style.background = "var(--node-merchant)";
+          role.innerText = "Target Merchant Terminal";
+          score.innerText = `Velocity: ${Math.round(ring.transaction_velocity)} tx/hr`;
+          score.style.color = "var(--node-merchant)";
+        }
       }
 
       card.style.display = "block";
@@ -4786,7 +4795,7 @@ html_template = """<!DOCTYPE html>
       }, 650);
     }
 
-    // Modal Control Functions: Independent Architecture, User Guide, Instructions & Real AML Data
+    // Modal Control Functions: Independent Architecture, User Guide & Instructions
     function backToSettingsModal() {
       const arch = document.getElementById("architecture-modal");
       if (arch) arch.classList.remove("open");
@@ -4794,22 +4803,8 @@ html_template = """<!DOCTYPE html>
       if (guide) guide.classList.remove("open");
       const inst = document.getElementById("instructions-modal");
       if (inst) inst.classList.remove("open");
-      const realData = document.getElementById("real-data-modal");
-      if (realData) realData.classList.remove("open");
 
       openSettingsModal('docs');
-    }
-
-    function openRealDataModal() {
-      closeSettingsModal();
-      const modal = document.getElementById("real-data-modal");
-      if (modal) modal.classList.add("open");
-    }
-
-    function closeRealDataModal(e) {
-      if (e && e.target !== document.getElementById("real-data-modal") && !e.target.closest(".modal-close-btn")) return;
-      const modal = document.getElementById("real-data-modal");
-      if (modal) modal.classList.remove("open");
     }
 
     function openArchitectureModal() {
@@ -4874,7 +4869,6 @@ html_template = """<!DOCTYPE html>
         closeArchitectureModal();
         closeUserGuideModal();
         closeInstructionsModal();
-        closeRealDataModal();
         closeBenchmarkModal();
         closeNodeInspector();
         hideSearchSuggestions();
@@ -5140,7 +5134,12 @@ html_template = """<!DOCTYPE html>
 </html>
 """
 
-output_html = html_template.replace("__FALLBACK_JSON__", fallback_data)
+output_html = (
+    html_template
+    .replace("__ACTUAL_RINGS_JSON__", fallback_data)
+    .replace("__REAL_AML_RINGS_JSON__", real_aml_data)
+    .replace("__FALLBACK_JSON__", fallback_data)
+)
 with open("web/index.html", "w", encoding="utf-8") as f:
     f.write(output_html)
 
