@@ -2280,15 +2280,55 @@ html_template = """<!DOCTYPE html>
       if (network) network.destroy();
       network = new vis.Network(container, data, options);
 
-      // User interaction handlers for smooth drag/zoom without hanging
-      network.on("dragStart", function() {
-        isUserInteracting = true;
+      // User interaction handlers for smooth elastic stretching & zero-hang floating
+      let dragSettleTimeout = null;
+
+      network.on("dragStart", function(params) {
+        if (params.nodes && params.nodes.length > 0) {
+          isUserInteracting = true;
+          if (dragSettleTimeout) {
+            clearTimeout(dragSettleTimeout);
+            dragSettleTimeout = null;
+          }
+          // Enable elastic spring physics while actively stretching and dragging nodes!
+          network.setOptions({
+            physics: {
+              enabled: true,
+              solver: "forceAtlas2Based",
+              forceAtlas2Based: {
+                gravitationalConstant: -460,
+                centralGravity: 0.002,
+                springLength: currentSpringLength,
+                springConstant: 0.035,
+                damping: 0.35,
+                avoidOverlap: 1.0
+              }
+            }
+          });
+          network.startSimulation();
+        } else {
+          // Canvas pan
+          isUserInteracting = true;
+        }
       });
 
-      network.on("dragEnd", function() {
-        recalculatePolarCoordinates();
-        isUserInteracting = false;
-        lastFrameTime = performance.now();
+      network.on("dragEnd", function(params) {
+        if (params.nodes && params.nodes.length > 0) {
+          // Let the elastic springs settle into the new stretched shape
+          dragSettleTimeout = setTimeout(() => {
+            if (network) {
+              network.stopSimulation();
+              network.setOptions({ physics: { enabled: false } });
+              recomputePolarFromCurrentPositions();
+              isUserInteracting = false;
+              lastFrameTime = performance.now();
+            }
+          }, 450);
+        } else {
+          // Pan ended
+          isUserInteracting = false;
+          lastFrameTime = performance.now();
+        }
       });
 
       // Once layout stabilizes, fit perfectly to frame and stop simulation for zero jitter
@@ -2469,18 +2509,40 @@ html_template = """<!DOCTYPE html>
       startSpinLoop();
     }
 
-    function recalculatePolarCoordinates() {
+    function recomputePolarFromCurrentPositions() {
       if (!network) return;
       const positions = network.getPositions();
+
+      let cx = 0, cy = 0, count = 0;
       for (const id in positions) {
-        if (nodePolarData[id]) {
-          const p = nodePolarData[id];
-          const dx = positions[id].x - p.cx;
-          const dy = positions[id].y - p.cy;
-          p.radius = Math.sqrt(dx * dx + dy * dy);
-          p.initialAngle = Math.atan2(dy, dx) - accumulatedRotation;
-        }
+        cx += positions[id].x;
+        cy += positions[id].y;
+        count++;
       }
+      if (count > 0) { cx /= count; cy /= count; }
+
+      for (const id in positions) {
+        let p = nodePolarData[id];
+        if (!p) {
+          const h = hashString(id);
+          p = {
+            phase: (h % 1000) / 1000 * Math.PI * 2,
+            cx: cx,
+            cy: cy
+          };
+          nodePolarData[id] = p;
+        }
+        const dx = positions[id].x - cx;
+        const dy = positions[id].y - cy;
+        p.cx = cx;
+        p.cy = cy;
+        p.radius = Math.sqrt(dx * dx + dy * dy);
+        p.initialAngle = Math.atan2(dy, dx) - accumulatedRotation;
+      }
+    }
+
+    function recalculatePolarCoordinates() {
+      recomputePolarFromCurrentPositions();
     }
 
     function startSpinLoop() {
