@@ -193,7 +193,7 @@ Navigate to `http://localhost:3000` to inspect the live force-directed fraud rin
 
 ## Acknowledgements & Attribution
 
-This project builds upon the foundational research and graph schema designs from [Apate](https://github.com/roboticol/Apate) by **Oishik Guha**, expanded here into the **DarkNode** prototype with community ring extraction, heuristic benchmarking, a lightweight FastAPI backend, and an interactive intelligence interface.
+This project builds upon foundational research and graph schema designs from [Apate](https://github.com/roboticol/Apate), expanded here into the **DarkNode** prototype with community ring extraction, heuristic benchmarking, a lightweight FastAPI backend, and an interactive intelligence interface.
 
 ---
 
