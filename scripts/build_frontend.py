@@ -1380,7 +1380,7 @@ html_template = """<!DOCTYPE html>
         </button>
         <button class="canvas-pill-btn" id="physics-toggle" onclick="togglePhysics()">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          <span id="physics-label">Physics: On</span>
+          <span id="physics-label">Physics: Off</span>
         </button>
         <span style="color: var(--border-subtle);">|</span>
         <button class="canvas-pill-btn active" id="filter-user" onclick="toggleFilter('user')">Users</button>
@@ -1754,7 +1754,7 @@ html_template = """<!DOCTYPE html>
     let allRings = [];
     let activeIndex = 0;
     let currentTierFilter = 'all';
-    let physicsState = true;
+    let physicsState = false;
     let currentSpringLength = 260;
     let activeFilters = { user: true, device: true, merchant: true };
     let currentVisibleNodes = [];
@@ -2317,9 +2317,11 @@ html_template = """<!DOCTYPE html>
           // Let the elastic springs settle into the new stretched shape
           dragSettleTimeout = setTimeout(() => {
             if (network) {
-              network.stopSimulation();
-              network.setOptions({ physics: { enabled: false } });
-              recomputePolarFromCurrentPositions();
+              if (!physicsState) {
+                network.stopSimulation();
+                network.setOptions({ physics: { enabled: false } });
+                recomputePolarFromCurrentPositions();
+              }
               isUserInteracting = false;
               lastFrameTime = performance.now();
             }
@@ -2334,12 +2336,18 @@ html_template = """<!DOCTYPE html>
       // Once layout stabilizes, fit perfectly to frame and stop simulation for zero jitter
       network.once("stabilizationIterationsDone", function() {
         network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
-        network.stopSimulation();
-        // Zero physics computation during animation to prevent any possible visual hanging
-        network.setOptions({ physics: { enabled: false } });
-        setTimeout(() => {
-          initAndStartSpinAnimation(nodes);
-        }, 360);
+        if (!physicsState) {
+          network.stopSimulation();
+          // Zero physics computation during animation to prevent any possible visual hanging
+          network.setOptions({ physics: { enabled: false } });
+          setTimeout(() => {
+            if (isSpinningEnabled) {
+              initAndStartSpinAnimation(nodes);
+            }
+          }, 360);
+        } else {
+          network.startSimulation();
+        }
       });
 
       // Constant screen text size & high-contrast visibility at all zoom levels
@@ -2496,15 +2504,13 @@ html_template = """<!DOCTYPE html>
         const phase = (h % 1000) / 1000 * Math.PI * 2;
         nodePolarData[id] = {
           radius: radius,
-          initialAngle: angle,
+          initialAngle: angle - accumulatedRotation,
           phase: phase,
           cx: cx,
           cy: cy
         };
       }
 
-      accumulatedRotation = 0;
-      spinStartTime = performance.now();
       lastFrameTime = performance.now();
       startSpinLoop();
     }
@@ -2597,16 +2603,37 @@ html_template = """<!DOCTYPE html>
       const lbl = document.getElementById("spin-label");
       if (btn) btn.classList.toggle("active", isSpinningEnabled);
       if (lbl) lbl.innerText = `Orbit Spin: ${isSpinningEnabled ? 'On' : 'Off'}`;
-      showToast(`Orbit rotation & float: ${isSpinningEnabled ? 'Active' : 'Paused'}`);
-      lastFrameTime = performance.now();
+
+      if (isSpinningEnabled) {
+        // If Physics Mode is currently ON, turn it OFF so they do not conflict
+        if (physicsState) {
+          physicsState = false;
+          const pBtn = document.getElementById("physics-toggle");
+          const pLbl = document.getElementById("physics-label");
+          if (pBtn) pBtn.classList.remove("active");
+          if (pLbl) pLbl.innerText = "Physics: Off";
+          if (network) {
+            network.stopSimulation();
+            network.setOptions({ physics: { enabled: false } });
+          }
+        }
+        recomputePolarFromCurrentPositions();
+        isUserInteracting = false;
+        lastFrameTime = performance.now();
+        showToast("Orbit rotation & float: Active");
+      } else {
+        showToast("Orbit rotation & float: Paused");
+        lastFrameTime = performance.now();
+      }
     }
 
     function resetGraphView() {
       if (network) {
         isUserInteracting = true;
         network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+        showToast("Framed network graph to viewport");
         setTimeout(() => {
-          recalculatePolarCoordinates();
+          recomputePolarFromCurrentPositions();
           isUserInteracting = false;
           lastFrameTime = performance.now();
         }, 380);
@@ -2617,45 +2644,89 @@ html_template = """<!DOCTYPE html>
       currentSpringLength = (currentSpringLength === 260) ? 380 : 260;
       const btn = document.getElementById("spread-btn");
       const label = document.getElementById("spread-label");
-      label.innerText = currentSpringLength === 380 ? "Spread: Wide" : "Spread Out";
-      btn.classList.toggle("active", currentSpringLength === 380);
+      const isWide = (currentSpringLength === 380);
+      label.innerText = isWide ? "Spread: Wide" : "Spread Out";
+      btn.classList.toggle("active", isWide);
 
       if (network) {
         isUserInteracting = true;
         network.setOptions({
           physics: {
             enabled: true,
-            forceAtlas2Based: { springLength: currentSpringLength, gravitationalConstant: currentSpringLength === 380 ? -620 : -460 }
+            solver: "forceAtlas2Based",
+            forceAtlas2Based: {
+              gravitationalConstant: isWide ? -620 : -460,
+              centralGravity: 0.003,
+              springLength: currentSpringLength,
+              springConstant: 0.035,
+              damping: 0.35,
+              avoidOverlap: 1.0
+            }
           }
         });
         network.startSimulation();
+        showToast(isWide ? "Expanding cluster springs (Wide Layout)..." : "Restoring compact cluster springs...");
         setTimeout(() => {
           if (network) {
-            network.stopSimulation();
-            network.setOptions({ physics: { enabled: false } });
-            recalculatePolarCoordinates();
+            if (!physicsState) {
+              network.stopSimulation();
+              network.setOptions({ physics: { enabled: false } });
+            }
+            recomputePolarFromCurrentPositions();
             isUserInteracting = false;
             lastFrameTime = performance.now();
           }
-        }, 1200);
+        }, 900);
       }
     }
 
     function togglePhysics() {
       physicsState = !physicsState;
       const label = document.getElementById("physics-label");
+      const btn = document.getElementById("physics-toggle");
       label.innerText = `Physics: ${physicsState ? 'On' : 'Off'}`;
+      if (btn) btn.classList.toggle("active", physicsState);
+
       if (network) {
         if (physicsState) {
-          isUserInteracting = true;
-          network.setOptions({ physics: { enabled: true } });
+          // If Orbit Spin is active, pause it cleanly so live physics takes over
+          if (isSpinningEnabled) {
+            isSpinningEnabled = false;
+            const spinBtn = document.getElementById("spin-btn");
+            const spinLbl = document.getElementById("spin-label");
+            if (spinBtn) spinBtn.classList.remove("active");
+            if (spinLbl) spinLbl.innerText = "Orbit Spin: Off";
+          }
+          isUserInteracting = false;
+          network.setOptions({
+            physics: {
+              enabled: true,
+              solver: "forceAtlas2Based",
+              forceAtlas2Based: {
+                gravitationalConstant: (currentSpringLength === 380 ? -620 : -460),
+                centralGravity: 0.005,
+                springLength: currentSpringLength,
+                springConstant: 0.035,
+                damping: 0.25,
+                avoidOverlap: 1.0
+              }
+            }
+          });
           network.startSimulation();
+          showToast("Live Physics Mode enabled: Dynamic force-directed simulation active");
         } else {
           network.stopSimulation();
           network.setOptions({ physics: { enabled: false } });
-          recalculatePolarCoordinates();
+          recomputePolarFromCurrentPositions();
           isUserInteracting = false;
           lastFrameTime = performance.now();
+          // Resume Orbit Spin when Physics is turned off
+          isSpinningEnabled = true;
+          const spinBtn = document.getElementById("spin-btn");
+          const spinLbl = document.getElementById("spin-label");
+          if (spinBtn) spinBtn.classList.add("active");
+          if (spinLbl) spinLbl.innerText = "Orbit Spin: On";
+          showToast("Physics Mode paused: Orbit rotation & float resumed");
         }
       }
     }
@@ -2665,17 +2736,28 @@ html_template = """<!DOCTYPE html>
       const btn = document.getElementById(`filter-${type}`);
       btn.classList.toggle("active", activeFilters[type]);
       const currentRing = allRings[activeIndex];
-      if (currentRing) renderGraph(currentRing.graph);
+      if (currentRing) {
+        if (spinAnimFrameId) {
+          cancelAnimationFrame(spinAnimFrameId);
+          spinAnimFrameId = null;
+        }
+        renderGraph(currentRing.graph);
+      }
     }
 
     function focusOnNode(nodeId) {
       if (!network) return;
+      isUserInteracting = true;
       network.focus(nodeId, {
-        scale: 1.3,
+        scale: 1.35,
         animation: { duration: 500, easingFunction: "easeInOutQuad" }
       });
       network.selectNodes([nodeId]);
       showNodeInspector(nodeId);
+      setTimeout(() => {
+        isUserInteracting = false;
+        lastFrameTime = performance.now();
+      }, 550);
     }
 
     async function executeFreezeAction() {
