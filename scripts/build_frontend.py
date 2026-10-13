@@ -309,7 +309,47 @@ html_template = """<!DOCTYPE html>
       letter-spacing: 0.05em;
     }
 
+    /* Risk Tier Filters in Left Sidebar */
+    .tier-filter-row {
+      display: flex;
+      gap: 5px;
+      padding: 0 12px 10px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-panel);
+    }
+
+    .tier-tab-btn {
+      flex: 1;
+      height: 25px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.12s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+    }
+
+    .tier-tab-btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-strong);
+      color: var(--text-main);
+    }
+
+    .tier-tab-btn.active {
+      background: var(--yellow-bg);
+      border-color: var(--yellow-border);
+      color: var(--yellow-primary);
+    }
+
     .search-box-clean {
+      position: relative;
       padding: 10px 14px;
       border-bottom: 1px solid var(--border-subtle);
       background: var(--bg-panel);
@@ -332,6 +372,97 @@ html_template = """<!DOCTYPE html>
 
     .search-input-clean:focus {
       border-color: var(--yellow-primary);
+    }
+
+    .search-clear-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 2px 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: color 0.15s ease;
+    }
+
+    .search-clear-btn:hover {
+      color: var(--yellow-primary);
+    }
+
+    /* Interactive Search Suggestions Dropdown */
+    .search-suggestions-dropdown {
+      position: absolute;
+      top: calc(100% + 2px);
+      left: 10px;
+      right: 10px;
+      background: rgba(20, 21, 26, 0.98);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(250, 204, 21, 0.08);
+      z-index: 100;
+      display: none;
+      max-height: 330px;
+      overflow-y: auto;
+      padding: 6px;
+    }
+
+    .search-suggestions-dropdown.open {
+      display: block;
+    }
+
+    .suggestion-group-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 6px 8px 3px 8px;
+    }
+
+    .suggestion-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.12s ease;
+      font-size: 11px;
+      color: var(--text-main);
+    }
+
+    .suggestion-item:hover {
+      background: var(--bg-card-hover);
+      color: var(--yellow-primary);
+    }
+
+    .suggestion-item-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .suggestion-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+    }
+
+    .suggestion-tag.risk-tag {
+      background: var(--yellow-bg);
+      border-color: var(--yellow-border);
+      color: var(--yellow-primary);
     }
 
     .rings-list-scroll {
@@ -1118,9 +1249,97 @@ html_template = """<!DOCTYPE html>
         <span class="panel-title">Detected Syndicates</span>
         <span class="badge-pill" id="rings-count-badge">10 total</span>
       </div>
+
+      <!-- Risk Tier Filter Tabs with Real Logic -->
+      <div class="tier-filter-row">
+        <button class="tier-tab-btn active" id="tier-all" onclick="setTierFilter('all')" title="Show all detected syndicates">All (<span id="count-all">10</span>)</button>
+        <button class="tier-tab-btn" id="tier-critical" onclick="setTierFilter('critical')" title="Filter rings with critical threat >= 81.4%">Critical (<span id="count-critical">8</span>)</button>
+        <button class="tier-tab-btn" id="tier-elevated" onclick="setTierFilter('elevated')" title="Filter rings with elevated threat < 81.4%">Elevated (<span id="count-elevated">2</span>)</button>
+      </div>
+
       <div class="search-box-clean">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" class="search-input-clean" id="search-filter" placeholder="Filter by Ring ID or User ID..." oninput="filterRings()">
+        <input type="text" class="search-input-clean" id="search-filter" placeholder="Filter by Ring ID, User, Device..." oninput="onSearchInput()" onfocus="showSearchSuggestions()" autocomplete="off">
+        <button id="search-clear-btn" class="search-clear-btn" onclick="clearSearchFilter()" style="display: none;" title="Clear search">×</button>
+
+        <!-- Interactive Search Suggestions Dropdown -->
+        <div class="search-suggestions-dropdown" id="search-suggestions">
+          <div class="suggestion-group-title">High Priority Rings</div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('Ring #3')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="12 6 12 12 16 14"/></svg>
+              <span>Ring #3</span>
+            </div>
+            <span class="suggestion-tag risk-tag">82.9% Risk</span>
+          </div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('Ring #8')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="12 6 12 12 16 14"/></svg>
+              <span>Ring #8</span>
+            </div>
+            <span class="suggestion-tag risk-tag">82.5% Risk</span>
+          </div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('Ring #6')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="12 6 12 12 16 14"/></svg>
+              <span>Ring #6</span>
+            </div>
+            <span class="suggestion-tag risk-tag">82.2% Risk</span>
+          </div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('Ring #2')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="12 6 12 12 16 14"/></svg>
+              <span>Ring #2</span>
+            </div>
+            <span class="suggestion-tag">80.8% Risk</span>
+          </div>
+
+          <div class="suggestion-group-title" style="margin-top: 4px;">Key Member Accounts</div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('User 0')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a8.38 8.38 0 0 1 13 0"/></svg>
+              <span>User 0</span>
+            </div>
+            <span class="suggestion-tag">Ring #3 Lead</span>
+          </div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('User 24')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a8.38 8.38 0 0 1 13 0"/></svg>
+              <span>User 24</span>
+            </div>
+            <span class="suggestion-tag">Ring #8 Lead</span>
+          </div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('User 32')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a8.38 8.38 0 0 1 13 0"/></svg>
+              <span>User 32</span>
+            </div>
+            <span class="suggestion-tag">Ring #6 Lead</span>
+          </div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('User 80')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a8.38 8.38 0 0 1 13 0"/></svg>
+              <span>User 80</span>
+            </div>
+            <span class="suggestion-tag">Ring #2 Lead</span>
+          </div>
+
+          <div class="suggestion-group-title" style="margin-top: 4px;">Shared Infrastructure</div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('Device 666')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              <span>Device 666</span>
+            </div>
+            <span class="suggestion-tag">Multiplexed</span>
+          </div>
+          <div class="suggestion-item" onclick="applySearchSuggestion('Device 789')">
+            <div class="suggestion-item-left">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              <span>Device 789</span>
+            </div>
+            <span class="suggestion-tag">High-Density</span>
+          </div>
+        </div>
       </div>
       <div class="rings-list-scroll" id="rings-container">
         <!-- Injected rings -->
@@ -1528,12 +1747,15 @@ html_template = """<!DOCTYPE html>
     let network = null;
     let allRings = [];
     let activeIndex = 0;
+    let currentTierFilter = 'all';
     let physicsState = true;
     let currentSpringLength = 260;
     let activeFilters = { user: true, device: true, merchant: true };
     let currentVisibleNodes = [];
     let inspectedNodeId = null;
     let frozenRings = new Set();
+
+    const CRITICAL_CUTOFF = 0.814;
 
     // Real fallback dataset extracted from trained GNN model
     const FALLBACK_RINGS = __FALLBACK_JSON__;
@@ -1542,7 +1764,7 @@ html_template = """<!DOCTYPE html>
       const runBtn = document.getElementById("run-btn");
       const dot = document.getElementById("status-dot");
       const label = document.getElementById("status-label");
-      const url = document.getElementById("api-url").value.trim().replace(/\\/$/, "");
+      const url = document.getElementById("api-url").value.trim().replace(/\/$/, "");
 
       // Multi-step logic: Step 1 - Enter active inference pipeline state
       if (runBtn) {
@@ -1602,21 +1824,52 @@ html_template = """<!DOCTYPE html>
 
       document.getElementById("stat-rings").innerText = allRings.length;
       document.getElementById("rings-count-badge").innerText = `${allRings.length} total`;
-      renderRingsList(allRings);
+
+      // Update tier filter counts dynamically
+      const critCount = allRings.filter(r => r.score >= CRITICAL_CUTOFF).length;
+      const elevCount = allRings.filter(r => r.score < CRITICAL_CUTOFF).length;
+      const cntAll = document.getElementById("count-all");
+      const cntCrit = document.getElementById("count-critical");
+      const cntElev = document.getElementById("count-elevated");
+      if (cntAll) cntAll.innerText = allRings.length;
+      if (cntCrit) cntCrit.innerText = critCount;
+      if (cntElev) cntElev.innerText = elevCount;
+
+      filterRings();
       if (allRings.length > 0) {
         const targetIdx = (activeIndex >= 0 && activeIndex < allRings.length) ? activeIndex : 0;
         selectRing(targetIdx, false);
       }
     }
 
+    function setTierFilter(tier) {
+      currentTierFilter = tier;
+      document.querySelectorAll('.tier-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeTab = document.getElementById(`tier-${tier}`);
+      if (activeTab) activeTab.classList.add('active');
+      filterRings();
+    }
+
     function renderRingsList(rings) {
       const container = document.getElementById("rings-container");
       container.innerHTML = "";
 
-      rings.forEach((ring, index) => {
+      if (!rings || rings.length === 0) {
+        container.innerHTML = `
+          <div style="padding: 28px 12px; text-align: center; color: var(--text-muted); font-size: 11px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="opacity: 0.5; margin-bottom: 6px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <div>No matching syndicates found</div>
+            <div style="font-size: 10px; opacity: 0.7; margin-top: 3px;">Try switching to 'All' or clearing search</div>
+          </div>
+        `;
+        return;
+      }
+
+      rings.forEach((ring) => {
+        const originalIndex = allRings.findIndex(r => r.ring_id === ring.ring_id);
         const card = document.createElement("div");
-        card.className = `ring-card-item ${index === activeIndex ? 'active' : ''}`;
-        card.onclick = () => selectRing(index);
+        card.className = `ring-card-item ${originalIndex === activeIndex ? 'active' : ''}`;
+        card.onclick = () => selectRing(originalIndex);
 
         card.innerHTML = `
           <div class="ring-card-top">
@@ -1642,13 +1895,86 @@ html_template = """<!DOCTYPE html>
       });
     }
 
+    function onSearchInput() {
+      const input = document.getElementById("search-filter");
+      const val = input ? input.value : "";
+      const clearBtn = document.getElementById("search-clear-btn");
+      if (clearBtn) clearBtn.style.display = val.length > 0 ? "flex" : "none";
+      filterRings();
+    }
+
+    function showSearchSuggestions() {
+      const dropdown = document.getElementById("search-suggestions");
+      if (dropdown) dropdown.classList.add("open");
+    }
+
+    function hideSearchSuggestions() {
+      const dropdown = document.getElementById("search-suggestions");
+      if (dropdown) dropdown.classList.remove("open");
+    }
+
+    function applySearchSuggestion(query) {
+      const input = document.getElementById("search-filter");
+      if (input) input.value = query;
+      const clearBtn = document.getElementById("search-clear-btn");
+      if (clearBtn) clearBtn.style.display = "flex";
+      filterRings();
+      hideSearchSuggestions();
+    }
+
+    function clearSearchFilter() {
+      const input = document.getElementById("search-filter");
+      if (input) input.value = "";
+      const clearBtn = document.getElementById("search-clear-btn");
+      if (clearBtn) clearBtn.style.display = "none";
+      filterRings();
+      hideSearchSuggestions();
+    }
+
     function filterRings() {
-      const query = document.getElementById("search-filter").value.toLowerCase();
-      const filtered = allRings.filter(r => 
-        `ring #${r.ring_id}`.toLowerCase().includes(query) ||
-        r.members.some(m => String(m).includes(query))
-      );
+      const input = document.getElementById("search-filter");
+      const query = input ? input.value.trim().toLowerCase() : "";
+
+      const filtered = allRings.filter(r => {
+        // 1. Tier tab filter
+        if (currentTierFilter === 'critical' && r.score < CRITICAL_CUTOFF) return false;
+        if (currentTierFilter === 'elevated' && r.score >= CRITICAL_CUTOFF) return false;
+
+        // 2. Query text filter
+        if (!query) return true;
+
+        const ringMatches = `ring #${r.ring_id}`.toLowerCase().includes(query) ||
+                            `ring ${r.ring_id}`.toLowerCase().includes(query) ||
+                            (query.startsWith('#') && String(r.ring_id) === query.slice(1)) ||
+                            String(r.ring_id) === query;
+        if (ringMatches) return true;
+
+        const memberMatches = (r.members || []).some(m => {
+          const s = String(m);
+          return s === query || `user ${s}`.toLowerCase().includes(query) || `user_${s}`.toLowerCase().includes(query);
+        });
+        if (memberMatches) return true;
+
+        if (r.graph && r.graph.nodes) {
+          const nodeMatches = r.graph.nodes.some(n =>
+            n.label && n.label.toLowerCase().includes(query)
+          );
+          if (nodeMatches) return true;
+        }
+
+        return false;
+      });
+
       renderRingsList(filtered);
+
+      // Keep current active ring if visible, else select first matching ring
+      if (filtered.length > 0) {
+        const isCurrentVisible = filtered.some(r => r.ring_id === (allRings[activeIndex] ? allRings[activeIndex].ring_id : -1));
+        if (!isCurrentVisible) {
+          const newIdx = allRings.findIndex(r => r.ring_id === filtered[0].ring_id);
+          if (newIdx !== -1) selectRing(newIdx, false);
+        }
+      }
     }
 
     let currentRenderedRingId = null;
@@ -2098,6 +2424,14 @@ html_template = """<!DOCTYPE html>
         closeGuideModal();
         closeBenchmarkModal();
         closeNodeInspector();
+        hideSearchSuggestions();
+      }
+    });
+
+    document.addEventListener("click", (e) => {
+      const searchBox = document.querySelector(".search-box-clean");
+      if (searchBox && !searchBox.contains(e.target)) {
+        hideSearchSuggestions();
       }
     });
 
