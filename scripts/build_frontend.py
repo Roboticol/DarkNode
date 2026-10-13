@@ -1279,6 +1279,123 @@ html_template = """<!DOCTYPE html>
       background-color: #131415;
     }
 
+    /* Settings Category Tabs */
+    .settings-tab-bar {
+      display: flex;
+      gap: 6px;
+      padding: 0 0 10px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      overflow-x: auto;
+      margin-bottom: 4px;
+    }
+
+    .settings-tab-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+
+    .settings-tab-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+      border-color: var(--border-strong);
+    }
+
+    .settings-tab-btn.active {
+      background: var(--yellow-bg);
+      border-color: var(--yellow-border);
+      color: var(--yellow-primary);
+    }
+
+    /* Documentation 3-column subcard grid */
+    .docs-three-col-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 768px) {
+      .docs-three-col-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .doc-subcard {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }
+
+    .doc-subcard:hover {
+      border-color: var(--border-strong);
+      background: #1f2022;
+      transform: translateY(-1px);
+    }
+
+    .doc-subcard-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2px;
+    }
+
+    .doc-subcard-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .doc-subcard-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      flex: 1;
+    }
+
+    .doc-subcard-btn {
+      width: 100%;
+      height: 30px;
+      font-size: 11px;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .spin-icon {
+      animation: spinAnim 0.85s linear infinite;
+    }
+
+    @keyframes spinAnim {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .modal-window.modal-wide {
+      max-width: 940px;
+    }
+
     /* Right Sidebar: Evidence & Signals Panel */
     .sidebar-right {
       width: 340px;
@@ -2037,10 +2154,6 @@ html_template = """<!DOCTYPE html>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             Freeze Syndicate Accounts
           </button>
-          <button class="btn btn-outline" style="height: 34px;" onclick="openSettingsModal('sar')" title="Configure regulatory reporting & export official FinCEN / FIU SAR packages">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            Compliance & SAR Export
-          </button>
         </div>
       </div>
     </div>
@@ -2057,14 +2170,15 @@ html_template = """<!DOCTYPE html>
 
   <!-- Interactive System Settings & Compliance Modal -->
   <div class="modal-backdrop" id="settings-modal" onclick="closeSettingsModal(event)">
-    <div class="modal-window" style="max-width: 880px;" onclick="event.stopPropagation()">
+    <div class="modal-window modal-wide" onclick="event.stopPropagation()">
       <div class="modal-head">
         <div class="modal-title-group">
           <div class="brand-logo-mark" style="width:24px; height:24px;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#131415" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </div>
-          <div class="modal-title">
-            DarkNode Settings & Compliance Controls
+          <div>
+            <div class="modal-title">DarkNode Enterprise Configuration & Controls</div>
+            <div style="font-size: 10px; color: var(--text-dim); margin-top: 1px;">PRODUCTION ENGINE MATRIX • VERSION 2.4.1</div>
           </div>
         </div>
         <button class="modal-close-btn" onclick="closeSettingsModal()">
@@ -2072,10 +2186,36 @@ html_template = """<!DOCTYPE html>
         </button>
       </div>
 
+      <!-- Settings Category Tabs -->
+      <div style="padding: 10px 24px 0 24px; background: var(--bg-card); border-bottom: 1px solid var(--border-subtle);">
+        <div class="settings-tab-bar">
+          <button class="settings-tab-btn active" id="tab-btn-all" onclick="switchSettingsTab('all')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            All Settings
+          </button>
+          <button class="settings-tab-btn" id="tab-btn-engine" onclick="switchSettingsTab('engine')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+            Engine & API
+          </button>
+          <button class="settings-tab-btn" id="tab-btn-sar" onclick="switchSettingsTab('sar')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Regulatory & SAR
+          </button>
+          <button class="settings-tab-btn" id="tab-btn-docs" onclick="switchSettingsTab('docs')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            Manuals & SOP
+          </button>
+          <button class="settings-tab-btn" id="tab-btn-restart" onclick="switchSettingsTab('restart')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            System Restart
+          </button>
+        </div>
+      </div>
+
       <div class="modal-body">
         <div class="settings-grid">
           <!-- Card 1: API Connection (ss3) -->
-          <div class="settings-card" id="setting-card-api">
+          <div class="settings-card" id="setting-card-api" data-category="engine">
             <div class="settings-card-head">
               <span class="settings-card-title">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
@@ -2107,7 +2247,7 @@ html_template = """<!DOCTYPE html>
           </div>
 
           <!-- Card 2: Regulatory Compliance & SAR Filing (ss2) -->
-          <div class="settings-card" id="setting-card-sar">
+          <div class="settings-card" id="setting-card-sar" data-category="sar">
             <div class="settings-card-head">
               <span class="settings-card-title">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -2141,7 +2281,7 @@ html_template = """<!DOCTYPE html>
           </div>
 
           <!-- Card 3: GNN Detection Threshold & Sensitivity -->
-          <div class="settings-card">
+          <div class="settings-card" id="setting-card-thresh" data-category="engine">
             <div class="settings-card-head">
               <span class="settings-card-title">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
@@ -2170,7 +2310,7 @@ html_template = """<!DOCTYPE html>
           </div>
 
           <!-- Card 4: Real-Time Alerts & Notification Options -->
-          <div class="settings-card">
+          <div class="settings-card" id="setting-card-alerts" data-category="engine">
             <div class="settings-card-head">
               <span class="settings-card-title">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -2210,7 +2350,7 @@ html_template = """<!DOCTYPE html>
           </div>
 
           <!-- Card 5: Graph Engine & Physics Controls -->
-          <div class="settings-card">
+          <div class="settings-card" id="setting-card-physics" data-category="engine">
             <div class="settings-card-head">
               <span class="settings-card-title">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><line x1="12" y1="9" x2="19" y2="6.5"/><line x1="12" y1="15" x2="5" y2="17.5"/></svg>
@@ -2246,8 +2386,8 @@ html_template = """<!DOCTYPE html>
             </div>
           </div>
 
-          <!-- Card 6: Graph Simulation & Batch Synthesis (Moved from Header to Settings) -->
-          <div class="settings-card" id="setting-card-graph">
+          <!-- Card 6: Graph Simulation & Batch Synthesis -->
+          <div class="settings-card" id="setting-card-graph" data-category="engine">
             <div class="settings-card-head">
               <span class="settings-card-title">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
@@ -2266,25 +2406,81 @@ html_template = """<!DOCTYPE html>
             </div>
           </div>
 
-          <!-- Card 7: System Documentation & Defaults -->
-          <div class="settings-card full-width">
+          <!-- Card 7: System Documentation, Architecture & SOP Manuals (3 Separate Modules) -->
+          <div class="settings-card full-width" id="setting-card-docs" data-category="docs">
             <div class="settings-card-head">
               <span class="settings-card-title">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                Documentation & Defaults
+                Architecture, User Guide & Operator SOP
               </span>
+              <span class="badge-pill" style="font-size: 9px; color: var(--yellow-primary); border-color: var(--yellow-border);">3 INDEPENDENT MODULES</span>
             </div>
             <div style="font-size: 11px; color: var(--text-muted);">
-              Inspect mathematical model architecture, operator workflows, or restore system factory defaults.
+              Access standalone operational manuals, mathematical heterogeneous GNN architecture specifications, and AML compliance officer protocols.
             </div>
-            <div style="display: flex; gap: 10px;">
-              <button class="btn btn-outline" style="flex: 1; height: 32px;" onclick="closeSettingsModal(); openGuideModal();">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                Open Architecture & User Guide
+
+            <div class="docs-three-col-grid">
+              <!-- Option 1: Architecture -->
+              <div class="doc-subcard">
+                <div class="doc-subcard-icon" style="color: #38bdf8; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.25);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </div>
+                <div class="doc-subcard-title">System Architecture</div>
+                <div class="doc-subcard-desc">Heterogeneous 2-layer MPNN formulation, graph relations, feature embedding pipeline, and microservice specs.</div>
+                <button class="btn btn-outline doc-subcard-btn" onclick="openArchitectureModal()">
+                  Open Architecture
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+
+              <!-- Option 2: User Guide -->
+              <div class="doc-subcard">
+                <div class="doc-subcard-icon" style="color: #facc15; background: rgba(250, 204, 21, 0.12); border: 1px solid rgba(250, 204, 21, 0.25);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+                </div>
+                <div class="doc-subcard-title">User Guide</div>
+                <div class="doc-subcard-desc">Visual platform tour: tri-panel navigation, node inspector, physics toggles, orbit spin, and entity filters.</div>
+                <button class="btn btn-outline doc-subcard-btn" onclick="openUserGuideModal()">
+                  Open User Guide
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+
+              <!-- Option 3: Instructions & SOP -->
+              <div class="doc-subcard">
+                <div class="doc-subcard-icon" style="color: #34d399; background: rgba(52, 211, 153, 0.12); border: 1px solid rgba(52, 211, 153, 0.25);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                </div>
+                <div class="doc-subcard-title">Operator Instructions</div>
+                <div class="doc-subcard-desc">Step-by-step AML investigation SOP, decision matrix, emergency account quarantine & FinCEN SAR filing.</div>
+                <button class="btn btn-outline doc-subcard-btn" onclick="openInstructionsModal()">
+                  Open Instructions
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 8: System Restart & Engine Reboot (Last Option in Settings) -->
+          <div class="settings-card full-width" id="setting-card-restart" data-category="restart" style="border-color: rgba(239, 68, 68, 0.35); background: rgba(30, 20, 20, 0.35);">
+            <div class="settings-card-head">
+              <span class="settings-card-title" style="color: #f87171;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                System Restart & Engine Reboot
+              </span>
+              <span class="badge-pill" style="font-size: 9px; color: #f87171; border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.1);">SYSTEM ADMIN</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5;">
+              Reboot the DarkNode graph engine, clear in-memory ring caches, re-initialize GNN inference session, reset physics equilibrium, and re-synchronize live telemetry.
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 4px;">
+              <button class="btn btn-outline" style="flex: 1; height: 34px; color: var(--text-main); border-color: var(--border-strong);" onclick="executeSystemRestart('soft')" id="btn-soft-restart">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                Soft Restart Engine (Clear Cache & Re-sync)
               </button>
-              <button class="btn btn-outline" style="flex: 1; height: 32px; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" onclick="resetSettingsToDefault()">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                Reset All Settings to Defaults
+              <button class="btn btn-outline" style="flex: 1; height: 34px; color: #ef4444; border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.08);" onclick="executeSystemRestart('hard')" id="btn-hard-restart">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+                Hard Factory Reset (Reboot All State)
               </button>
             </div>
           </div>
@@ -2293,183 +2489,354 @@ html_template = """<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- Interactive System & User Guide Modal -->
-  <div class="modal-backdrop" id="guide-modal" onclick="closeGuideModal(event)">
-    <div class="modal-window" style="max-width: 860px;" onclick="event.stopPropagation()">
+  <!-- Independent Modal 1: System Architecture -->
+  <div class="modal-backdrop" id="architecture-modal" onclick="closeArchitectureModal(event)">
+    <div class="modal-window modal-wide" onclick="event.stopPropagation()">
       <div class="modal-head">
         <div class="modal-title-group">
           <div class="brand-logo-mark" style="width:24px; height:24px;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#131415" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><line x1="12" y1="9" x2="19" y2="6.5"/><line x1="12" y1="15" x2="5" y2="17.5"/></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#131415" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           </div>
-          <div class="modal-title">
-            DarkNode Operator Guide & Architecture
+          <div>
+            <div class="modal-title">DarkNode Multi-Layer GNN Architecture & Inference Specifications</div>
+            <div style="font-size: 10px; color: var(--text-dim); margin-top: 1px;">MATHEMATICAL FORMULATION & PIPELINE TOPOLOGY</div>
           </div>
         </div>
-        <button class="modal-close-btn" onclick="closeGuideModal()">
+        <button class="modal-close-btn" onclick="closeArchitectureModal()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
 
       <div class="modal-body">
-        <!-- Section 1: Overview -->
+        <!-- Section 1: Heterogeneous Graph Schema -->
         <div class="guide-section">
           <h3>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            1. Problem Statement & Heterogeneous GNN Solution
+            1. Heterogeneous Multi-Layer Graph Schema
           </h3>
           <p>
-            Mule accounts operate in organized syndicates where individual transactions appear benign. Traditional rule-based engines inspect transactions in isolation, resulting in high false alarms (<strong>58.1% of alerts are false positives</strong>) on innocent events like public Wi-Fi access or family-shared tablets.
+            Mule account syndicates operate across diverse entity layers to conceal illicit fund movements. Standard transactional rules examine accounts in isolation, failing to detect structural multiplexing. <strong>DarkNode</strong> structures financial activity as a heterogeneous graph <strong>G = (V, E, T)</strong>:
           </p>
+          <div style="background: var(--bg-input); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-subtle); font-size: 12px; line-height: 1.6; color: #e5e7eb;">
+            <div><strong>• Entity Nodes (V):</strong></div>
+            <div style="padding-left: 12px; color: var(--text-muted); margin-bottom: 6px;">
+              - <span style="color: #facc15; font-weight: 700;">Users (V_U)</span>: Individual account holders initiating and receiving financial transactions.<br>
+              - <span style="color: #38bdf8; font-weight: 700;">Devices (V_D)</span>: Hardware fingerprints (IMEI, MAC, browser hardware hashes) shared across accounts.<br>
+              - <span style="color: #34d399; font-weight: 700;">Merchants (V_M)</span>: Payment gateway terminals and merchant entities receiving burst settlements.
+            </div>
+            <div><strong>• Relational Edges (E):</strong></div>
+            <div style="padding-left: 12px; color: var(--text-muted);">
+              - <strong>(u_i &rarr; [TX: Transfers] &rarr; u_j)</strong>: Peer-to-peer money transfers with timestamp, velocity, and amount attributes.<br>
+              - <strong>(u_i &rarr; [DEV: Uses Device] &rarr; d_k)</strong>: Account access from shared hardware, detecting mule multiplexing.<br>
+              - <strong>(u_i &rarr; [IP: Subnet Match] &rarr; u_l)</strong>: IP/subnet collision edges identifying co-located operators.<br>
+              - <strong>(u_i &rarr; [MERCH: Settlement] &rarr; m_p)</strong>: Target merchant transactions capturing high-frequency cash-outs.
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: 2-Layer Relational MPNN Formulation -->
+        <div class="guide-section">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            2. Mathematical Formulation: 2-Layer Relational MPNN
+          </h3>
           <p>
-            <strong>DarkNode</strong> implements a 2-layer Heterogeneous Graph Message Passing Neural Network (MPNN) across <strong>Users</strong>, <strong>Devices</strong>, and <strong>Merchants</strong>. By propagating structural graph embeddings across shared device fingerprints and IP collision graphs, DarkNode achieves <strong>95.0% precision</strong> and curtails false alarms to just 5.0%.
+            DarkNode implements relational message passing across all edge types R. At layer l in {1, 2}, node representations are updated via directional aggregation:
+          </p>
+          <div style="background: var(--bg-input); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-subtle); font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #facc15; line-height: 1.7;">
+            m_{N(v)}^{(l)} = AGGREGATE_{r in R} ( &Sigma;_{u in N_r(v)} W_r^{(l)} &middot; h_u^{(l-1)} )<br>
+            h_v^{(l)} = LeakyReLU( W_{self}^{(l)} &middot; h_v^{(l-1)} + m_{N(v)}^{(l)} )
+          </div>
+          <p style="margin-top: 8px;">
+            <strong>Why exactly 2 Layers?</strong> Layer 1 captures direct 1-hop associations (e.g. User to Shared Device). Layer 2 captures indirect 2-hop structural coordination (User A &rarr; Device &rarr; User B &rarr; Merchant) essential for catching distributed smurfing rings without inducing topological over-smoothing.
           </p>
         </div>
 
-        <!-- Section 2: End-to-End Pipeline Architecture -->
+        <!-- Section 3: End-to-End Pipeline ASCII Architecture -->
         <div class="guide-section">
           <h3>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-            2. End-to-End System Architecture Pipeline
+            3. End-to-End Pipeline & Microservice Flow
           </h3>
-          <div style="background: var(--bg-input); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-subtle); font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: #e5e7eb; overflow-x: auto; line-height: 1.55;">
+          <div style="background: var(--bg-input); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-subtle); font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #e5e7eb; overflow-x: auto; line-height: 1.55;">
 ┌─────────────────────────┐     ┌─────────────────────────┐     ┌─────────────────────────┐
-│ Multi-Modal Data Ingest │ ──► │ Heterogeneous Graph     │ ──► │ 2-Layer MPNN            │
-│ • User Accounts         │     │ • (User)-[transacts]-►  │     │ • Device Embedding Agg  │
-│ • Hardware IDs / IMEI   │     │ • (User)-[shares_ip]-►  │     │ • IP Dispersion Agg     │
-│ • Merchant Terminals    │     │ • (User)-[uses_dev]-►   │     │ • Multi-Hop Latent Embed│
+│ Banking Core & Ingest   │ ──► │ Heterogeneous Graph     │ ──► │ PyTorch Geometric GNN   │
+│ • User Profiles         │     │ • Multi-modal Triples   │     │ • 2-Layer Relational    │
+│ • Hardware Device IDs   │     │ • Temporal Tx Windows   │     │ • Latent Embeddings     │
+│ • Settlement Terminals  │     │ • Subnet Collision Grid │     │ • Latency &lt; 18ms        │
 └─────────────────────────┘     └─────────────────────────┘     └───────────┬─────────────┘
                                                                             │
 ┌─────────────────────────┐     ┌─────────────────────────┐                 ▼
 │ Statutory Containment   │ ◄── │ Risk Fusion Engine      │ ◄───────────────┘
-│ • Auto Account Freeze   │     │ • GNN Anomaly Weight    │
-│ • FinCEN SAR Filing     │     │ • Burst Velocity Metric │
-│ • Regulatory Audit Doss │     │ • Decision Threshold θ  │
+│ • Instant Debit Freeze  │     │ • GNN Anomaly Score     │
+│ • FinCEN SAR Form 111   │     │ • Burst Velocity Metric │
+│ • CSV Evidence Ledger   │     │ • Decision Cutoff θ     │
 └─────────────────────────┘     └─────────────────────────┘
           </div>
-          <p style="margin-top: 10px; font-size: 12px;">
-            <strong>Step 1: Graph Construction:</strong> Links accounts via shared hardware fingerprints and subnet collisions.<br>
-            <strong>Step 2: Message Passing:</strong> Aggregates neighbor embeddings across 2 hops, capturing indirect smurfing coordination.<br>
-            <strong>Step 3: Risk Scoring & Cutoff:</strong> Applies decision threshold θ to rank syndicates by laundering probability.<br>
-            <strong>Step 4: Containment & Reporting:</strong> Generates FinCEN Form 111 / FIU-compliant SAR dossiers for regulatory submission.
-          </p>
         </div>
 
-        <!-- Section 3: Operator Investigation Workflow (Instructions) -->
-        <div class="guide-section">
-          <h3>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            3. Step-by-Step Operator Instructions
-          </h3>
-          <div class="guide-grid-2">
-            <div class="guide-step-card">
-              <div class="guide-step-title">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                Step 1: Syndicate Triage (Left Directory)
-              </div>
-              <div class="guide-step-desc">
-                Review the ranked syndicate list. Syndicates with composite scores &gt;0.80 are flagged with red CRITICAL badges. Click any card to load its dedicated topological subgraph.
-              </div>
-            </div>
-
-            <div class="guide-step-card">
-              <div class="guide-step-title">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><line x1="12" y1="9" x2="19" y2="6.5"/><line x1="12" y1="15" x2="5" y2="17.5"/></svg>
-                Step 2: Subgraph Inspection (Center Canvas)
-              </div>
-              <div class="guide-step-desc">
-                Examine interconnections. Click any node to open the live Inspector card showing connected hops, roles, and device hardware linkages.
-              </div>
-            </div>
-
-            <div class="guide-step-card">
-              <div class="guide-step-title">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                Step 3: Traversal Verification (Run Analysis)
-              </div>
-              <div class="guide-step-desc">
-                Click <strong>Run Analysis</strong> to launch sequential GNN neural packet traversal, verifying cyclical layering and money dispersion patterns across users.
-              </div>
-            </div>
-
-            <div class="guide-step-card">
-              <div class="guide-step-title">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                Step 4: Containment & Legal Escalation
-              </div>
-              <div class="guide-step-desc">
-                Click <strong>Freeze Syndicate Accounts</strong> to instantly execute simulated debit quarantines. Use <strong>Settings → Export SAR Dossier</strong> for official FinCEN filing packages.
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section 4: Canvas Navigation & Controls -->
-        <div class="guide-section">
-          <h3>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
-            4. Canvas Navigation & Physics Controls
-          </h3>
-          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
-              <span>Normalized Zoom</span>
-              <div><span class="shortcut-badge">Mouse Wheel</span> or <span class="shortcut-badge">Trackpad Pinch</span> (smooth, controlled speed)</div>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
-              <span>Pan Viewport</span>
-              <div><span class="shortcut-badge">Click + Drag</span> background canvas</div>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
-              <span>Inspect Node</span>
-              <div><span class="shortcut-badge">Click Any Node</span> to view connected hops, role, and anomaly rating</div>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
-              <span>Orbit / Physics Toggles</span>
-              <div>Independent top-canvas controls for yaw camera rotation and ForceAtlas2 physics</div>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0;">
-              <span>Entity Filters</span>
-              <div>Toggle <span class="shortcut-badge">Users</span>, <span class="shortcut-badge">Devices</span>, or <span class="shortcut-badge">Merchants</span> to isolate subgraphs</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section 5: Graph Visual Legend -->
-        <div class="guide-section">
-          <h3>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
-            5. Graph Visual Legend (Exact Model Symbols)
-          </h3>
-          <div style="display: flex; flex-wrap: wrap; gap: 18px; align-items: center; margin-top: 6px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <div style="width: 12px; height: 12px; border-radius: 50%; background: #facc15;"></div>
-              <span style="color: #f3f4f6; font-size: 12px;"><strong>User Node (Circle, Yellow)</strong>: Syndicate member account</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <div style="width: 12px; height: 12px; transform: rotate(45deg); background: #38bdf8;"></div>
-              <span style="color: #f3f4f6; font-size: 12px;"><strong>Device Node (Diamond, Cyan)</strong>: Shared hardware identifier</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 12px solid #34d399;"></div>
-              <span style="color: #f3f4f6; font-size: 12px;"><strong>Merchant Node (Triangle, Mint)</strong>: Target merchant terminal</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section 6: Settings & Compliance Controls -->
+        <!-- Section 4: Engine Specifications -->
         <div class="guide-section">
           <h3>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            6. Settings & Compliance Configuration
+            4. Microservice Technology Stack
+          </h3>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 11.5px;">
+            <div style="background: var(--bg-panel); padding: 10px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+              <strong style="color: var(--yellow-primary);">Backend Runtime:</strong> FastAPI Async ASGI Microservice (:8000)
+            </div>
+            <div style="background: var(--bg-panel); padding: 10px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+              <strong style="color: #38bdf8;">Graph ML Engine:</strong> PyTorch 2.x + PyTorch Geometric (PyG)
+            </div>
+            <div style="background: var(--bg-panel); padding: 10px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+              <strong style="color: #34d399;">Physics Accelerator:</strong> ForceAtlas2 with Barnes-Hut repulsion
+            </div>
+            <div style="background: var(--bg-panel); padding: 10px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+              <strong style="color: #f43f5e;">Regulatory Standard:</strong> FinCEN Form 111 BSA & FIU-IND compliance
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Independent Modal 2: User Guide -->
+  <div class="modal-backdrop" id="user-guide-modal" onclick="closeUserGuideModal(event)">
+    <div class="modal-window modal-wide" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <div class="modal-title-group">
+          <div class="brand-logo-mark" style="width:24px; height:24px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#131415" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+          </div>
+          <div>
+            <div class="modal-title">DarkNode Interactive Platform User Guide</div>
+            <div style="font-size: 10px; color: var(--text-dim); margin-top: 1px;">OPERATOR INTERFACE WALK-THROUGH & CONTROLS MANUAL</div>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeUserGuideModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Section 1: Tri-Panel Command Layout -->
+        <div class="guide-section">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+            1. Tri-Panel Command Architecture
           </h3>
           <p>
-            Access <strong>Settings</strong> at any time via the bottom-right button or header. Use Settings to:
+            The DarkNode interface is engineered as a three-pillar fraud command center:
+          </p>
+          <div class="guide-grid-2">
+            <div class="guide-step-card">
+              <div class="guide-step-title">Left Panel: Syndicate Directory</div>
+              <div class="guide-step-desc">
+                Lists all discovered smurfing rings ranked by threat score. Critical syndicates (&gt;0.80) display Red badges. Click any syndicate to focus the center graph and populate the right dossier.
+              </div>
+            </div>
+            <div class="guide-step-card">
+              <div class="guide-step-title">Center Viewport: Network Canvas</div>
+              <div class="guide-step-desc">
+                Dynamic topological graph rendering users, devices, and merchants. Features continuous physics, orbit spin, zoom/pan, and interactive node inspection.
+              </div>
+            </div>
+            <div class="guide-step-card">
+              <div class="guide-step-title">Right Panel: Evidence Dossier</div>
+              <div class="guide-step-desc">
+                Presents quantified risk signals (device ratio, IP collisions, transaction velocity), account chip rosters, and instant legal freeze quarantine trigger.
+              </div>
+            </div>
+            <div class="guide-step-card">
+              <div class="guide-step-title">Top Header & Notification Center</div>
+              <div class="guide-step-desc">
+                Displays live cluster telemetry, benchmark comparison modal, Run Analysis tracer, and Notification Bell with real-time audio chimes.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Canvas Controls -->
+        <div class="guide-section">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+            2. Viewport Navigation & Canvas Controls
+          </h3>
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
+              <span><strong>Fit View:</strong> Auto-centers and frames the active graph within screen bounds.</span>
+              <span class="shortcut-badge">Top Toolbar</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
+              <span><strong>Orbit Spin:</strong> Toggles slow 360° yaw camera rotation and harmonic floating micro-motion.</span>
+              <span class="shortcut-badge">Top Toolbar</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
+              <span><strong>Spread Out:</strong> Expands spring repulsion distance (260px &rarr; 380px) to untangle dense clusters.</span>
+              <span class="shortcut-badge">Top Toolbar</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
+              <span><strong>Physics Simulation:</strong> Toggles live ForceAtlas2 spring calculation vs static pinned drag.</span>
+              <span class="shortcut-badge">Top Toolbar</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0;">
+              <span><strong>Zoom & Pan:</strong> Mouse wheel/trackpad pinch for smooth zoom; click-drag empty canvas to pan.</span>
+              <span class="shortcut-badge">Canvas Gesture</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Entity Filters (Top Right) -->
+        <div class="guide-section">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            3. Top-Right Floating Entity Filters
+          </h3>
+          <p>
+            Filter out background clutter and isolate specific entity layers by clicking the floating pill buttons at the top right of the canvas:
+          </p>
+          <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px;">
+            <div style="background: rgba(25, 26, 27, 0.9); border: 1px solid #facc15; color: #facc15; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700;">
+              [ Users ] — Yellow circle accounts
+            </div>
+            <div style="background: rgba(25, 26, 27, 0.9); border: 1px solid #38bdf8; color: #38bdf8; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700;">
+              [ Devices ] — Cyan diamond hardware
+            </div>
+            <div style="background: rgba(25, 26, 27, 0.9); border: 1px solid #34d399; color: #34d399; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700;">
+              [ Merchants ] — Mint triangle cash-out terminals
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Interactive Node Inspector -->
+        <div class="guide-section">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            4. Interactive Node Inspection
+          </h3>
+          <p>
+            Clicking any node on the graph triggers the floating <strong>Node Inspector Card</strong>, presenting entity role, connected degree, risk score, and instant neighbor isolation controls.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Independent Modal 3: Operator Instructions & SOP -->
+  <div class="modal-backdrop" id="instructions-modal" onclick="closeInstructionsModal(event)">
+    <div class="modal-window modal-wide" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <div class="modal-title-group">
+          <div class="brand-logo-mark" style="width:24px; height:24px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#131415" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <div>
+            <div class="modal-title">DarkNode AML Compliance & Operator SOP Instructions</div>
+            <div style="font-size: 10px; color: var(--text-dim); margin-top: 1px;">STANDARD OPERATING PROCEDURE & REGULATORY CONTAINMENT PROTOCOL</div>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeInstructionsModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Section 1: Standard Operating Procedure (SOP) -->
+        <div class="guide-section">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            1. AML Analyst Daily Investigation Workflow (SOP)
+          </h3>
+          <div class="guide-grid-2">
+            <div class="guide-step-card">
+              <div class="guide-step-title">Step 1: Priority Queue Triage</div>
+              <div class="guide-step-desc">
+                Review syndicates in the Left Panel. Focus immediately on syndicates with <strong style="color: #ef4444;">CRITICAL</strong> badges (composite score &gt;0.80). Click the syndicate card to load its topology.
+              </div>
+            </div>
+            <div class="guide-step-card">
+              <div class="guide-step-title">Step 2: Signal Correlation Verification</div>
+              <div class="guide-step-desc">
+                Inspect the Right Panel evidence signals: verify device multiplexing ratio (DEV), shared IP collisions (NET), and transaction burst velocity (VEL).
+              </div>
+            </div>
+            <div class="guide-step-card">
+              <div class="guide-step-title">Step 3: Graph Traversal Verification</div>
+              <div class="guide-step-desc">
+                Click <strong>Run Analysis</strong> on the top header. Observe animated payment packets flowing across accounts to verify cyclical laundering loops and smurf dispersion.
+              </div>
+            </div>
+            <div class="guide-step-card">
+              <div class="guide-step-title">Step 4: Emergency Debit Freeze</div>
+              <div class="guide-step-desc">
+                Click <strong>Freeze Syndicate Accounts</strong> to execute immediate simulated quarantine on all member accounts. Quarantined accounts show red freeze badges.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Decision Matrix & Threshold Policy -->
+        <div class="guide-section">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="20" y1="21" x2="20" y2="16"/></svg>
+            2. Risk Cutoff & Escalation Decision Matrix
+          </h3>
+          <div style="background: var(--bg-input); padding: 12px; border-radius: 8px; border: 1px solid var(--border-subtle); font-size: 11.5px; line-height: 1.6;">
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px; margin-bottom: 6px;">
+              <span style="color: #ef4444; font-weight: 700;">Score &ge; 0.75 (Critical High-Certainty):</span>
+              <span>Immediate Account Freeze + Mandatory FinCEN SAR Filing within 24h</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px; margin-bottom: 6px;">
+              <span style="color: var(--yellow-primary); font-weight: 700;">0.50 &le; Score &lt; 0.75 (Elevated Suspicion):</span>
+              <span>Enhanced Due Diligence (EDD) + 48h Transaction Monitoring Watchlist</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted); font-weight: 700;">Score &lt; 0.50 (Permissive Surveillance):</span>
+              <span>Routine Automated Graph Monitoring (Low Intervention Priority)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Statutory SAR Filing Protocol -->
+        <div class="guide-section">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            3. Regulatory FinCEN / FIU SAR Export Protocol
+          </h3>
+          <p>
+            For verified illicit syndicates, compliance officers must generate legal evidence dossiers:
           </p>
           <ul style="margin: 6px 0 0 18px; font-size: 12px; line-height: 1.6;">
-            <li><strong>Configure API Endpoint:</strong> Switch between live FastAPI backend (port 8000) or test connectivity with single-click latency pinging.</li>
-            <li><strong>Tune GNN Decision Cutoff (Threshold θ):</strong> Calibrate sensitivity between high-recall candidate discovery (0.40) and high-precision critical enforcement (0.75).</li>
-            <li><strong>Export Regulatory FinCEN SAR & CSV Dossiers:</strong> Download auditable evidence packages containing complete account rosters and transaction burst logs.</li>
-            <li><strong>Configure Real-time Compliance Alarms:</strong> Toggle audio chimes for critical threat rings (&gt;0.80) and manage graph physics.</li>
+            <li>Navigate to <strong>Settings &rarr; Regulatory SAR Dossier Export</strong>.</li>
+            <li>Click <strong>Export SAR Dossier (JSON / FinCEN)</strong> to download an official Form 111 XML/JSON evidentiary payload.</li>
+            <li>Click <strong>Export Evidence Ledger (CSV)</strong> to download a complete tabular ledger of member accounts, device IMEIs, and merchant terminals for court subpoena attachments.</li>
           </ul>
+        </div>
+
+        <!-- Section 4: Hotkeys & Shortcuts -->
+        <div class="guide-section">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><line x1="6" y1="8" x2="6" y2="8"/><line x1="10" y1="8" x2="10" y2="8"/><line x1="14" y1="8" x2="14" y2="8"/><line x1="18" y1="8" x2="18" y2="8"/></svg>
+            4. Operator Hotkeys & Quick Navigation
+          </h3>
+          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 11.5px;">
+            <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border-subtle);">
+              <span>Dismiss Modals / Flyouts / Inspector</span>
+              <span class="shortcut-badge">Esc</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border-subtle);">
+              <span>Open Enterprise Settings & Controls</span>
+              <span class="shortcut-badge">Gear Logo (Bottom-Right)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border-subtle);">
+              <span>Run Live Graph Traversal Analysis</span>
+              <span class="shortcut-badge">Run Analysis (Header)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+              <span>Inspect Specific Entity Node</span>
+              <span class="shortcut-badge">Click Any Node</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -3801,20 +4168,23 @@ html_template = """<!DOCTYPE html>
         if (threshBadge) threshBadge.innerText = threshInput.value;
       }
 
-      // If opening specifically for SAR export, scroll smoothly to the card
-      if (targetSection === "sar") {
+      // Handle category tab activation
+      if (targetSection) {
+        switchSettingsTab(targetSection);
         setTimeout(() => {
-          const sarCard = document.getElementById("setting-card-sar");
-          if (sarCard) {
-            sarCard.scrollIntoView({ behavior: "smooth", block: "center" });
-            sarCard.style.borderColor = "var(--yellow-primary)";
-            sarCard.style.boxShadow = "0 0 16px rgba(250, 204, 21, 0.3)";
+          const targetCard = document.getElementById(`setting-card-${targetSection}`);
+          if (targetCard) {
+            targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+            targetCard.style.borderColor = "var(--yellow-primary)";
+            targetCard.style.boxShadow = "0 0 16px rgba(250, 204, 21, 0.3)";
             setTimeout(() => {
-              sarCard.style.borderColor = "var(--border-subtle)";
-              sarCard.style.boxShadow = "none";
+              targetCard.style.borderColor = "var(--border-subtle)";
+              targetCard.style.boxShadow = "none";
             }, 2500);
           }
         }, 150);
+      } else {
+        switchSettingsTab('all');
       }
     }
 
@@ -4016,16 +4386,120 @@ html_template = """<!DOCTYPE html>
       showToast("Reset all settings & thresholds to factory defaults");
     }
 
-    // Modal Control Functions
-    function openGuideModal() {
-      const modal = document.getElementById("guide-modal");
+    // Settings Category Tabs Filtering
+    function switchSettingsTab(tab) {
+      const tabs = ['all', 'engine', 'sar', 'docs', 'restart'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (btn) btn.classList.toggle('active', t === tab);
+      });
+
+      const cards = document.querySelectorAll('.settings-card');
+      cards.forEach(c => {
+        const cat = c.getAttribute('data-category');
+        if (tab === 'all') {
+          c.style.display = 'flex';
+        } else if (cat === tab) {
+          c.style.display = 'flex';
+        } else {
+          c.style.display = 'none';
+        }
+      });
+    }
+
+    // System Restart & Engine Reboot Execution (Soft / Hard)
+    async function executeSystemRestart(mode = 'soft') {
+      const isHard = (mode === 'hard');
+      const btn = document.getElementById(isHard ? "btn-hard-restart" : "btn-soft-restart");
+      const origText = btn ? btn.innerHTML : "";
+
+      if (btn) {
+        btn.innerHTML = `<svg class="spin-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/></svg> Restarting Engine...`;
+        btn.disabled = true;
+      }
+
+      showToast(`Initiating ${isHard ? 'hard factory reset' : 'soft system restart'}... Purging cache buffers`);
+
+      setTimeout(async () => {
+        try {
+          if (isHard) {
+            resetSettingsToDefault();
+            frozenRings.clear();
+          }
+
+          if (spinAnimFrameId) {
+            cancelAnimationFrame(spinAnimFrameId);
+            spinAnimFrameId = null;
+          }
+
+          activeFilters = { user: true, device: true, merchant: true };
+          ['user', 'device', 'merchant'].forEach(t => {
+            const fBtn = document.getElementById(`filter-${t}`);
+            if (fBtn) fBtn.classList.add('active');
+          });
+
+          await fetchRings();
+          resetGraphView();
+          closeSettingsModal();
+
+          playAlertChime();
+          showToast(`✓ Engine reboot complete — Telemetry & topology synchronized`, "System Restart", isHard ? "critical" : "success");
+        } catch (err) {
+          console.error("Restart error:", err);
+          showToast(`Engine rebooted to local cache state`, "System Restart", "warning");
+        } finally {
+          if (btn) {
+            btn.innerHTML = origText;
+            btn.disabled = false;
+          }
+        }
+      }, 650);
+    }
+
+    // Modal Control Functions: Independent Architecture, User Guide & Instructions
+    function openArchitectureModal() {
+      closeSettingsModal();
+      const modal = document.getElementById("architecture-modal");
       if (modal) modal.classList.add("open");
     }
 
-    function closeGuideModal(e) {
-      if (e && e.target !== document.getElementById("guide-modal") && !e.target.closest(".modal-close-btn")) return;
-      const modal = document.getElementById("guide-modal");
+    function closeArchitectureModal(e) {
+      if (e && e.target !== document.getElementById("architecture-modal") && !e.target.closest(".modal-close-btn")) return;
+      const modal = document.getElementById("architecture-modal");
       if (modal) modal.classList.remove("open");
+    }
+
+    function openUserGuideModal() {
+      closeSettingsModal();
+      const modal = document.getElementById("user-guide-modal");
+      if (modal) modal.classList.add("open");
+    }
+
+    function closeUserGuideModal(e) {
+      if (e && e.target !== document.getElementById("user-guide-modal") && !e.target.closest(".modal-close-btn")) return;
+      const modal = document.getElementById("user-guide-modal");
+      if (modal) modal.classList.remove("open");
+    }
+
+    function openInstructionsModal() {
+      closeSettingsModal();
+      const modal = document.getElementById("instructions-modal");
+      if (modal) modal.classList.add("open");
+    }
+
+    function closeInstructionsModal(e) {
+      if (e && e.target !== document.getElementById("instructions-modal") && !e.target.closest(".modal-close-btn")) return;
+      const modal = document.getElementById("instructions-modal");
+      if (modal) modal.classList.remove("open");
+    }
+
+    // Aliases for backward compatibility
+    function openGuideModal() {
+      openUserGuideModal();
+    }
+
+    function closeGuideModal(e) {
+      closeUserGuideModal(e);
     }
 
     function openBenchmarkModal() {
@@ -4042,7 +4516,9 @@ html_template = """<!DOCTYPE html>
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         closeSettingsModal();
-        closeGuideModal();
+        closeArchitectureModal();
+        closeUserGuideModal();
+        closeInstructionsModal();
         closeBenchmarkModal();
         closeNodeInspector();
         hideSearchSuggestions();
