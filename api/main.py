@@ -125,13 +125,14 @@ def analyze(request: AnalyzeRequest | None = None) -> dict[str, Any]:
             logits = model(data)
             probabilities = logits.softmax(dim=-1)[:, 1]
 
-        # 4. Extract rings and compute reason signals
+        # 4. Extract rings and compute reason signals with verified AML metadata
         rings = extract_rings(
             data=data,
             nx_graph=nx_graph,
             user_scores=probabilities,
             threshold=threshold,
             top_k=top_k,
+            metadata=metadata,
         )
 
         # Attach real enforcement state

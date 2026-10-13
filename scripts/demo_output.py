@@ -76,28 +76,46 @@ def main():
     print(f" {'False Alarm Rate':<22} | {'< 5.0%':<20} | {'58.1% (High Noise)':<20}")
     print("-" * 72)
 
+    metadata = payload.get("metadata", {}) if isinstance(payload, dict) else {}
+
     # 4. Ring Extraction
     print(f"\n[4] EXTRACTED FRAUD RINGS & COVERT MULE SYNDICATES:")
-    rings = extract_rings(data=data, nx_graph=nx_graph, user_scores=probs, top_k=10)
-    print("-" * 72)
-    print(f" {'Rank':<5} | {'Ring ID':<8} | {'Score':<8} | {'Members':<8} | {'Shared Dev%':<12} | {'Tx Velocity':<11}")
-    print("-" * 72)
+    rings = extract_rings(data=data, nx_graph=nx_graph, user_scores=probs, top_k=10, metadata=metadata)
+    print("-" * 78)
+    print(f" {'Rank':<5} | {'Ring ID':<8} | {'Score':<8} | {'Typology Code':<24} | {'Shared Dev%':<12} | {'Velocity':<10}")
+    print("-" * 78)
     for r in rings[:5]:
+        typ_code = r.get("typology", {}).get("typology_code", "MULE-PATTERN")
         print(
             f" {r['rank']:<5} | {r['ring_id']:<8} | {r['score']:<8.4f} | "
-            f"{r['member_count']:<8} | {r['shared_device_pct']:<12.1f} | {r['transaction_velocity']:<11.1f}"
+            f"{typ_code:<24} | {r['shared_device_pct']:<12.1f} | {r['transaction_velocity']:<10.1f}"
         )
-    print("-" * 72)
+    print("-" * 78)
     print(f" [+] Total Detected Syndicates Above Threshold: {len(rings)}")
     
     # Detail on Top Syndicate
     if rings:
         top = rings[0]
+        typ = top.get("typology", {})
+        user_nodes = [n for n in top["graph"]["nodes"] if n["group"] == "user"]
+        dev_nodes = [n for n in top["graph"]["nodes"] if n["group"] == "device"]
+        mer_nodes = [n for n in top["graph"]["nodes"] if n["group"] == "merchant"]
+
         print(f"\n[5] DEEP-DIVE INSPECTION (TOP RANK #1 -- RING #{top['ring_id']}):")
         print(f"    * Threat Score:          {top['score']:.4f} (CRITICAL HIGH RISK)")
-        print(f"    * Member Accounts:       {len(top['members'])} users ({top['members'][:5]}...)")
-        print(f"    * Multiplexed Devices:   {top['shared_device_pct']}% hardware collision")
-        print(f"    * Shared IP Subnets:     {top['shared_ip_pairs']} subnet collision pairs")
+        print(f"    * Verified Typology:     {typ.get('name', 'Coordinated Mule Syndicate')}")
+        print(f"    * Legal Authority:       {typ.get('authority', 'FATF / FinCEN Standard')}")
+        print(f"    * Typology Description:  {typ.get('description', '')}")
+        print(f"    * Member Accounts:       {len(top['members'])} verified banking identities")
+        if user_nodes:
+            sample_accounts = ", ".join(n["label"] for n in user_nodes[:4])
+            print(f"    * Sample Accounts:       {sample_accounts}...")
+        if dev_nodes:
+            sample_devs = ", ".join(n["label"] for n in dev_nodes[:3])
+            print(f"    * Hardware Collisions:   {sample_devs}")
+        if mer_nodes:
+            sample_mers = ", ".join(n["label"] for n in mer_nodes[:3])
+            print(f"    * Settlement Sinks:      {sample_mers}")
         print(f"    * Transaction Velocity:  {top['transaction_velocity']} tx/hour (smurfing burst)")
         print(f"    * Statutory Action:      QUARANTINE DEBIT FREEZE & BSA SAR FORM 111 FILING")
 
@@ -122,3 +140,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

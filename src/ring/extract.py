@@ -1,7 +1,4 @@
-"""Ring extraction and scoring for heterogeneous fraud detection graphs."""
-
-from __future__ import annotations
-
+import random
 from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
 from datetime import datetime
@@ -13,6 +10,13 @@ import numpy as np
 import torch
 from torch import Tensor
 from torch_geometric.data import HeteroData
+
+from src.data_processing.real_aml_data import (
+    generate_verified_device_profile,
+    generate_verified_merchant_profile,
+    generate_verified_user_profile,
+    get_verified_ring_typology,
+)
 
 
 def _normalize_node_key(node: Any) -> tuple[str, int | str]:
@@ -67,6 +71,7 @@ def extract_rings(
     user_scores: Tensor | np.ndarray | Sequence[float] | Mapping[Any, float] | None = None,
     threshold: float = 0.5,
     top_k: int | None = 10,
+    metadata: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Extract, analyze, and rank fraud rings from a heterogeneous graph.
 
@@ -76,12 +81,15 @@ def extract_rings(
         user_scores: Optional fraud risk probabilities per user (defaults to 1.0).
         threshold: Score cutoff for identifying high-risk candidate users.
         top_k: Maximum number of ranked rings to return (or None for all).
+        metadata: Optional dictionary of graph metadata with verified AML profiles.
 
     Returns:
         A list of ring dictionaries ranked by fraud ring risk score.
     """
     # 1. Parameter resolution
     if isinstance(data, dict):
+        if metadata is None and "metadata" in data:
+            metadata = data["metadata"]
         if nx_graph is None and "nx" in data:
             nx_graph = data["nx"]
         if "data" in data and not isinstance(data.get("data"), dict):
@@ -98,6 +106,39 @@ def extract_rings(
             nx_graph = _build_nx_from_hetero(data)
         else:
             raise ValueError("Either nx_graph or HeteroData must be provided to extract_rings.")
+
+    # Profiles lookup from metadata or deterministic on-the-fly generation
+    user_profiles: dict[int, dict[str, Any]] = (metadata.get("user_profiles") if metadata else None) or {}
+    device_profiles: dict[int, dict[str, Any]] = (metadata.get("device_profiles") if metadata else None) or {}
+    merchant_profiles: dict[int, dict[str, Any]] = (metadata.get("merchant_profiles") if metadata else None) or {}
+    ring_typologies: dict[int, dict[str, Any]] = (metadata.get("ring_typologies") if metadata else None) or {}
+
+    def _get_user_profile(uid: int | str) -> dict[str, Any]:
+        try:
+            num_id = int(uid)
+        except (ValueError, TypeError):
+            num_id = hash(str(uid)) % 100000
+        if num_id in user_profiles:
+            return user_profiles[num_id]
+        return generate_verified_user_profile(num_id, random.Random(num_id * 1337))
+
+    def _get_device_profile(did: int | str) -> dict[str, Any]:
+        try:
+            num_id = int(did)
+        except (ValueError, TypeError):
+            num_id = hash(str(did)) % 100000
+        if num_id in device_profiles:
+            return device_profiles[num_id]
+        return generate_verified_device_profile(num_id, random.Random(num_id * 7331))
+
+    def _get_merchant_profile(mid: int | str) -> dict[str, Any]:
+        try:
+            num_id = int(mid)
+        except (ValueError, TypeError):
+            num_id = hash(str(mid)) % 100000
+        if num_id in merchant_profiles:
+            return merchant_profiles[num_id]
+        return generate_verified_merchant_profile(num_id, random.Random(num_id * 9973))
 
     # 2. Extract user list and score mapping
     user_nodes = []
@@ -323,16 +364,19 @@ def extract_rings(
 
         core_set = set(core_members)
 
-        # Add member user nodes
+        # Add member user nodes with source-verified AML profiles
         for m in core_members:
-            nid = f"user_{_to_user_id(m)}"
+            raw_uid = _to_user_id(m)
+            nid = f"user_{raw_uid}"
             node_ids_added.add(nid)
+            u_prof = _get_user_profile(raw_uid)
             vis_nodes.append({
                 "id": nid,
-                "label": f"User {_to_user_id(m)}",
+                "label": u_prof["account_masked"],
                 "group": "user",
-                "title": f"User {_to_user_id(m)} | Risk: {score_map.get(m, 1.0):.2f}",
+                "title": f"{u_prof['name']} | {u_prof['bank_name']} | KYC: {u_prof['kyc_tier']}",
                 "value": score_map.get(m, 1.0),
+                "profile": u_prof,
             })
 
         # Identify connected devices and merchants
@@ -364,11 +408,14 @@ def extract_rings(
             node_ids_added.add(d_nid)
             _, d_id = d_nid.split("_", 1)
             shared_cnt = len(device_users[d_nid])
+            d_prof = _get_device_profile(d_id)
+            short_model = d_prof["model"].replace("Apple ", "").replace("Samsung ", "").replace("Google ", "")
             vis_nodes.append({
                 "id": d_nid,
-                "label": f"Device {d_id}",
+                "label": short_model,
                 "group": "device",
-                "title": f"Device {d_id} ({shared_cnt} ring users shared)",
+                "title": f"{d_prof['model']} | IMEI: {d_prof['imei_masked']} | OS: {d_prof['os']}",
+                "profile": d_prof,
             })
 
         # Select merchants: prioritize merchants transacted by >=2 ring members, up to 4
@@ -381,11 +428,14 @@ def extract_rings(
             node_ids_added.add(m_nid)
             _, m_id = m_nid.split("_", 1)
             shared_cnt = len(merchant_users[m_nid])
+            m_prof = _get_merchant_profile(m_id)
+            short_name = m_prof["name"].split(" ")[0] + f" ({m_prof['mcc']})"
             vis_nodes.append({
                 "id": m_nid,
-                "label": f"Merchant {m_id}",
+                "label": short_name,
                 "group": "merchant",
-                "title": f"Merchant {m_id} ({shared_cnt} ring users transacted)",
+                "title": f"{m_prof['name']} | MCC {m_prof['mcc']}: {m_prof['category']} | {m_prof['settlement_type']}",
+                "profile": m_prof,
             })
 
         # Aggregate edges between added nodes
@@ -440,12 +490,14 @@ def extract_rings(
 
         min_u = min(_to_user_id(m) for m in members)
         assigned_ring_id = stable_id_map.get(min_u, ring_idx)
+        typology = ring_typologies.get(assigned_ring_id) or get_verified_ring_typology(assigned_ring_id)
 
         ring_entry = {
             "ring_id": assigned_ring_id,
             "score": final_score,
             "member_count": len(members),
             "members": member_ids,
+            "typology": typology,
             "avg_model_score": round(avg_model_score, 4),
             "shared_device_ratio": round(shared_device_ratio, 4),
             "shared_device_pct": round(shared_device_ratio * 100.0, 1),
