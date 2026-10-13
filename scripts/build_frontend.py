@@ -1662,49 +1662,22 @@ html_template = """<!DOCTYPE html>
     }
 
     .modal-back-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      background: rgba(25, 26, 27, 0.9);
-      border: 1px solid var(--border-subtle);
+      background: transparent;
+      border: none;
       color: var(--text-muted);
-      padding: 6px 12px;
-      border-radius: 7px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
       cursor: pointer;
-      transition: all 0.16s ease;
-      white-space: nowrap;
-      font-family: inherit;
-      user-select: none;
+      padding: 6px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
     }
 
     .modal-back-btn:hover {
       background: var(--bg-card-hover);
       color: var(--yellow-primary);
-      border-color: var(--yellow-border);
-      box-shadow: 0 0 10px rgba(250, 204, 21, 0.18);
-      transform: translateX(-2px);
-    }
-
-    .modal-back-btn svg {
-      transition: transform 0.16s ease;
-      stroke: currentColor;
-    }
-
-    .modal-back-btn:hover svg {
-      transform: translateX(-2px);
-    }
-
-    .modal-footer {
-      padding: 12px 22px;
-      border-top: 1px solid var(--border-subtle);
-      background: var(--bg-card);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-shrink: 0;
     }
 
     .modal-body {
@@ -2539,22 +2512,19 @@ html_template = """<!DOCTYPE html>
   <div class="modal-backdrop" id="architecture-modal" onclick="closeArchitectureModal(event)">
     <div class="modal-window modal-wide" onclick="event.stopPropagation()">
       <div class="modal-head">
-        <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
-          <button class="modal-back-btn" onclick="backToSettingsModal()" title="Back to Settings">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            <span>Back to Settings</span>
+        <div class="modal-title-group">
+          <button class="modal-back-btn" onclick="backToSettingsModal()" title="Back to Settings" aria-label="Back to Settings">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           </button>
-          <div class="modal-title-group">
-            <div class="brand-logo-mark" style="width:24px; height:24px;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#131415" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-            </div>
-            <div>
-              <div class="modal-title">DarkNode Multi-Layer GNN Architecture & Inference Specifications</div>
-              <div style="font-size: 10px; color: var(--text-dim); margin-top: 1px;">MATHEMATICAL FORMULATION & PIPELINE TOPOLOGY</div>
-            </div>
+          <div class="brand-logo-mark" style="width:24px; height:24px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#131415" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <div>
+            <div class="modal-title">DarkNode Multi-Layer GNN Architecture & Inference Specifications</div>
+            <div style="font-size: 10px; color: var(--text-dim); margin-top: 1px;">MATHEMATICAL FORMULATION & PIPELINE TOPOLOGY</div>
           </div>
         </div>
-        <button class="modal-close-btn" onclick="closeArchitectureModal()" title="Close to Dashboard">
+        <button class="modal-close-btn" onclick="closeArchitectureModal()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -2649,15 +2619,6 @@ html_template = """<!DOCTYPE html>
           </div>
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="modal-back-btn" onclick="backToSettingsModal()" title="Back to Settings">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-          <span>Back to Settings</span>
-        </button>
-        <button class="btn btn-outline" style="font-size: 11px; height: 30px;" onclick="closeArchitectureModal()">
-          Close to Canvas
-        </button>
-      </div>
     </div>
   </div>
 
@@ -2665,22 +2626,19 @@ html_template = """<!DOCTYPE html>
   <div class="modal-backdrop" id="user-guide-modal" onclick="closeUserGuideModal(event)">
     <div class="modal-window modal-wide" onclick="event.stopPropagation()">
       <div class="modal-head">
-        <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
-          <button class="modal-back-btn" onclick="backToSettingsModal()" title="Back to Settings">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            <span>Back to Settings</span>
+        <div class="modal-title-group">
+          <button class="modal-back-btn" onclick="backToSettingsModal()" title="Back to Settings" aria-label="Back to Settings">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           </button>
-          <div class="modal-title-group">
-            <div class="brand-logo-mark" style="width:24px; height:24px;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#131415" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
-            </div>
-            <div>
-              <div class="modal-title">DarkNode Interactive Platform User Guide</div>
-              <div style="font-size: 10px; color: var(--text-dim); margin-top: 1px;">OPERATOR INTERFACE WALK-THROUGH & CONTROLS MANUAL</div>
-            </div>
+          <div class="brand-logo-mark" style="width:24px; height:24px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#131415" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+          </div>
+          <div>
+            <div class="modal-title">DarkNode Interactive Platform User Guide</div>
+            <div style="font-size: 10px; color: var(--text-dim); margin-top: 1px;">OPERATOR INTERFACE WALK-THROUGH & CONTROLS MANUAL</div>
           </div>
         </div>
-        <button class="modal-close-btn" onclick="closeUserGuideModal()" title="Close to Dashboard">
+        <button class="modal-close-btn" onclick="closeUserGuideModal()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -2786,15 +2744,6 @@ html_template = """<!DOCTYPE html>
           </p>
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="modal-back-btn" onclick="backToSettingsModal()" title="Back to Settings">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-          <span>Back to Settings</span>
-        </button>
-        <button class="btn btn-outline" style="font-size: 11px; height: 30px;" onclick="closeUserGuideModal()">
-          Close to Canvas
-        </button>
-      </div>
     </div>
   </div>
 
@@ -2802,22 +2751,19 @@ html_template = """<!DOCTYPE html>
   <div class="modal-backdrop" id="instructions-modal" onclick="closeInstructionsModal(event)">
     <div class="modal-window modal-wide" onclick="event.stopPropagation()">
       <div class="modal-head">
-        <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
-          <button class="modal-back-btn" onclick="backToSettingsModal()" title="Back to Settings">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            <span>Back to Settings</span>
+        <div class="modal-title-group">
+          <button class="modal-back-btn" onclick="backToSettingsModal()" title="Back to Settings" aria-label="Back to Settings">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           </button>
-          <div class="modal-title-group">
-            <div class="brand-logo-mark" style="width:24px; height:24px;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#131415" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            </div>
-            <div>
-              <div class="modal-title">DarkNode AML Compliance & Operator SOP Instructions</div>
-              <div style="font-size: 10px; color: var(--text-dim); margin-top: 1px;">STANDARD OPERATING PROCEDURE & REGULATORY CONTAINMENT PROTOCOL</div>
-            </div>
+          <div class="brand-logo-mark" style="width:24px; height:24px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#131415" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <div>
+            <div class="modal-title">DarkNode AML Compliance & Operator SOP Instructions</div>
+            <div style="font-size: 10px; color: var(--text-dim); margin-top: 1px;">STANDARD OPERATING PROCEDURE & REGULATORY CONTAINMENT PROTOCOL</div>
           </div>
         </div>
-        <button class="modal-close-btn" onclick="closeInstructionsModal()" title="Close to Dashboard">
+        <button class="modal-close-btn" onclick="closeInstructionsModal()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -2920,15 +2866,6 @@ html_template = """<!DOCTYPE html>
             </div>
           </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button class="modal-back-btn" onclick="backToSettingsModal()" title="Back to Settings">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-          <span>Back to Settings</span>
-        </button>
-        <button class="btn btn-outline" style="font-size: 11px; height: 30px;" onclick="closeInstructionsModal()">
-          Close to Canvas
-        </button>
       </div>
     </div>
   </div>
