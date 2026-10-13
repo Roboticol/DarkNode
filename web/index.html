@@ -830,6 +830,172 @@
       transform: rotate(45deg);
     }
 
+    .legend-triangle {
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-bottom: 9px solid var(--node-merchant);
+    }
+
+    /* Floating Settings Button at Right Bottom */
+    .settings-floating-btn {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(25, 26, 27, 0.96);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-strong);
+      border-radius: 20px;
+      padding: 7px 14px;
+      color: var(--text-main);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      transition: all 0.2s ease;
+    }
+
+    .settings-floating-btn:hover {
+      background: #252628;
+      border-color: var(--yellow-primary);
+      color: var(--yellow-primary);
+      box-shadow: 0 6px 24px rgba(250, 204, 21, 0.22);
+      transform: translateY(-1px);
+    }
+
+    /* Settings Modal Specific Styles */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 768px) {
+      .settings-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .settings-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .settings-card.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .settings-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 8px;
+    }
+
+    .settings-card-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .settings-card-title svg {
+      color: var(--yellow-primary);
+      flex-shrink: 0;
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 12px;
+    }
+
+    .settings-row label {
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .settings-input {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .settings-input:focus {
+      border-color: var(--yellow-primary);
+    }
+
+    .settings-switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .settings-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .settings-slider-round {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--border-strong);
+      transition: .22s;
+      border-radius: 20px;
+    }
+
+    .settings-slider-round:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #ffffff;
+      transition: .22s;
+      border-radius: 50%;
+    }
+
+    .settings-switch input:checked + .settings-slider-round {
+      background-color: var(--yellow-primary);
+    }
+
+    .settings-switch input:checked + .settings-slider-round:before {
+      transform: translateX(16px);
+      background-color: #131415;
+    }
+
     /* Right Sidebar: Evidence & Signals Panel */
     .sidebar-right {
       width: 340px;
@@ -1278,22 +1444,6 @@
 
     <!-- Controls -->
     <div class="header-actions">
-      <div class="api-box">
-        <div class="status-dot" id="status-dot"></div>
-        <input type="text" id="api-url" value="http://localhost:8000" placeholder="http://localhost:8000">
-        <span class="status-text" id="status-label">ONLINE</span>
-      </div>
-
-      <!-- Threshold Sensitivity Control -->
-      <div class="stat-pill" style="gap: 5px; padding: 4px 8px;" title="Adjust detection sensitivity threshold (alters candidate pool and ring structures)">
-        <span style="font-weight: 700; color: var(--text-muted); font-size: 10px;">THRESHOLD:</span>
-        <select id="threshold-select" style="background: transparent; border: none; color: var(--yellow-primary); font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 11px; outline: none; cursor: pointer;" onchange="onThresholdChange(this.value)">
-          <option value="0.40" style="background: #1e2029; color: #f3f4f6;">0.40 (Broad)</option>
-          <option value="0.50" selected style="background: #1e2029; color: #f3f4f6;">0.50 (Standard)</option>
-          <option value="0.60" style="background: #1e2029; color: #f3f4f6;">0.60 (Strict)</option>
-        </select>
-      </div>
-
       <!-- Generate Fresh Graph Button -->
       <button class="btn btn-outline" id="new-graph-btn" onclick="generateNewGraph()" title="Generate a fresh batch of synthetic transactions and syndicate patterns">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
@@ -1310,6 +1460,12 @@
       <button class="btn btn-outline" onclick="openGuideModal()" title="View System Architecture and Dashboard Operator Guide">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         User Guide
+      </button>
+
+      <!-- Settings Modal Button -->
+      <button class="btn btn-outline" onclick="openSettingsModal()" title="Open System Configuration, API & Compliance Settings">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
       </button>
 
       <!-- Run Analysis Button with Intelligent Pipeline Execution -->
@@ -1499,7 +1655,7 @@
           <span>Shared Device</span>
         </div>
         <div class="legend-indicator">
-          <div class="legend-dot" style="background: var(--node-merchant); border-radius: 2px;"></div>
+          <div class="legend-triangle"></div>
           <span>Target Merchant</span>
         </div>
       </div>
@@ -1565,9 +1721,9 @@
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             Freeze Syndicate Accounts
           </button>
-          <button class="btn btn-outline" style="height: 34px;" onclick="exportSarDossier()" title="Export official FinCEN / FIU-compliant SAR forensic evidence package">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Export SAR Dossier (FinCEN / FIU)
+          <button class="btn btn-outline" style="height: 34px;" onclick="openSettingsModal('sar')" title="Configure regulatory reporting & export official FinCEN / FIU SAR packages">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Compliance & SAR Export
           </button>
         </div>
       </div>
@@ -1575,9 +1731,240 @@
 
   </div>
 
+  <!-- Fixed Floating Settings Trigger at Right Bottom of Page -->
+  <button class="settings-floating-btn" id="open-settings-bottom-btn" onclick="openSettingsModal()" title="System Configuration, API & SAR Compliance">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+    <span>Settings</span>
+  </button>
+
+  <!-- Interactive System Settings & Compliance Modal -->
+  <div class="modal-backdrop" id="settings-modal" onclick="closeSettingsModal(event)">
+    <div class="modal-window" style="max-width: 880px;" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <div class="modal-title-group">
+          <div class="brand-logo-mark" style="width:24px; height:24px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#131415" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </div>
+          <div class="modal-title">
+            DarkNode Settings & Compliance Controls
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeSettingsModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="settings-grid">
+          <!-- Card 1: API Connection (ss3) -->
+          <div class="settings-card" id="setting-card-api">
+            <div class="settings-card-head">
+              <span class="settings-card-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                Backend API & Inference Engine
+              </span>
+              <div class="api-box" style="margin: 0; padding: 2px 7px;">
+                <div class="status-dot" id="status-dot"></div>
+                <span class="status-text" id="status-label">ONLINE</span>
+              </div>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted);">
+              Target FastAPI backend serving PyTorch Geometric GNN-MPNN inference.
+            </div>
+            <div>
+              <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">ENDPOINT BASE URL</label>
+              <input type="text" id="api-url" class="settings-input" value="http://localhost:8000" placeholder="http://localhost:8000">
+            </div>
+            <div id="api-ping-result" style="font-size: 10.5px; font-family: 'JetBrains Mono', monospace; min-height: 16px;"></div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-outline" style="flex: 1; height: 32px;" onclick="testApiConnection()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                Ping Endpoint
+              </button>
+              <button class="btn btn-yellow" style="flex: 1; height: 32px;" onclick="fetchRings(); showToast('Triggered live GNN re-analysis');">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Run GNN Inference
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 2: Regulatory Compliance & SAR Filing (ss2) -->
+          <div class="settings-card" id="setting-card-sar">
+            <div class="settings-card-head">
+              <span class="settings-card-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                Regulatory SAR Dossier Export
+              </span>
+              <span class="badge-pill" style="font-size: 9px;">FinCEN / FIU</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted);">
+              Official Suspicious Activity Report (SAR Form 111 / STR) evidence generation for legal escalation.
+            </div>
+            <div style="background: var(--bg-input); padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-subtle); font-size: 11px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                <span style="color: var(--text-muted);">Active Syndicate:</span>
+                <span style="font-weight: 700; color: var(--yellow-primary);" id="settings-active-ring-lbl">Syndicate #3</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Audit Standard:</span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px;">FinCEN ML-111 & FIU-IND</span>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 7px; margin-top: 2px;">
+              <button class="btn btn-outline" style="height: 33px;" onclick="exportSarDossier()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export SAR Dossier (JSON / FinCEN)
+              </button>
+              <button class="btn btn-outline" style="height: 33px;" onclick="exportSarCsv()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Export Evidence Ledger (CSV)
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 3: GNN Detection Threshold & Sensitivity -->
+          <div class="settings-card">
+            <div class="settings-card-head">
+              <span class="settings-card-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                GNN Sensitivity Threshold
+              </span>
+              <span class="badge-pill" id="settings-thresh-badge">0.50</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted);">
+              Controls candidate pool cutoff. Lower values increase recall (captures early smurfs); higher values enforce strict precision.
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 11px;">
+                <label>CUTOFF PRESET</label>
+                <select id="threshold-select" class="settings-input" style="width: auto; padding: 2px 8px;" onchange="onThresholdChange(this.value)">
+                  <option value="0.40">0.40 (Broad / High Recall)</option>
+                  <option value="0.50" selected>0.50 (Standard Balance)</option>
+                  <option value="0.60">0.60 (Strict Precision)</option>
+                  <option value="0.75">0.75 (Critical High-Certainty)</option>
+                </select>
+              </div>
+              <input type="range" id="threshold-slider" min="0.30" max="0.85" step="0.05" value="0.50" style="width: 100%; accent-color: var(--yellow-primary); cursor: pointer;" oninput="onThresholdSliderChange(this.value)">
+            </div>
+            <div id="threshold-desc-box" style="font-size: 10.5px; color: var(--text-muted); background: var(--bg-input); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+              Currently filtering at <strong>0.50</strong>: 95.0% model precision with minimal false alarms.
+            </div>
+          </div>
+
+          <!-- Card 4: Real-Time Alerts & Notification Options -->
+          <div class="settings-card">
+            <div class="settings-card-head">
+              <span class="settings-card-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                Alerts & Notifications
+              </span>
+              <span class="badge-pill" style="font-size: 9px; color: #34d399; border-color: rgba(52, 211, 153, 0.3);">ACTIVE</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted);">
+              Real-time audit alerts when syndicates exceed critical threat thresholds.
+            </div>
+            <div class="settings-row">
+              <div>
+                <div style="color: var(--text-main); font-weight: 600;">High-Risk Audio Alert Chime</div>
+                <div style="font-size: 10.5px; color: var(--text-muted);">Audible cue on critical syndicates (&gt;0.80)</div>
+              </div>
+              <label class="settings-switch">
+                <input type="checkbox" id="setting-sound-alert" checked onchange="toggleSoundPreference(this.checked)">
+                <span class="settings-slider-round"></span>
+              </label>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div style="color: var(--text-main); font-weight: 600;">Compliance In-App Toasts</div>
+                <div style="font-size: 10.5px; color: var(--text-muted);">Show action audit confirmations</div>
+              </div>
+              <label class="settings-switch">
+                <input type="checkbox" id="setting-toast-alert" checked onchange="toggleToastPreference(this.checked)">
+                <span class="settings-slider-round"></span>
+              </label>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 4px;">
+              <button class="btn btn-outline" style="flex: 1; height: 30px; font-size: 11px;" onclick="playAlertChime()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                Test Alert Chime
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 5: Graph Engine & Physics Controls -->
+          <div class="settings-card">
+            <div class="settings-card-head">
+              <span class="settings-card-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><line x1="12" y1="9" x2="19" y2="6.5"/><line x1="12" y1="15" x2="5" y2="17.5"/></svg>
+                Graph Engine & Physics
+              </span>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div style="color: var(--text-main); font-weight: 600;">Physics Force Simulation</div>
+                <div style="font-size: 10.5px; color: var(--text-muted);">Live ForceAtlas2 layout equilibrium</div>
+              </div>
+              <label class="settings-switch">
+                <input type="checkbox" id="setting-physics-toggle" checked onchange="togglePhysicsFromSettings(this.checked)">
+                <span class="settings-slider-round"></span>
+              </label>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div style="color: var(--text-main); font-weight: 600;">Continuous Orbit Rotation</div>
+                <div style="font-size: 10.5px; color: var(--text-muted);">Smooth yaw orbital camera rotation</div>
+              </div>
+              <label class="settings-switch">
+                <input type="checkbox" id="setting-orbit-toggle" checked onchange="toggleOrbitFromSettings(this.checked)">
+                <span class="settings-slider-round"></span>
+              </label>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
+                <label>SPRING REPULSION DISTANCE</label>
+                <span id="spring-len-val" style="font-family: 'JetBrains Mono', monospace; color: var(--yellow-primary);">260px</span>
+              </div>
+              <input type="range" id="spring-slider" min="180" max="420" step="20" value="260" style="width: 100%; accent-color: var(--yellow-primary); cursor: pointer;" oninput="onSpringSliderChange(this.value)">
+            </div>
+          </div>
+
+          <!-- Card 6: System Documentation & Quick Navigation -->
+          <div class="settings-card">
+            <div class="settings-card-head">
+              <span class="settings-card-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                Documentation & Defaults
+              </span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted);">
+              Inspect mathematical model architecture, empirical benchmarks, or restore system factory defaults.
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 7px;">
+              <button class="btn btn-outline" style="height: 32px;" onclick="closeSettingsModal(); openGuideModal();">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Open Architecture & User Guide
+              </button>
+              <button class="btn btn-outline" style="height: 32px;" onclick="closeSettingsModal(); openBenchmarkModal();">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                Open Model Benchmarks vs Rules
+              </button>
+              <button class="btn btn-outline" style="height: 32px; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" onclick="resetSettingsToDefault()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Reset All Settings to Defaults
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Interactive System & User Guide Modal -->
   <div class="modal-backdrop" id="guide-modal" onclick="closeGuideModal(event)">
-    <div class="modal-window" onclick="event.stopPropagation()">
+    <div class="modal-window" style="max-width: 860px;" onclick="event.stopPropagation()">
       <div class="modal-head">
         <div class="modal-title-group">
           <div class="brand-logo-mark" style="width:24px; height:24px;">
@@ -1607,60 +1994,89 @@
           </p>
         </div>
 
-        <!-- Section 2: Dashboard Structure -->
+        <!-- Section 2: End-to-End Pipeline Architecture -->
         <div class="guide-section">
           <h3>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-            2. Dashboard Structure & Investigation Flow
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            2. End-to-End System Architecture Pipeline
+          </h3>
+          <div style="background: var(--bg-input); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-subtle); font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: #e5e7eb; overflow-x: auto; line-height: 1.55;">
+┌─────────────────────────┐     ┌─────────────────────────┐     ┌─────────────────────────┐
+│ Multi-Modal Data Ingest │ ──► │ Heterogeneous Graph     │ ──► │ 2-Layer MPNN            │
+│ • User Accounts         │     │ • (User)-[transacts]-►  │     │ • Device Embedding Agg  │
+│ • Hardware IDs / IMEI   │     │ • (User)-[shares_ip]-►  │     │ • IP Dispersion Agg     │
+│ • Merchant Terminals    │     │ • (User)-[uses_dev]-►   │     │ • Multi-Hop Latent Embed│
+└─────────────────────────┘     └─────────────────────────┘     └───────────┬─────────────┘
+                                                                            │
+┌─────────────────────────┐     ┌─────────────────────────┐                 ▼
+│ Statutory Containment   │ ◄── │ Risk Fusion Engine      │ ◄───────────────┘
+│ • Auto Account Freeze   │     │ • GNN Anomaly Weight    │
+│ • FinCEN SAR Filing     │     │ • Burst Velocity Metric │
+│ • Regulatory Audit Doss │     │ • Decision Threshold θ  │
+└─────────────────────────┘     └─────────────────────────┘
+          </div>
+          <p style="margin-top: 10px; font-size: 12px;">
+            <strong>Step 1: Graph Construction:</strong> Links accounts via shared hardware fingerprints and subnet collisions.<br>
+            <strong>Step 2: Message Passing:</strong> Aggregates neighbor embeddings across 2 hops, capturing indirect smurfing coordination.<br>
+            <strong>Step 3: Risk Scoring & Cutoff:</strong> Applies decision threshold θ to rank syndicates by laundering probability.<br>
+            <strong>Step 4: Containment & Reporting:</strong> Generates FinCEN Form 111 / FIU-compliant SAR dossiers for regulatory submission.
+          </p>
+        </div>
+
+        <!-- Section 3: Operator Investigation Workflow (Instructions) -->
+        <div class="guide-section">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            3. Step-by-Step Operator Instructions
           </h3>
           <div class="guide-grid-2">
             <div class="guide-step-card">
               <div class="guide-step-title">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                Syndicate Directory (Left)
+                Step 1: Syndicate Triage (Left Directory)
               </div>
               <div class="guide-step-desc">
-                Lists all detected mule rings sorted by composite risk. Use the search bar to filter by Ring ID or User ID. Click any ring card to inspect its dedicated subgraph.
+                Review the ranked syndicate list. Syndicates with composite scores &gt;0.80 are flagged with red CRITICAL badges. Click any card to load its dedicated topological subgraph.
               </div>
             </div>
 
             <div class="guide-step-card">
               <div class="guide-step-title">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><line x1="12" y1="9" x2="19" y2="6.5"/><line x1="12" y1="15" x2="5" y2="17.5"/></svg>
-                Network Canvas (Center)
+                Step 2: Subgraph Inspection (Center Canvas)
               </div>
               <div class="guide-step-desc">
-                Interactive topological graph with high-contrast screen labels. Click any node to open the live Node Inspector.
+                Examine interconnections. Click any node to open the live Inspector card showing connected hops, roles, and device hardware linkages.
               </div>
             </div>
 
             <div class="guide-step-card">
               <div class="guide-step-title">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                Syndicate Dossier (Right)
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Step 3: Traversal Verification (Run Analysis)
               </div>
               <div class="guide-step-desc">
-                Reveals the 5 evidence signals (Shared Device %, Shared IP pairs, Burst Velocity, GNN Confidence, New Accounts). Click account chips to jump directly to any entity.
+                Click <strong>Run Analysis</strong> to launch sequential GNN neural packet traversal, verifying cyclical layering and money dispersion patterns across users.
               </div>
             </div>
 
             <div class="guide-step-card">
               <div class="guide-step-title">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                Legal Containment & SAR Filing
+                Step 4: Containment & Legal Escalation
               </div>
               <div class="guide-step-desc">
-                Execute a direct account freeze across all syndicate members to block unauthorized capital flight, or export an official FinCEN / FIU-compliant Suspicious Activity Report (SAR) dossier for regulatory filing.
+                Click <strong>Freeze Syndicate Accounts</strong> to instantly execute simulated debit quarantines. Use <strong>Settings → Export SAR Dossier</strong> for official FinCEN filing packages.
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Section 3: Navigation & Controls -->
+        <!-- Section 4: Canvas Navigation & Controls -->
         <div class="guide-section">
           <h3>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
-            3. Canvas Navigation & Controls
+            4. Canvas Navigation & Physics Controls
           </h3>
           <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
@@ -1676,8 +2092,8 @@
               <div><span class="shortcut-badge">Click Any Node</span> to view connected hops, role, and anomaly rating</div>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
-              <span>Spread Out / Decluster</span>
-              <div>Click <span class="shortcut-badge">Spread Out</span> on top canvas bar for open layout</div>
+              <span>Orbit / Physics Toggles</span>
+              <div>Independent top-canvas controls for yaw camera rotation and ForceAtlas2 physics</div>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0;">
               <span>Entity Filters</span>
@@ -1686,26 +2102,43 @@
           </div>
         </div>
 
-        <!-- Section 4: Graph Visual Legend -->
+        <!-- Section 5: Graph Visual Legend -->
         <div class="guide-section">
           <h3>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
-            4. Graph Visual Legend
+            5. Graph Visual Legend (Exact Model Symbols)
           </h3>
           <div style="display: flex; flex-wrap: wrap; gap: 18px; align-items: center; margin-top: 6px;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <div style="width: 12px; height: 12px; border-radius: 50%; background: #facc15;"></div>
-              <span style="color: #f3f4f6; font-size: 12px;"><strong>User Node (Yellow)</strong>: Syndicate member account</span>
+              <span style="color: #f3f4f6; font-size: 12px;"><strong>User Node (Circle, Yellow)</strong>: Syndicate member account</span>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <div style="width: 12px; height: 12px; transform: rotate(45deg); background: #38bdf8;"></div>
-              <span style="color: #f3f4f6; font-size: 12px;"><strong>Device Node (Cyan)</strong>: Shared hardware identifier</span>
+              <span style="color: #f3f4f6; font-size: 12px;"><strong>Device Node (Diamond, Cyan)</strong>: Shared hardware identifier</span>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
-              <div style="width: 12px; height: 12px; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); background: #34d399;"></div>
-              <span style="color: #f3f4f6; font-size: 12px;"><strong>Merchant Node (Mint)</strong>: Shared high-velocity merchant</span>
+              <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 12px solid #34d399;"></div>
+              <span style="color: #f3f4f6; font-size: 12px;"><strong>Merchant Node (Triangle, Mint)</strong>: Target merchant terminal</span>
             </div>
           </div>
+        </div>
+
+        <!-- Section 6: Settings & Compliance Controls -->
+        <div class="guide-section">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            6. Settings & Compliance Configuration
+          </h3>
+          <p>
+            Access <strong>Settings</strong> at any time via the bottom-right button or header. Use Settings to:
+          </p>
+          <ul style="margin: 6px 0 0 18px; font-size: 12px; line-height: 1.6;">
+            <li><strong>Configure API Endpoint:</strong> Switch between live FastAPI backend (port 8000) or test connectivity with single-click latency pinging.</li>
+            <li><strong>Tune GNN Decision Cutoff (Threshold θ):</strong> Calibrate sensitivity between high-recall candidate discovery (0.40) and high-precision critical enforcement (0.75).</li>
+            <li><strong>Export Regulatory FinCEN SAR & CSV Dossiers:</strong> Download auditable evidence packages containing complete account rosters and transaction burst logs.</li>
+            <li><strong>Configure Real-time Compliance Alarms:</strong> Toggle audio chimes for critical threat rings (&gt;0.80) and manage graph physics.</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -9545,6 +9978,9 @@
       document.getElementById("sig-fresh").innerText = `${ring.fresh_account_count} accounts`;
       document.getElementById("members-count").innerText = ring.member_count;
 
+      const ringLbl = document.getElementById("settings-active-ring-lbl");
+      if (ringLbl) ringLbl.innerText = `Syndicate #${ring.ring_id} (Score: ${(ring.score * 100).toFixed(1)}%)`;
+
       // Handle freeze state for this ring
       const freezeBtn = document.getElementById("freeze-btn");
       const isFrozen = frozenRings.has(ring.ring_id);
@@ -10360,6 +10796,259 @@
       showToast(`Exported Official SAR Forensic Dossier: ${filingId}`);
     }
 
+    // =========================================================================
+    // SYSTEM SETTINGS & COMPLIANCE CONTROLS
+    // =========================================================================
+    let isSoundAlertEnabled = true;
+    let isToastAlertEnabled = true;
+
+    function openSettingsModal(targetSection) {
+      const modal = document.getElementById("settings-modal");
+      if (modal) modal.classList.add("open");
+
+      // Sync active ring label in SAR card
+      const ring = allRings[activeIndex];
+      const ringLbl = document.getElementById("settings-active-ring-lbl");
+      if (ringLbl && ring) {
+        ringLbl.innerText = `Syndicate #${ring.ring_id} (Score: ${(ring.score * 100).toFixed(1)}%)`;
+      }
+
+      // Sync physics & orbit checkboxes with live state
+      const physCheck = document.getElementById("setting-physics-toggle");
+      if (physCheck) physCheck.checked = !!physicsState;
+      const orbCheck = document.getElementById("setting-orbit-toggle");
+      if (orbCheck) orbCheck.checked = !!isSpinningEnabled;
+
+      // Sync spring slider
+      const springSlider = document.getElementById("spring-slider");
+      const springVal = document.getElementById("spring-len-val");
+      if (springSlider) springSlider.value = currentSpringLength;
+      if (springVal) springVal.innerText = `${currentSpringLength}px`;
+
+      // Sync threshold slider & select
+      const threshInput = document.getElementById("threshold-select");
+      const threshSlider = document.getElementById("threshold-slider");
+      const threshBadge = document.getElementById("settings-thresh-badge");
+      if (threshInput && threshSlider) {
+        threshSlider.value = threshInput.value;
+        if (threshBadge) threshBadge.innerText = threshInput.value;
+      }
+
+      // If opening specifically for SAR export, scroll smoothly to the card
+      if (targetSection === "sar") {
+        setTimeout(() => {
+          const sarCard = document.getElementById("setting-card-sar");
+          if (sarCard) {
+            sarCard.scrollIntoView({ behavior: "smooth", block: "center" });
+            sarCard.style.borderColor = "var(--yellow-primary)";
+            sarCard.style.boxShadow = "0 0 16px rgba(250, 204, 21, 0.3)";
+            setTimeout(() => {
+              sarCard.style.borderColor = "var(--border-subtle)";
+              sarCard.style.boxShadow = "none";
+            }, 2500);
+          }
+        }, 150);
+      }
+    }
+
+    function closeSettingsModal(e) {
+      if (e && e.target !== document.getElementById("settings-modal") && !e.target.closest(".modal-close-btn")) return;
+      const modal = document.getElementById("settings-modal");
+      if (modal) modal.classList.remove("open");
+    }
+
+    async function testApiConnection() {
+      const input = document.getElementById("api-url");
+      const url = input ? input.value.trim().replace(/\/$/, "") : "http://localhost:8000";
+      const dot = document.getElementById("status-dot");
+      const label = document.getElementById("status-label");
+      const pingResult = document.getElementById("api-ping-result");
+
+      if (pingResult) pingResult.innerHTML = `<span style="color: var(--yellow-primary);">Pinging ${url}...</span>`;
+      const startTime = performance.now();
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
+        const res = await fetch(`${url}/health`, { method: "GET", signal: controller.signal });
+        clearTimeout(timeoutId);
+        const elapsed = Math.round(performance.now() - startTime);
+
+        if (res.ok) {
+          if (dot) {
+            dot.classList.remove("offline");
+            dot.classList.add("active-infer");
+            setTimeout(() => dot.classList.remove("active-infer"), 800);
+          }
+          if (label) label.innerText = "LIVE API";
+          if (pingResult) {
+            pingResult.innerHTML = `<span style="color: #34d399;">✓ Connected (${elapsed}ms) — FastAPI Backend Healthy</span>`;
+          }
+          showToast(`Backend online: ${elapsed}ms response time`);
+        } else {
+          throw new Error(`HTTP ${res.status}`);
+        }
+      } catch (err) {
+        if (dot) {
+          dot.classList.remove("active-infer");
+          dot.classList.add("offline");
+        }
+        if (label) label.innerText = "OFFLINE";
+        if (pingResult) {
+          pingResult.innerHTML = `<span style="color: #ef4444;">✗ Offline / Timeout — Falling back to cached GNN dossier</span>`;
+        }
+        showToast("Backend connection failed — serving cached GNN model");
+      }
+    }
+
+    function onThresholdSliderChange(val) {
+      const threshSelect = document.getElementById("threshold-select");
+      const threshBadge = document.getElementById("settings-thresh-badge");
+      const descBox = document.getElementById("threshold-desc-box");
+      const numVal = parseFloat(val);
+
+      if (threshBadge) threshBadge.innerText = numVal.toFixed(2);
+      if (threshSelect) {
+        let matched = false;
+        for (let opt of threshSelect.options) {
+          if (Math.abs(parseFloat(opt.value) - numVal) < 0.04) {
+            threshSelect.value = opt.value;
+            matched = true;
+            break;
+          }
+        }
+      }
+
+      if (descBox) {
+        if (numVal <= 0.40) {
+          descBox.innerHTML = `Filtering at <strong>${numVal.toFixed(2)}</strong>: Broad surveillance queue (high recall for early smurfing).`;
+        } else if (numVal <= 0.60) {
+          descBox.innerHTML = `Filtering at <strong>${numVal.toFixed(2)}</strong>: Standard benchmark balance (95.0% precision, 5.0% false alarms).`;
+        } else {
+          descBox.innerHTML = `Filtering at <strong>${numVal.toFixed(2)}</strong>: Strict critical threshold (isolates confirmed large syndicates).`;
+        }
+      }
+
+      onThresholdChange(val);
+    }
+
+    function exportSarCsv() {
+      const ring = allRings[activeIndex];
+      if (!ring) return;
+
+      const filingId = `SAR-AML-${new Date().getFullYear()}-R${ring.ring_id}`;
+      const rows = [
+        ["Regulatory_Filing_ID", filingId],
+        ["Syndicate_ID", `RING_${ring.ring_id}`],
+        ["Composite_Risk_Score", ring.score],
+        ["Detection_Method", "2-Layer Heterogeneous MPNN"],
+        ["Enforcement_Status", frozenRings.has(ring.ring_id) ? "FROZEN_QUARANTINE" : "PENDING_ENFORCEMENT"],
+        ["Burst_Velocity_TxHr", ring.transaction_velocity],
+        [],
+        ["Member_Type", "Entity_ID", "Status"]
+      ];
+
+      (ring.members || []).forEach(m => {
+        rows.push(["User_Account", `user_${m}`, frozenRings.has(ring.ring_id) ? "FROZEN" : "ACTIVE"]);
+      });
+      (ring.devices || []).forEach(d => {
+        rows.push(["Hardware_Device", d, "LINKED_MULTIPLEX"]);
+      });
+      (ring.merchants || []).forEach(m => {
+        rows.push(["Merchant_Terminal", m, "TARGET_BURST"]);
+      });
+
+      const csvContent = "data:text/csv;charset=utf-8," + rows.map(r => r.join(",")).join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `DARKNODE_EVIDENCE_RING_${ring.ring_id}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast(`Exported Evidence Ledger CSV: Ring #${ring.ring_id}`);
+    }
+
+    function playAlertChime() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.14); // A5
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.38);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.38);
+        showToast("Audio alert notification chime played");
+      } catch (err) {
+        showToast("Audio alert notification triggered");
+      }
+    }
+
+    function toggleSoundPreference(enabled) {
+      isSoundAlertEnabled = enabled;
+      showToast(`High-Risk Audio Alert: ${enabled ? 'Enabled' : 'Disabled'}`);
+    }
+
+    function toggleToastPreference(enabled) {
+      isToastAlertEnabled = enabled;
+      showToast(`Compliance Audit Toasts: ${enabled ? 'Enabled' : 'Disabled'}`);
+    }
+
+    function togglePhysicsFromSettings(enabled) {
+      if (physicsState !== enabled) {
+        togglePhysics();
+      }
+    }
+
+    function toggleOrbitFromSettings(enabled) {
+      if (isSpinningEnabled !== enabled) {
+        toggleOrbit();
+      }
+    }
+
+    function onSpringSliderChange(val) {
+      currentSpringLength = parseInt(val, 10);
+      const valDisp = document.getElementById("spring-len-val");
+      if (valDisp) valDisp.innerText = `${currentSpringLength}px`;
+
+      if (network) {
+        network.setOptions({
+          physics: {
+            forceAtlas2Based: { springLength: currentSpringLength }
+          }
+        });
+      }
+    }
+
+    function resetSettingsToDefault() {
+      const input = document.getElementById("api-url");
+      if (input) input.value = "http://localhost:8000";
+
+      const threshSelect = document.getElementById("threshold-select");
+      const threshSlider = document.getElementById("threshold-slider");
+      if (threshSelect) threshSelect.value = "0.50";
+      if (threshSlider) threshSlider.value = "0.50";
+      onThresholdSliderChange("0.50");
+
+      const springSlider = document.getElementById("spring-slider");
+      if (springSlider) springSlider.value = "260";
+      onSpringSliderChange("260");
+
+      if (!physicsState) togglePhysics();
+      if (!isSpinningEnabled) toggleOrbit();
+
+      const soundCheck = document.getElementById("setting-sound-alert");
+      if (soundCheck) soundCheck.checked = true;
+      isSoundAlertEnabled = true;
+
+      showToast("Reset all settings & thresholds to factory defaults");
+    }
+
     // Modal Control Functions
     function openGuideModal() {
       const modal = document.getElementById("guide-modal");
@@ -10385,6 +11074,7 @@
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
+        closeSettingsModal();
         closeGuideModal();
         closeBenchmarkModal();
         closeNodeInspector();
@@ -10400,7 +11090,9 @@
     });
 
     function showToast(text) {
+      if (!isToastAlertEnabled) return;
       const toast = document.getElementById("toast");
+      if (!toast) return;
       document.getElementById("toast-text").innerText = text;
       toast.style.display = "flex";
       setTimeout(() => { toast.style.display = "none"; }, 3500);
