@@ -2137,9 +2137,12 @@ html_template = """<!DOCTYPE html>
 
       // Only re-render graph if the ring actually changed or forced
       if (!network || currentRenderedRingId !== ring.ring_id || forceRerender) {
-        if (spinAnimFrameId) {
-          cancelAnimationFrame(spinAnimFrameId);
-          spinAnimFrameId = null;
+        if (!physicsState) {
+          isSpinningEnabled = true;
+          const spinBtn = document.getElementById("spin-btn");
+          const spinLbl = document.getElementById("spin-label");
+          if (spinBtn) spinBtn.classList.add("active");
+          if (spinLbl) spinLbl.innerText = "Orbit Spin: On";
         }
         renderGraph(ring.graph);
         currentRenderedRingId = ring.ring_id;
@@ -2245,10 +2248,10 @@ html_template = """<!DOCTYPE html>
           improvedLayout: false
         },
         physics: {
-          enabled: physicsState,
+          enabled: true,
           solver: "forceAtlas2Based",
           forceAtlas2Based: {
-            gravitationalConstant: -460,
+            gravitationalConstant: (currentSpringLength === 380 ? -620 : -460),
             centralGravity: 0.002,
             springLength: currentSpringLength,
             springConstant: 0.035,
@@ -2291,21 +2294,23 @@ html_template = """<!DOCTYPE html>
             dragSettleTimeout = null;
           }
           // Enable elastic spring physics while actively stretching and dragging nodes!
-          network.setOptions({
-            physics: {
-              enabled: true,
-              solver: "forceAtlas2Based",
-              forceAtlas2Based: {
-                gravitationalConstant: -460,
-                centralGravity: 0.002,
-                springLength: currentSpringLength,
-                springConstant: 0.035,
-                damping: 0.35,
-                avoidOverlap: 1.0
+          if (!physicsState) {
+            network.setOptions({
+              physics: {
+                enabled: true,
+                solver: "forceAtlas2Based",
+                forceAtlas2Based: {
+                  gravitationalConstant: (currentSpringLength === 380 ? -620 : -460),
+                  centralGravity: 0.002,
+                  springLength: currentSpringLength,
+                  springConstant: 0.035,
+                  damping: 0.35,
+                  avoidOverlap: 1.0
+                }
               }
-            }
-          });
-          network.startSimulation();
+            });
+            network.startSimulation();
+          }
         } else {
           // Canvas pan
           isUserInteracting = true;
@@ -2325,7 +2330,7 @@ html_template = """<!DOCTYPE html>
               isUserInteracting = false;
               lastFrameTime = performance.now();
             }
-          }, 450);
+          }, 150);
         } else {
           // Pan ended
           isUserInteracting = false;
@@ -2335,19 +2340,14 @@ html_template = """<!DOCTYPE html>
 
       // Once layout stabilizes, fit perfectly to frame and stop simulation for zero jitter
       network.once("stabilizationIterationsDone", function() {
-        network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+        network.fit({ animation: { duration: 250, easingFunction: "easeInOutQuad" } });
         if (!physicsState) {
           network.stopSimulation();
-          // Zero physics computation during animation to prevent any possible visual hanging
           network.setOptions({ physics: { enabled: false } });
-          setTimeout(() => {
-            if (isSpinningEnabled) {
-              initAndStartSpinAnimation(nodes);
-            }
-          }, 360);
         } else {
           network.startSimulation();
         }
+        initAndStartSpinAnimation(nodes);
       });
 
       // Constant screen text size & high-contrast visibility at all zoom levels
@@ -2558,7 +2558,7 @@ html_template = """<!DOCTYPE html>
         spinAnimFrameId = requestAnimationFrame(spinTick);
 
         if (!isSpinningEnabled || !network || !activeNodesDataSet) return;
-        if (isUserInteracting) {
+        if (isUserInteracting || physicsState) {
           lastFrameTime = now;
           return;
         }
@@ -2617,9 +2617,13 @@ html_template = """<!DOCTYPE html>
             network.setOptions({ physics: { enabled: false } });
           }
         }
+        if (!activeNodesDataSet && network) {
+          activeNodesDataSet = network.body.data.nodes;
+        }
         recomputePolarFromCurrentPositions();
         isUserInteracting = false;
         lastFrameTime = performance.now();
+        if (!spinAnimFrameId) startSpinLoop();
         showToast("Orbit rotation & float: Active");
       } else {
         showToast("Orbit rotation & float: Paused");
@@ -2630,13 +2634,13 @@ html_template = """<!DOCTYPE html>
     function resetGraphView() {
       if (network) {
         isUserInteracting = true;
-        network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+        network.fit({ animation: { duration: 250, easingFunction: "easeInOutQuad" } });
         showToast("Framed network graph to viewport");
         setTimeout(() => {
           recomputePolarFromCurrentPositions();
           isUserInteracting = false;
           lastFrameTime = performance.now();
-        }, 380);
+        }, 260);
       }
     }
 
@@ -2676,7 +2680,7 @@ html_template = """<!DOCTYPE html>
             isUserInteracting = false;
             lastFrameTime = performance.now();
           }
-        }, 900);
+        }, 350);
       }
     }
 
@@ -2726,6 +2730,7 @@ html_template = """<!DOCTYPE html>
           const spinLbl = document.getElementById("spin-label");
           if (spinBtn) spinBtn.classList.add("active");
           if (spinLbl) spinLbl.innerText = "Orbit Spin: On";
+          if (!spinAnimFrameId) startSpinLoop();
           showToast("Physics Mode paused: Orbit rotation & float resumed");
         }
       }
