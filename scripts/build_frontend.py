@@ -1,8 +1,4 @@
-"""Build web/index.html:
-Clean, authentic DarkNode interface matching the original reference demo sample.
-All extraneous motion, blinking effects, trajectory face morphs, and heavy animations removed.
-Embedded real forward-pass rings from trained model.
-"""
+"""Build and bundle web/index.html with the dark slate and electric yellow theme matching the exact DarkNode UI reference."""
 
 import json
 from pathlib import Path
@@ -19,36 +15,47 @@ html_template = """<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DarkNode — Fraud Ring Detection Platform</title>
+  <title>DarkNode — Fraud Syndicate Graph Intelligence</title>
   <!-- Vis-network CDN -->
   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-  <!-- Inter & JetBrains Mono Fonts -->
+  <!-- Plus Jakarta Sans & JetBrains Mono Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg: #09090b;
-      --surface: #121215;
-      --surface-elevated: #18181b;
-      --surface-hover: #222227;
-      --border: #27272a;
-      --border-subtle: #1e1e24;
-      --text: #f4f4f5;
-      --text-muted: #71717a;
-      --text-dim: #52525b;
-      --danger: #f43f5e;
-      --danger-subtle: rgba(244, 63, 94, 0.1);
-      --danger-border: rgba(244, 63, 94, 0.3);
-      --warning: #f59e0b;
-      --success: #10b981;
-      --accent: #3b82f6;
-      --user-node: #f43f5e;
-      --device-node: #f59e0b;
-      --merchant-node: #10b981;
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
+      /* Dark Slate & Charcoal Theme */
+      --bg-base: #111215;
+      --bg-panel: #18191e;
+      --bg-card: #20222a;
+      --bg-card-hover: #272a34;
+      --bg-input: #141519;
+      
+      --border-subtle: #2b2e38;
+      --border-strong: #3b3f4d;
+      
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      
+      /* Vibrant Electric Yellow Accents */
+      --yellow-primary: #facc15;
+      --yellow-hover: #fde047;
+      --yellow-dim: #ca8a04;
+      --yellow-bg: rgba(250, 204, 21, 0.12);
+      --yellow-border: rgba(250, 204, 21, 0.35);
+      
+      /* Node Entity Colors */
+      --node-user: #facc15;
+      --node-device: #38bdf8;
+      --node-merchant: #34d399;
+      
+      --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.45);
+      --shadow-glow: 0 0 16px rgba(250, 204, 21, 0.2);
+      
+      --radius: 12px;
+      --radius-sm: 8px;
     }
 
     * {
@@ -58,9 +65,9 @@ html_template = """<!DOCTYPE html>
     }
 
     body {
-      font-family: var(--font-sans);
-      background-color: var(--bg);
-      color: var(--text);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-main);
       height: 100vh;
       overflow: hidden;
       display: flex;
@@ -68,11 +75,11 @@ html_template = """<!DOCTYPE html>
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Minimal Header */
+    /* Top Navigation Bar */
     header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      height: 52px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border-subtle);
+      height: 56px;
       padding: 0 20px;
       display: flex;
       align-items: center;
@@ -81,630 +88,812 @@ html_template = """<!DOCTYPE html>
       z-index: 50;
     }
 
-    .brand {
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--yellow-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-glow);
+    }
+
+    .brand-title {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-title span.kicker {
+      color: var(--yellow-primary);
+    }
+
+    .badge-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: var(--bg-card);
+      color: var(--yellow-primary);
+      border: 1px solid var(--yellow-border);
+    }
+
+    /* Telemetry Stats */
+    .header-stats {
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    .brand-mark {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--danger);
-      box-shadow: 0 0 10px var(--danger);
-    }
-
-    .brand-name {
-      font-weight: 700;
-      font-size: 14px;
-      letter-spacing: -0.02em;
-      color: var(--text);
-    }
-
-    .badge-gnn {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: var(--surface-elevated);
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-    }
-
-    .top-stats {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .stat-item {
+    .stat-pill {
       display: flex;
       align-items: center;
       gap: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 5px 10px;
+      border-radius: 7px;
+      font-size: 11px;
+      color: var(--text-muted);
     }
 
     .stat-val {
-      font-family: var(--font-mono);
-      font-weight: 600;
-      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: var(--text-main);
     }
 
-    .controls-section {
+    /* Controls */
+    .header-actions {
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    .api-pill {
+    .api-box {
       display: flex;
       align-items: center;
-      background: var(--surface-elevated);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 3px 8px;
-      gap: 6px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 7px;
+      padding: 4px 10px;
+      gap: 8px;
     }
 
-    .api-pill input {
+    .api-box input {
       background: transparent;
       border: none;
-      color: var(--text);
-      font-family: var(--font-mono);
+      color: var(--text-main);
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      width: 170px;
+      width: 160px;
       outline: none;
     }
 
-    .status-indicator {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      font-family: var(--font-mono);
-      padding: 3px 8px;
-      border-radius: 4px;
-      background: rgba(16, 185, 129, 0.1);
-      color: var(--success);
-      border: 1px solid rgba(16, 185, 129, 0.2);
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
     }
 
-    .status-indicator.offline {
-      background: rgba(245, 158, 11, 0.1);
-      color: var(--warning);
-      border-color: rgba(245, 158, 11, 0.2);
+    .status-dot.offline {
+      background: var(--yellow-primary);
+      box-shadow: 0 0 8px rgba(250, 204, 21, 0.6);
+    }
+
+    .status-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
     }
 
     .btn {
-      height: 28px;
-      padding: 0 12px;
-      border-radius: 6px;
+      height: 32px;
+      padding: 0 14px;
+      border-radius: 7px;
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 700;
       cursor: pointer;
-      border: 1px solid var(--border);
-      background: var(--surface-elevated);
-      color: var(--text);
+      border: none;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
+      transition: all 0.15s ease;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    .btn:hover {
-      background: var(--surface-hover);
-      border-color: var(--text-dim);
+    .btn-yellow {
+      background: var(--yellow-primary);
+      color: #111215;
+      box-shadow: 0 2px 10px rgba(250, 204, 21, 0.25);
     }
 
-    .btn-primary {
-      background: #fafafa;
-      color: #09090b;
-      border: none;
-      font-weight: 600;
+    .btn-yellow:hover {
+      background: var(--yellow-hover);
+      box-shadow: 0 4px 14px rgba(250, 204, 21, 0.35);
     }
 
-    .btn-primary:hover {
-      background: #e4e4e7;
+    .btn-outline {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
     }
 
-    .btn-danger {
-      background: var(--danger-subtle);
-      border-color: var(--danger-border);
-      color: var(--danger);
-      font-weight: 600;
+    .btn-outline:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-strong);
     }
 
-    .btn-danger:hover {
-      background: rgba(244, 63, 94, 0.2);
-    }
-
-    /* Workspace Layout */
+    /* Main Workspace */
     .workspace {
       display: flex;
       flex: 1;
-      height: calc(100vh - 52px);
+      gap: 12px;
+      padding: 12px 16px;
+      height: calc(100vh - 56px);
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    /* Panels */
+    .panel-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
       overflow: hidden;
     }
 
-    /* Left Sidebar: Ring Directory */
+    /* Left Sidebar: Rings Directory */
     .sidebar-left {
-      width: 290px;
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
+      width: 320px;
       flex-shrink: 0;
+      height: 100%;
     }
 
-    .sidebar-search {
-      padding: 10px 12px;
+    .panel-header-clean {
+      padding: 12px 16px;
       border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(24, 25, 30, 0.6);
     }
 
-    .search-input {
-      width: 100%;
-      background: var(--surface-elevated);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 6px 10px;
+    .panel-title {
       font-size: 12px;
-      color: var(--text);
+      font-weight: 700;
+      color: var(--text-main);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .search-box-clean {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-panel);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-input-clean {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 7px;
+      padding: 7px 10px;
+      font-size: 11px;
+      color: var(--text-main);
       outline: none;
-      font-family: var(--font-sans);
+      font-family: inherit;
     }
 
-    .search-input:focus {
-      border-color: var(--text-dim);
+    .search-input-clean:focus {
+      border-color: var(--yellow-primary);
     }
 
-    .rings-list {
+    .rings-list-scroll {
       flex: 1;
       overflow-y: auto;
       padding: 8px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
-    }
-
-    .ring-item {
-      padding: 10px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      border: 1px solid transparent;
-      background: transparent;
-      display: flex;
-      flex-direction: column;
       gap: 6px;
     }
 
-    .ring-item:hover {
-      background: var(--surface-hover);
+    /* Ring Card Item */
+    .ring-card-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
     }
 
-    .ring-item.active {
-      background: var(--surface-elevated);
-      border-color: var(--border);
+    .ring-card-item:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-strong);
     }
 
-    .ring-item-top {
+    .ring-card-item.active {
+      background: #252834;
+      border-color: var(--yellow-primary);
+      box-shadow: 0 2px 10px rgba(250, 204, 21, 0.15);
+    }
+
+    .ring-card-item.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 3.5px;
+      border-radius: 0 4px 4px 0;
+      background: var(--yellow-primary);
+    }
+
+    .ring-card-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    .ring-title {
-      font-size: 13px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+    .ring-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
     }
 
-    .ring-score-pill {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 600;
+    .ring-risk-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
       padding: 2px 6px;
-      border-radius: 4px;
-      background: var(--danger-subtle);
-      color: var(--danger);
-      border: 1px solid var(--danger-border);
+      border-radius: 5px;
+      background: var(--yellow-bg);
+      color: var(--yellow-primary);
+      border: 1px solid var(--yellow-border);
     }
 
-    .ring-item-bottom {
+    .ring-card-bottom {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       font-size: 11px;
       color: var(--text-muted);
-      font-family: var(--font-mono);
     }
 
-    /* Center Viewport: Graph */
+    .raw-stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .raw-stat-pill svg {
+      opacity: 0.75;
+    }
+
+    /* Center Viewport: Spacious Graph */
     .viewport-center {
       flex: 1;
+      min-width: 0;
+      height: 100%;
       position: relative;
-      background: #09090b;
+      background: #14151a;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Fixed Canvas Wrapper */
+    .canvas-outer {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      min-height: 450px;
       overflow: hidden;
+      background-color: #14151a;
+      background-image: radial-gradient(#252834 1.2px, transparent 1.2px);
+      background-size: 24px 24px;
     }
 
     #network-canvas {
-      width: 100%;
-      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
     }
 
-    /* Floating Graph Toolbar */
-    .graph-toolbar {
+    /* Floating Graph Bar */
+    .canvas-bar {
       position: absolute;
       top: 14px;
       left: 14px;
       display: flex;
       align-items: center;
       gap: 6px;
-      background: rgba(18, 18, 21, 0.85);
+      background: rgba(24, 25, 30, 0.94);
       backdrop-filter: blur(8px);
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-subtle);
       border-radius: 8px;
-      padding: 4px;
+      padding: 5px 8px;
+      box-shadow: var(--shadow-card);
       z-index: 10;
     }
 
-    .tool-btn {
+    .canvas-pill-btn {
       height: 26px;
-      padding: 0 8px;
-      font-size: 11px;
-      font-family: var(--font-sans);
-      border-radius: 4px;
-      border: none;
+      padding: 0 10px;
+      border-radius: 5px;
+      border: 1px solid transparent;
       background: transparent;
       color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
+      transition: all 0.12s ease;
+      font-family: inherit;
     }
 
-    .tool-btn:hover {
-      background: var(--surface-hover);
-      color: var(--text);
+    .canvas-pill-btn:hover {
+      background: var(--bg-card);
+      color: var(--text-main);
     }
 
-    .tool-btn.active {
-      background: var(--surface-hover);
-      color: var(--text);
-      font-weight: 600;
+    .canvas-pill-btn.active {
+      background: var(--bg-card);
+      border-color: var(--border-strong);
+      color: var(--yellow-primary);
     }
 
-    .graph-legend {
+    #filter-user.active {
+      background: var(--bg-card);
+      border-color: rgba(250, 204, 21, 0.5);
+      color: var(--node-user);
+    }
+
+    #filter-device.active {
+      background: var(--bg-card);
+      border-color: rgba(56, 189, 248, 0.5);
+      color: var(--node-device);
+    }
+
+    #filter-merchant.active {
+      background: var(--bg-card);
+      border-color: rgba(52, 211, 153, 0.5);
+      color: var(--node-merchant);
+    }
+
+    /* Legend Floating Pill */
+    .canvas-legend {
       position: absolute;
-      bottom: 14px;
+      bottom: 54px;
       left: 14px;
       display: flex;
       align-items: center;
-      gap: 14px;
-      background: rgba(18, 18, 21, 0.85);
+      gap: 12px;
+      background: rgba(24, 25, 30, 0.94);
       backdrop-filter: blur(8px);
-      border: 1px solid var(--border);
-      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 7px;
       padding: 6px 12px;
+      box-shadow: var(--shadow-card);
       font-size: 11px;
+      font-weight: 600;
       color: var(--text-muted);
       z-index: 10;
     }
 
-    .legend-item {
+    .legend-indicator {
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
     .legend-dot {
-      width: 8px;
-      height: 8px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
     }
 
-    /* Right Inspector Panel */
-    .sidebar-right {
-      width: 320px;
-      background: var(--surface);
-      border-left: 1px solid var(--border);
+    .legend-diamond {
+      width: 9px;
+      height: 9px;
+      transform: rotate(45deg);
+    }
+
+    /* Bottom Architecture Banner */
+    .key-detail-banner {
+      background: rgba(24, 25, 30, 0.95);
+      border-top: 1px solid var(--border-subtle);
+      padding: 8px 16px;
+      font-size: 11px;
+      color: var(--text-muted);
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      gap: 8px;
       flex-shrink: 0;
+      z-index: 5;
+    }
+
+    .key-detail-banner strong {
+      font-weight: 700;
+      color: var(--yellow-primary);
+    }
+
+    /* Right Sidebar: Evidence & Signals Panel */
+    .sidebar-right {
+      width: 340px;
+      flex-shrink: 0;
+      height: 100%;
       overflow-y: auto;
     }
 
-    .panel-header {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border-subtle);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .panel-header h2 {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .panel-content {
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    /* Threat Score Card */
-    .threat-card {
-      background: var(--surface-elevated);
-      border: 1px solid var(--border);
-      border-radius: 8px;
+    .inspector-content {
       padding: 14px;
       display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-    }
-
-    .threat-score-large {
-      font-family: var(--font-mono);
-      font-size: 32px;
-      font-weight: 700;
-      color: var(--danger);
-      line-height: 1;
-    }
-
-    .threat-label {
-      font-size: 11px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    /* Signals Grid */
-    .signals-grid {
-      display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 14px;
     }
 
-    .signal-row {
-      background: var(--surface-elevated);
+    /* Hero Risk Box */
+    .hero-risk-box {
+      background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      border-radius: 6px;
-      padding: 8px 12px;
+      border-left: 4px solid var(--yellow-primary);
+      border-radius: 9px;
+      padding: 14px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
     }
 
-    .signal-name {
-      font-size: 12px;
+    .hero-score-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--yellow-primary);
+    }
+
+    .hero-score-sub {
+      font-size: 10px;
+      font-weight: 600;
       color: var(--text-muted);
-    }
-
-    .signal-num {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    /* Account Chips */
-    .section-title {
-      font-size: 11px;
-      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    .hero-rank-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 5px;
+      background: var(--yellow-bg);
+      color: var(--yellow-primary);
+      border: 1px solid var(--yellow-border);
+    }
+
+    .block-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       margin-bottom: 8px;
     }
 
-    .chips-wrap {
+    /* Signals List */
+    .signals-card-group {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9px;
+      overflow: hidden;
+    }
+
+    .signal-item-row {
+      padding: 9px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 11px;
+    }
+
+    .signal-item-row:last-child {
+      border-bottom: none;
+    }
+
+    .signal-prefix-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: var(--bg-panel);
+      color: var(--yellow-primary);
+      border: 1px solid var(--border-subtle);
+      margin-right: 6px;
+    }
+
+    .signal-label-text {
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .signal-metric-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* Account Chips Grid */
+    .user-chips-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px;
+      gap: 6px;
+      max-height: 130px;
+      overflow-y: auto;
+      padding: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9px;
     }
 
-    .user-chip {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 3px 7px;
-      border-radius: 4px;
-      background: var(--surface-elevated);
-      border: 1px solid var(--border);
-      color: var(--text);
+    .chip-account {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 5px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      color: var(--yellow-primary);
       cursor: pointer;
+      transition: all 0.12s ease;
     }
 
-    .user-chip:hover {
-      border-color: var(--danger);
-      color: var(--danger);
+    .chip-account:hover {
+      background: var(--yellow-bg);
+      border-color: var(--yellow-primary);
     }
 
-    /* Action Buttons */
-    .actions-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    /* Minimal Toast */
-    .toast {
+    /* Toast Alert */
+    .toast-popup {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: var(--surface-elevated);
-      border: 1px solid var(--border);
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-left: 4px solid var(--yellow-primary);
+      border-radius: 8px;
       padding: 10px 16px;
-      border-radius: 6px;
       font-size: 12px;
       display: none;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
-    .toast-dot {
-      width: 6px;
-      height: 6px;
+    .toast-dot-glow {
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      background: var(--success);
+      background: var(--yellow-primary);
+      box-shadow: 0 0 8px rgba(250, 204, 21, 0.8);
     }
   </style>
 </head>
 <body>
 
-  <!-- Minimal Header -->
+  <!-- Top Header Navigation -->
   <header>
-    <div class="brand">
-      <div class="brand-mark"></div>
-      <div class="brand-name">DarkNode</div>
-      <span class="badge-gnn">MPNN GNN</span>
+    <div class="brand-group">
+      <div class="brand-logo-mark">
+        <!-- Raw Network Graph Node Glyph -->
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#111215" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><line x1="12" y1="9" x2="19" y2="6.5"/><line x1="12" y1="15" x2="5" y2="17.5"/></svg>
+      </div>
+      <div class="brand-title">
+        Dark <span class="kicker">Node</span>
+        <span class="badge-pill">GNN-MPNN</span>
+      </div>
     </div>
 
-    <!-- Quick Stats -->
-    <div class="top-stats">
-      <div class="stat-item">
-        <span>Users:</span>
+    <!-- Header Stats -->
+    <div class="header-stats">
+      <div class="stat-pill">
+        <span>USR:</span>
         <span class="stat-val" id="stat-users">1,000</span>
       </div>
-      <div class="stat-item">
-        <span>Transactions:</span>
+      <div class="stat-pill">
+        <span>TXS:</span>
         <span class="stat-val" id="stat-txs">13,680</span>
       </div>
-      <div class="stat-item">
-        <span>Rings:</span>
-        <span class="stat-val" id="stat-rings">12</span>
+      <div class="stat-pill">
+        <span>RINGS:</span>
+        <span class="stat-val" id="stat-rings" style="color: var(--yellow-primary);">10</span>
       </div>
     </div>
 
     <!-- Controls -->
-    <div class="controls-section">
-      <div class="status-indicator" id="status-pill">
-        <span id="status-text">Connecting...</span>
+    <div class="header-actions">
+      <div class="api-box">
+        <div class="status-dot" id="status-dot"></div>
+        <input type="text" id="api-url" value="http://localhost:8000" placeholder="http://localhost:8000">
+        <span class="status-text" id="status-label">ONLINE</span>
       </div>
 
-      <div class="api-pill">
-        <input type="text" id="api-url" value="http://localhost:8000" placeholder="API endpoint">
-      </div>
-
-      <button class="btn btn-primary" onclick="fetchRings()">
-        Analyze
+      <button class="btn btn-yellow" onclick="fetchRings()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Run Analysis
       </button>
     </div>
   </header>
 
-  <!-- Workspace -->
+  <!-- Spacious Workspace (3 Floating Panels) -->
   <div class="workspace">
 
-    <!-- Left: Rings Directory -->
-    <div class="sidebar-left">
-      <div class="sidebar-search">
-        <input type="text" class="search-input" id="search-filter" placeholder="Filter rings..." oninput="filterRings()">
+    <!-- Panel 1: Left Rings Directory -->
+    <div class="panel-card sidebar-left">
+      <div class="panel-header-clean">
+        <span class="panel-title">Detected Syndicates</span>
+        <span class="badge-pill" id="rings-count-badge">10 total</span>
       </div>
-      <div class="rings-list" id="rings-container">
+      <div class="search-box-clean">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="search-input-clean" id="search-filter" placeholder="Filter by Ring ID or User ID..." oninput="filterRings()">
+      </div>
+      <div class="rings-list-scroll" id="rings-container">
         <!-- Injected rings -->
       </div>
     </div>
 
-    <!-- Center: Interactive Vis-Network Viewport -->
-    <div class="viewport-center">
-      <!-- Toolbar -->
-      <div class="graph-toolbar">
-        <button class="tool-btn" onclick="resetGraphView()">Fit</button>
-        <button class="tool-btn" id="physics-toggle" onclick="togglePhysics()">Physics: On</button>
-        <span style="color: var(--border); font-size: 10px;">|</span>
-        <button class="tool-btn active" id="filter-user" onclick="toggleNodeFilter('user')">Users</button>
-        <button class="tool-btn active" id="filter-device" onclick="toggleNodeFilter('device')">Devices</button>
-        <button class="tool-btn active" id="filter-merchant" onclick="toggleNodeFilter('merchant')">Merchants</button>
+    <!-- Panel 2: Center Viewport (Network Graph Canvas) -->
+    <div class="panel-card viewport-center">
+      <!-- Floating Toolbar -->
+      <div class="canvas-bar">
+        <button class="canvas-pill-btn active" onclick="resetGraphView()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+          Fit View
+        </button>
+        <button class="canvas-pill-btn" id="spread-btn" onclick="spreadGraph()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+          <span id="spread-label">Spread Out</span>
+        </button>
+        <button class="canvas-pill-btn" id="physics-toggle" onclick="togglePhysics()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span id="physics-label">Physics: On</span>
+        </button>
+        <span style="color: var(--border-subtle);">|</span>
+        <button class="canvas-pill-btn active" id="filter-user" onclick="toggleFilter('user')">Users</button>
+        <button class="canvas-pill-btn active" id="filter-device" onclick="toggleFilter('device')">Devices</button>
+        <button class="canvas-pill-btn active" id="filter-merchant" onclick="toggleFilter('merchant')">Merchants</button>
       </div>
 
-      <div id="network-canvas"></div>
+      <!-- Graph Canvas Container (Guaranteed non-collapsing) -->
+      <div class="canvas-outer">
+        <div id="network-canvas"></div>
+      </div>
 
-      <!-- Legend -->
-      <div class="graph-legend">
-        <div class="legend-item">
-          <div class="legend-dot" style="background: var(--user-node);"></div>
-          <span>Ring Member</span>
+      <!-- Clean Floating Legend -->
+      <div class="canvas-legend">
+        <div class="legend-indicator">
+          <div class="legend-dot" style="background: var(--node-user);"></div>
+          <span>Syndicate Member</span>
         </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background: var(--device-node);"></div>
+        <div class="legend-indicator">
+          <div class="legend-diamond" style="background: var(--node-device);"></div>
           <span>Shared Device</span>
         </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background: var(--merchant-node);"></div>
-          <span>Merchant</span>
+        <div class="legend-indicator">
+          <div class="legend-dot" style="background: var(--node-merchant); border-radius: 2px;"></div>
+          <span>Target Merchant</span>
         </div>
+      </div>
+
+      <!-- Bottom Insight Banner -->
+      <div class="key-detail-banner">
+        <strong>Architectural Signal:</strong>
+        <span>Heterogeneous Message Passing propagates embeddings across device, IP, and transaction hops to eliminate heuristic false alarms.</span>
       </div>
     </div>
 
-    <!-- Right: Inspector & Reason Signals -->
-    <div class="sidebar-right">
-      <div class="panel-header">
-        <h2 id="inspector-title">Ring Inspector</h2>
-        <span class="badge-gnn" id="inspector-badge">#--</span>
+    <!-- Panel 3: Right Inspector & Evidence Panel -->
+    <div class="panel-card sidebar-right">
+      <div class="panel-header-clean">
+        <span class="panel-title" id="inspector-heading">SYNDICATE #3</span>
+        <span class="badge-pill" id="inspector-badge">RANK #1</span>
       </div>
 
-      <div class="panel-content">
-        <!-- Threat Card -->
-        <div class="threat-card">
+      <div class="inspector-content">
+        <!-- Hero Threat Score Card -->
+        <div class="hero-risk-box">
           <div>
-            <div class="threat-label">Composite Risk</div>
-            <div class="threat-score-large" id="card-threat-score">--</div>
+            <div class="hero-score-val" id="threat-score-num">--</div>
+            <div class="hero-score-sub">Threat Risk Score</div>
           </div>
-          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);" id="card-rank">
-            RANK #--
+          <div class="hero-rank-badge" id="threat-rank-pill">
+            RANK #1
           </div>
         </div>
 
         <!-- Evidence Signals -->
         <div>
-          <div class="section-title">Evidence & Reason Signals</div>
-          <div class="signals-grid">
-            <div class="signal-row">
-              <span class="signal-name">Shared Device Ratio</span>
-              <span class="signal-num" id="sig-device">0%</span>
+          <div class="block-title">Behavioral Reason Signals</div>
+          <div class="signals-card-group">
+            <div class="signal-item-row">
+              <span class="signal-label-text"><span class="signal-prefix-tag">DEV</span>Shared Device Ratio</span>
+              <span class="signal-metric-val" id="sig-device">0%</span>
             </div>
-            <div class="signal-row">
-              <span class="signal-name">Shared IP Pairs</span>
-              <span class="signal-num" id="sig-ip">0 pairs</span>
+            <div class="signal-item-row">
+              <span class="signal-label-text"><span class="signal-prefix-tag">NET</span>Shared IP Pairs</span>
+              <span class="signal-metric-val" id="sig-ip">0 pairs</span>
             </div>
-            <div class="signal-row">
-              <span class="signal-name">Transaction Velocity</span>
-              <span class="signal-num" id="sig-vel">0 tx/hr</span>
+            <div class="signal-item-row">
+              <span class="signal-label-text"><span class="signal-prefix-tag">VEL</span>Burst Velocity</span>
+              <span class="signal-metric-val" id="sig-vel">0 tx/hr</span>
             </div>
-            <div class="signal-row">
-              <span class="signal-name">GNN Fraud Confidence</span>
-              <span class="signal-num" id="sig-gnn">0.00</span>
+            <div class="signal-item-row">
+              <span class="signal-label-text"><span class="signal-prefix-tag">GNN</span>Model Confidence</span>
+              <span class="signal-metric-val" id="sig-gnn">0.00</span>
             </div>
-            <div class="signal-row">
-              <span class="signal-name">Rapid / Burst Accounts</span>
-              <span class="signal-num" id="sig-fresh">0</span>
+            <div class="signal-item-row">
+              <span class="signal-label-text"><span class="signal-prefix-tag">NEW</span>New Accounts Ratio</span>
+              <span class="signal-metric-val" id="sig-fresh">0</span>
             </div>
           </div>
         </div>
 
-        <!-- Members -->
+        <!-- Member Accounts -->
         <div>
-          <div class="section-title">Member Accounts (<span id="members-count">0</span>)</div>
-          <div class="chips-wrap" id="members-chips">
-            <!-- Injected user chips -->
+          <div class="block-title">Syndicate Accounts (<span id="members-count">0</span>)</div>
+          <div class="user-chips-grid" id="members-chips">
+            <!-- Account Chips -->
           </div>
         </div>
 
-        <!-- Actions -->
-        <div class="actions-stack">
-          <button class="btn btn-danger" style="height: 34px;" id="freeze-btn" onclick="freezeRing()">
-            Freeze Ring Accounts
+        <!-- Compliance & Export Actions -->
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
+          <button class="btn btn-yellow" id="freeze-btn" style="height: 36px;" onclick="simulateFreeze()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Freeze Ring Accounts (Simulation)
           </button>
-          <button class="btn" style="height: 32px;" onclick="exportRingJson()">
-            Export Ring Data (JSON)
+          <button class="btn btn-outline" style="height: 34px;" onclick="exportJson()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export Ring Dossier (JSON)
           </button>
         </div>
       </div>
@@ -712,35 +901,34 @@ html_template = """<!DOCTYPE html>
 
   </div>
 
-  <!-- Toast -->
-  <div class="toast" id="toast">
-    <div class="toast-dot"></div>
-    <span id="toast-message">Action confirmed.</span>
+  <!-- Toast Alert -->
+  <div class="toast-popup" id="toast">
+    <div class="toast-dot-glow"></div>
+    <span id="toast-text">Action executed.</span>
   </div>
 
   <script>
     let network = null;
     let allRings = [];
-    let activeRingIndex = 0;
-    let physicsEnabled = true;
-    let nodeFilters = { user: true, device: true, merchant: true };
+    let activeIndex = 0;
+    let physicsState = true;
+    let currentSpringLength = 260;
+    let activeFilters = { user: true, device: true, merchant: true };
+    let currentVisibleNodes = [];
 
-    // Embedded Forward-Pass Rings Data from Trained Model
-    const FALLBACK_DATA = __FALLBACK_JSON__;
+    // Real fallback dataset extracted from trained GNN model
+    const FALLBACK_RINGS = __FALLBACK_JSON__;
 
     async function fetchRings() {
-      const url = document.getElementById("api-url").value.trim().replace(/\/$/, "");
-      const pill = document.getElementById("status-pill");
-      const text = document.getElementById("status-text");
-
-      text.innerText = "Analyzing...";
-      pill.classList.remove("offline");
+      const url = document.getElementById("api-url").value.trim().replace(/\\/$/, "");
+      const dot = document.getElementById("status-dot");
+      const label = document.getElementById("status-label");
 
       try {
         const res = await fetch(`${url}/analyze`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ top_k: 12, threshold: 0.5 })
+          body: JSON.stringify({ top_k: 10, threshold: 0.5 })
         });
 
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -751,17 +939,18 @@ html_template = """<!DOCTYPE html>
           document.getElementById("stat-users").innerText = data.metadata.num_users?.toLocaleString() || "1,000";
           document.getElementById("stat-txs").innerText = data.metadata.total_transactions?.toLocaleString() || "13,680";
         }
-
-        text.innerText = "Live API";
-        pill.classList.remove("offline");
-      } catch (e) {
-        console.warn("Backend unavailable, loading bundled simulation data:", e);
-        allRings = FALLBACK_DATA;
-        text.innerText = "Live API";
-        pill.classList.remove("offline");
+        dot.classList.remove("offline");
+        label.innerText = "LIVE API";
+        showToast("Connected to DarkNode GNN backend");
+      } catch (err) {
+        console.warn("Backend unavailable, using cached model dossier:", err);
+        allRings = FALLBACK_RINGS;
+        dot.classList.add("offline");
+        label.innerText = "CACHED GNN";
       }
 
       document.getElementById("stat-rings").innerText = allRings.length;
+      document.getElementById("rings-count-badge").innerText = `${allRings.length} total`;
       renderRingsList(allRings);
       if (allRings.length > 0) {
         selectRing(0);
@@ -773,70 +962,75 @@ html_template = """<!DOCTYPE html>
       container.innerHTML = "";
 
       rings.forEach((ring, index) => {
-        const item = document.createElement("div");
-        item.className = `ring-item ${index === activeRingIndex ? 'active' : ''}`;
-        item.onclick = () => selectRing(index);
+        const card = document.createElement("div");
+        card.className = `ring-card-item ${index === activeIndex ? 'active' : ''}`;
+        card.onclick = () => selectRing(index);
 
-        item.innerHTML = `
-          <div class="ring-item-top">
-            <span class="ring-title">
-              Ring #${ring.ring_id}
-            </span>
-            <span class="ring-score-pill">${(ring.score * 100).toFixed(1)}%</span>
+        card.innerHTML = `
+          <div class="ring-card-top">
+            <span class="ring-label">Syndicate Ring #${ring.ring_id}</span>
+            <span class="ring-risk-tag">${(ring.score * 100).toFixed(1)}% RISK</span>
           </div>
-          <div class="ring-item-bottom">
-            <span>${ring.member_count} users</span>
-            <span>${ring.shared_device_pct}% dev</span>
-            <span>${Math.round(ring.transaction_velocity)} tx/h</span>
+          <div class="ring-card-bottom">
+            <span class="raw-stat-pill">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              ${ring.member_count} USR
+            </span>
+            <span class="raw-stat-pill">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              ${ring.shared_device_pct}% DEV
+            </span>
+            <span class="raw-stat-pill">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              ${Math.round(ring.transaction_velocity)} TX/H
+            </span>
           </div>
         `;
-        container.appendChild(item);
+        container.appendChild(card);
       });
     }
 
     function filterRings() {
-      const q = document.getElementById("search-filter").value.toLowerCase();
+      const query = document.getElementById("search-filter").value.toLowerCase();
       const filtered = allRings.filter(r => 
-        `ring #${r.ring_id}`.toLowerCase().includes(q) ||
-        r.members.some(m => String(m).includes(q))
+        `ring #${r.ring_id}`.toLowerCase().includes(query) ||
+        r.members.some(m => String(m).includes(query))
       );
       renderRingsList(filtered);
     }
 
     function selectRing(index) {
-      activeRingIndex = index;
+      activeIndex = index;
       const ring = allRings[index];
       if (!ring) return;
 
-      // Update sidebar active selection
-      const items = document.querySelectorAll(".ring-item");
-      items.forEach((it, i) => it.classList.toggle("active", i === index));
+      // Update Active States
+      const cards = document.querySelectorAll(".ring-card-item");
+      cards.forEach((c, i) => c.classList.toggle("active", i === index));
 
-      // Update Inspector Panel (clean, instant updates without digit rolling)
-      document.getElementById("inspector-title").innerText = `Fraud Ring #${ring.ring_id}`;
+      // Update Inspector Panel
+      document.getElementById("inspector-heading").innerText = `SYNDICATE #${ring.ring_id}`;
       document.getElementById("inspector-badge").innerText = `RANK #${ring.rank || index + 1}`;
-      document.getElementById("card-threat-score").innerText = `${(ring.score * 100).toFixed(1)}%`;
-      document.getElementById("card-rank").innerText = `RANK #${ring.rank || index + 1}`;
+      document.getElementById("threat-score-num").innerText = `${(ring.score * 100).toFixed(1)}%`;
+      document.getElementById("threat-rank-pill").innerText = `RANK #${ring.rank || index + 1}`;
 
       document.getElementById("sig-device").innerText = `${ring.shared_device_pct}%`;
       document.getElementById("sig-ip").innerText = `${ring.shared_ip_pairs} pairs`;
       document.getElementById("sig-vel").innerText = `${ring.transaction_velocity} tx/hr`;
       document.getElementById("sig-gnn").innerText = ring.avg_model_score.toFixed(3);
-      document.getElementById("sig-fresh").innerText = `${ring.fresh_account_count}`;
+      document.getElementById("sig-fresh").innerText = `${ring.fresh_account_count} accounts`;
       document.getElementById("members-count").innerText = ring.member_count;
 
       // Reset freeze button
       const freezeBtn = document.getElementById("freeze-btn");
-      if (freezeBtn) {
-        freezeBtn.innerText = "Freeze Ring Accounts";
-        freezeBtn.style.opacity = "1";
-        freezeBtn.disabled = false;
-      }
+      freezeBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Freeze Ring Accounts (Simulation)`;
+      freezeBtn.disabled = false;
+      freezeBtn.style.opacity = "1";
 
-      // Render user chips
-      const chipsContainer = document.getElementById("members-chips");
-      chipsContainer.innerHTML = ring.members.map(u => `
-        <span class="user-chip" onclick="focusNode('user_${u}')">User ${u}</span>
+      // Render Account Chips
+      const chipsBox = document.getElementById("members-chips");
+      chipsBox.innerHTML = ring.members.map(m => `
+        <span class="chip-account" onclick="focusOnNode('user_${m}')">User ${m}</span>
       `).join("");
 
       // Render Graph
@@ -845,150 +1039,274 @@ html_template = """<!DOCTYPE html>
 
     function renderGraph(graphData) {
       const container = document.getElementById("network-canvas");
-      if (!graphData || !graphData.nodes) return;
+      if (!container || !graphData || !graphData.nodes) return;
 
-      // Filter nodes based on active toolbar toggles
-      const visibleNodes = graphData.nodes.filter(n => nodeFilters[n.group] !== false);
-      const visibleNodeIds = new Set(visibleNodes.map(n => n.id));
-      const visibleEdges = (graphData.edges || []).filter(e => visibleNodeIds.has(e.from) && visibleNodeIds.has(e.to));
+      // Filter Nodes
+      const visibleNodes = graphData.nodes.filter(n => activeFilters[n.group] !== false);
+      currentVisibleNodes = visibleNodes;
+      const visibleIds = new Set(visibleNodes.map(n => n.id));
+      const visibleEdges = (graphData.edges || []).filter(e => visibleIds.has(e.from) && visibleIds.has(e.to));
 
       const nodes = new vis.DataSet(visibleNodes.map(n => {
-        let color = "#f43f5e";
+        let color = "#facc15";
         let shape = "dot";
-        let size = 18;
+        let size = 20;
 
         if (n.group === "user") {
-          color = "#f43f5e";
+          color = "#facc15"; // Electric Yellow
           shape = "dot";
-          size = 18;
-        } else if (n.group === "device") {
-          color = "#f59e0b";
-          shape = "diamond";
           size = 20;
+        } else if (n.group === "device") {
+          color = "#38bdf8"; // Cyan Diamond
+          shape = "diamond";
+          size = 22;
         } else if (n.group === "merchant") {
-          color = "#10b981";
+          color = "#34d399"; // Mint Triangle
           shape = "triangle";
-          size = 16;
+          size = 18;
         }
 
         return {
           id: n.id,
-          label: n.label,
+          label: " ", // High contrast constant-scale labels rendered via afterDrawing
+          actualLabel: n.label,
+          group: n.group,
           color: {
             background: color,
-            border: "#27272a",
+            border: "#ffffff",
             highlight: { background: "#ffffff", border: color }
           },
-          borderWidth: 1.5,
+          borderWidth: 2,
           shape: shape,
           size: size,
-          font: { color: "#d4d4d8", size: 11, face: "Inter" }
+          shadow: { enabled: true, color: "rgba(0, 0, 0, 0.6)", size: 6, x: 0, y: 3 }
         };
       }));
 
-      const edges = new vis.DataSet(visibleEdges.map(e => ({
-        from: e.from,
-        to: e.to,
-        label: e.label || e.relation || "",
-        color: { color: "#3f3f46", highlight: "#f43f5e" },
-        font: { color: "#71717a", size: 9, face: "JetBrains Mono" },
-        smooth: { type: "continuous" }
-      })));
+      // Clean, airy edges matching exact relation types
+      const edges = new vis.DataSet(visibleEdges.map(e => {
+        let edgeColor = "#64748b";
+        let dashes = false;
+        let width = 1.6;
+        let tooltip = `Connected (${e.count || 1} links)`;
+
+        if (e.relation === "shared_ip") {
+          edgeColor = "#facc15";
+          dashes = [5, 5];
+          width = 2.0;
+          tooltip = `Shared IP Interconnection (${e.count || 1} links)`;
+        } else if (e.relation === "shared_device" || e.relation === "connected") {
+          edgeColor = "#38bdf8";
+          width = 2.0;
+          tooltip = `Shared Hardware Device (${e.count || 1} links)`;
+        } else if (e.relation === "transaction" || e.relation === "burst_tx") {
+          edgeColor = "#2dd4bf";
+          width = 1.4;
+          tooltip = `Merchant Transaction Burst (${e.count || 1} txs)`;
+        }
+
+        return {
+          from: e.from,
+          to: e.to,
+          color: { color: edgeColor, highlight: "#facc15", hover: "#facc15" },
+          dashes: dashes,
+          width: width,
+          title: tooltip,
+          smooth: { type: "continuous", roundness: 0.25 }
+        };
+      }));
 
       const data = { nodes, edges };
+
+      // Physics configuration (settles calmly and cleanly into spacious layout)
       const options = {
         physics: {
-          enabled: physicsEnabled,
+          enabled: physicsState,
           solver: "forceAtlas2Based",
           forceAtlas2Based: {
-            gravitationalConstant: -180,
-            centralGravity: 0.015,
-            springLength: 110,
-            springConstant: 0.05,
-            damping: 0.45,
+            gravitationalConstant: -460,
+            centralGravity: 0.002,
+            springLength: currentSpringLength,
+            springConstant: 0.035,
+            damping: 0.35,
             avoidOverlap: 1.0
           },
           stabilization: {
             enabled: true,
-            iterations: 150
+            iterations: 160,
+            updateInterval: 25
           }
         },
         interaction: {
           hover: true,
-          tooltipDelay: 100,
+          tooltipDelay: 80,
           zoomView: true,
           dragView: true,
-          dragNodes: true
+          dragNodes: true,
+          zoomSpeed: 0.5
         }
       };
 
       if (network) network.destroy();
       network = new vis.Network(container, data, options);
 
+      // Once layout stabilizes, fit perfectly to frame and stop simulation for zero jitter
+      network.once("stabilizationIterationsDone", function() {
+        network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+        network.stopSimulation();
+      });
+
+      // Constant screen text size & high-contrast visibility at all zoom levels
+      network.on("afterDrawing", function(ctx) {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+        const positions = network.getPositions();
+        ctx.font = "600 11px 'JetBrains Mono', monospace";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        for (const node of currentVisibleNodes) {
+          const pos = positions[node.id];
+          if (!pos) continue;
+          const domPos = network.canvasToDOM({ x: pos.x, y: pos.y });
+
+          // Skip drawing if outside viewport
+          if (domPos.x < -60 || domPos.x > container.clientWidth + 60 ||
+              domPos.y < -60 || domPos.y > container.clientHeight + 60) {
+            continue;
+          }
+
+          const labelText = node.label;
+          const yOffset = (node.group === "device" ? 22 : (node.group === "merchant" ? 20 : 18));
+          const textX = domPos.x;
+          const textY = domPos.y + yOffset;
+
+          // Crisp dark background pill for high contrast
+          const textWidth = ctx.measureText(labelText).width;
+          ctx.fillStyle = "rgba(17, 18, 22, 0.92)";
+          ctx.beginPath();
+          if (ctx.roundRect) {
+            ctx.roundRect(textX - textWidth / 2 - 5, textY - 8, textWidth + 10, 16, 4);
+          } else {
+            ctx.rect(textX - textWidth / 2 - 5, textY - 8, textWidth + 10, 16);
+          }
+          ctx.fill();
+
+          // Subtle entity outline border
+          ctx.strokeStyle = node.group === "user" ? "rgba(250, 204, 21, 0.4)" : (node.group === "device" ? "rgba(56, 189, 248, 0.4)" : "rgba(52, 211, 153, 0.4)");
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+
+          // Text fill color
+          ctx.fillStyle = node.group === "user" ? "#facc15" : (node.group === "device" ? "#38bdf8" : "#34d399");
+          ctx.fillText(labelText, textX, textY);
+        }
+
+        ctx.restore();
+      });
+
+      // Click node to focus
       network.on("click", function(params) {
         if (params.nodes.length > 0) {
-          const clickedId = params.nodes[0];
-          showToast(`Focused: ${clickedId}`);
+          showToast(`Focused: ${params.nodes[0]}`);
         }
       });
     }
 
     function resetGraphView() {
-      if (network) network.fit({ animation: false });
+      if (network) network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
+    }
+
+    function spreadGraph() {
+      currentSpringLength = (currentSpringLength === 260) ? 380 : 260;
+      const btn = document.getElementById("spread-btn");
+      const label = document.getElementById("spread-label");
+      label.innerText = currentSpringLength === 380 ? "Spread: Wide" : "Spread Out";
+      btn.classList.toggle("active", currentSpringLength === 380);
+
+      if (network) {
+        network.setOptions({
+          physics: {
+            enabled: true,
+            forceAtlas2Based: { springLength: currentSpringLength, gravitationalConstant: currentSpringLength === 380 ? -620 : -460 }
+          }
+        });
+        network.startSimulation();
+        setTimeout(() => {
+          if (network) network.stopSimulation();
+        }, 1200);
+      }
     }
 
     function togglePhysics() {
-      physicsEnabled = !physicsEnabled;
-      document.getElementById("physics-toggle").innerText = `Physics: ${physicsEnabled ? 'On' : 'Off'}`;
-      if (network) network.setOptions({ physics: { enabled: physicsEnabled } });
+      physicsState = !physicsState;
+      const label = document.getElementById("physics-label");
+      label.innerText = `Physics: ${physicsState ? 'On' : 'Off'}`;
+      if (network) {
+        if (physicsState) {
+          network.setOptions({ physics: { enabled: true } });
+          network.startSimulation();
+        } else {
+          network.stopSimulation();
+          network.setOptions({ physics: { enabled: false } });
+        }
+      }
     }
 
-    function toggleNodeFilter(type) {
-      nodeFilters[type] = !nodeFilters[type];
+    function toggleFilter(type) {
+      activeFilters[type] = !activeFilters[type];
       const btn = document.getElementById(`filter-${type}`);
-      btn.classList.toggle("active", nodeFilters[type]);
-      const currentRing = allRings[activeRingIndex];
+      btn.classList.toggle("active", activeFilters[type]);
+      const currentRing = allRings[activeIndex];
       if (currentRing) renderGraph(currentRing.graph);
     }
 
-    function focusNode(nodeId) {
+    function focusOnNode(nodeId) {
       if (!network) return;
       network.focus(nodeId, {
         scale: 1.3,
-        animation: false
+        animation: { duration: 500, easingFunction: "easeInOutQuad" }
       });
       network.selectNodes([nodeId]);
     }
 
-    function freezeRing() {
-      const ring = allRings[activeRingIndex];
+    function simulateFreeze() {
+      const ring = allRings[activeIndex];
       if (!ring) return;
       const btn = document.getElementById("freeze-btn");
-      btn.innerText = "Accounts Frozen";
-      btn.style.opacity = "0.6";
+      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Accounts Suspended (Simulation)`;
       btn.disabled = true;
-      showToast(`Frozen ${ring.member_count} accounts in Ring #${ring.ring_id}`);
+      btn.style.opacity = "0.7";
+      showToast(`Simulation: Suspended ${ring.member_count} syndicate accounts in Ring #${ring.ring_id}`);
     }
 
-    function exportRingJson() {
-      const ring = allRings[activeRingIndex];
+    function exportJson() {
+      const ring = allRings[activeIndex];
       if (!ring) return;
       const blob = new Blob([JSON.stringify(ring, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `darknode_ring_${ring.ring_id}.json`;
+      a.download = `darknode_syndicate_${ring.ring_id}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast(`Exported Ring #${ring.ring_id} payload`);
+      showToast(`Exported Ring #${ring.ring_id} dossier.`);
     }
 
-    function showToast(msg) {
+    function showToast(text) {
       const toast = document.getElementById("toast");
-      document.getElementById("toast-message").innerText = msg;
+      document.getElementById("toast-text").innerText = text;
       toast.style.display = "flex";
-      setTimeout(() => { toast.style.display = "none"; }, 3000);
+      setTimeout(() => { toast.style.display = "none"; }, 3500);
     }
+
+    window.addEventListener("resize", () => {
+      if (network) {
+        network.redraw();
+        network.fit();
+      }
+    });
 
     window.addEventListener("DOMContentLoaded", () => {
       fetchRings();
