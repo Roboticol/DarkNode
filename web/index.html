@@ -1350,15 +1350,15 @@
       <div class="canvas-bar">
         <button class="canvas-pill-btn active" onclick="resetGraphView()">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
-          Fit View
+          Focus Ring
         </button>
-        <button class="canvas-pill-btn" id="spread-btn" onclick="spreadGraph()">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
-          <span id="spread-label">Spread Out</span>
+        <button class="canvas-pill-btn" id="galaxy-view-btn" onclick="viewAllRingsGalaxy()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+          Galaxy View
         </button>
-        <button class="canvas-pill-btn" id="physics-toggle" onclick="togglePhysics()">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          <span id="physics-label">Physics: On</span>
+        <button class="canvas-pill-btn active" id="float-toggle-btn" onclick="toggleFloating()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span id="float-label">Float: On</span>
         </button>
         <span style="color: var(--border-subtle);">|</span>
         <button class="canvas-pill-btn active" id="filter-user" onclick="toggleFilter('user')">Users</button>
@@ -9194,10 +9194,11 @@
       if (cntCrit) cntCrit.innerText = critCount;
       if (cntElev) cntElev.innerText = elevCount;
 
+      buildUnifiedGraph(allRings);
       filterRings();
       if (allRings.length > 0) {
         const targetIdx = (activeIndex >= 0 && activeIndex < allRings.length) ? activeIndex : 0;
-        selectRing(targetIdx, false);
+        selectRing(targetIdx, true);
       }
     }
 
@@ -9274,6 +9275,7 @@
 
       activeIndex = 0;
       currentRenderedRingId = null;
+      buildUnifiedGraph(allRings);
       filterRings();
       if (allRings.length > 0) {
         selectRing(0, true);
@@ -9415,7 +9417,359 @@
       }
     }
 
+    let allCanvasNodes = [];
+    let allCanvasEdges = [];
+    let globalNodesDataSet = null;
+    let globalEdgesDataSet = null;
+    let ringCenters = {};
     let currentRenderedRingId = null;
+
+    let floatingEnabled = true;
+    let floatAnimFrameId = null;
+    let draggedCanvasNodeId = null;
+    let isCameraInFlight = false;
+
+    function hashString(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0;
+      }
+      return Math.abs(hash);
+    }
+
+    function getNodeColor(group, isFrozen, isActiveRing) {
+      if (isActiveRing) {
+        if (group === "user") {
+          const col = isFrozen ? "#ef4444" : "#facc15";
+          return { background: col, border: "#ffffff", highlight: { background: "#ffffff", border: col } };
+        } else if (group === "device") {
+          return { background: "#38bdf8", border: "#ffffff", highlight: { background: "#ffffff", border: "#38bdf8" } };
+        } else {
+          return { background: "#34d399", border: "#ffffff", highlight: { background: "#ffffff", border: "#34d399" } };
+        }
+      } else {
+        // Distant rings in continuum: elegant subtle styling for cinematic depth-of-field
+        if (group === "user") {
+          const col = isFrozen ? "rgba(239, 68, 68, 0.45)" : "rgba(250, 204, 21, 0.45)";
+          return { background: col, border: "rgba(255, 255, 255, 0.25)", highlight: { background: "#ffffff", border: "#facc15" } };
+        } else if (group === "device") {
+          return { background: "rgba(56, 189, 248, 0.45)", border: "rgba(255, 255, 255, 0.25)", highlight: { background: "#ffffff", border: "#38bdf8" } };
+        } else {
+          return { background: "rgba(52, 211, 153, 0.45)", border: "rgba(255, 255, 255, 0.25)", highlight: { background: "#ffffff", border: "#34d399" } };
+        }
+      }
+    }
+
+    function buildUnifiedGraph(rings) {
+      const container = document.getElementById("network-canvas");
+      if (!container || !rings || rings.length === 0) return;
+
+      ringCenters = {};
+      allCanvasNodes = [];
+      allCanvasEdges = [];
+
+      const RING_SPACING = 1450;
+      const activeRingId = (rings[activeIndex] ? rings[activeIndex].ring_id : rings[0].ring_id);
+
+      rings.forEach((ring, rIdx) => {
+        // Serially arrange rings along a gentle orbital wave corridor
+        const cx = rIdx * RING_SPACING;
+        const cy = (rIdx % 2 === 0 ? -40 : 40);
+        ringCenters[ring.ring_id] = { x: cx, y: cy };
+
+        const isFrozen = frozenRings.has(ring.ring_id);
+        const isActiveRing = (ring.ring_id === activeRingId);
+        const nodeCount = (ring.graph && ring.graph.nodes) ? ring.graph.nodes.length : 1;
+
+        // Process nodes for this ring
+        (ring.graph.nodes || []).forEach((n, nIdx) => {
+          // Use canonical layout coordinates if available, else radial layout
+          const localX = (typeof n.x === "number") ? n.x : Math.cos(nIdx * 2 * Math.PI / nodeCount) * 160;
+          const localY = (typeof n.y === "number") ? n.y : Math.sin(nIdx * 2 * Math.PI / nodeCount) * 160;
+          const globalX = cx + localX;
+          const globalY = cy + localY;
+          const canvasId = `${ring.ring_id}__${n.id}`;
+
+          const h = hashString(canvasId);
+          const phase = (h % 1000) / 1000 * 6.283;
+          const speedX = 1.05 + ((h % 30) / 100);
+          const speedY = 0.85 + (((h >> 3) % 30) / 100);
+          const ampX = 3.6 + (((h >> 5) % 20) / 10);
+          const ampY = 3.6 + (((h >> 7) % 20) / 10);
+
+          allCanvasNodes.push({
+            id: canvasId,
+            originalId: n.id,
+            ring_id: ring.ring_id,
+            actualLabel: n.label,
+            label: " ", // High contrast pill rendered in afterDrawing
+            group: n.group,
+            x: globalX,
+            y: globalY,
+            baseX: globalX,
+            baseY: globalY,
+            phase: phase,
+            speedX: speedX,
+            speedY: speedY,
+            ampX: ampX,
+            ampY: ampY,
+            color: getNodeColor(n.group, isFrozen, isActiveRing),
+            borderWidth: 2,
+            shape: n.group === "user" ? "dot" : (n.group === "device" ? "diamond" : "triangle"),
+            size: n.group === "device" ? 22 : (n.group === "merchant" ? 18 : 20),
+            shadow: { enabled: true, color: "rgba(0, 0, 0, 0.6)", size: 6, x: 0, y: 3 },
+            hidden: activeFilters[n.group] === false
+          });
+        });
+
+        // Process intra-ring edges
+        (ring.graph.edges || []).forEach(e => {
+          let edgeColor = "#64748b";
+          let dashes = false;
+          let width = 1.6;
+          let tooltip = `Connected (${e.count || 1} links)`;
+
+          if (e.relation === "shared_ip") {
+            edgeColor = "#facc15";
+            dashes = [5, 5];
+            width = 2.0;
+            tooltip = `Shared IP Interconnection (${e.count || 1} links)`;
+          } else if (e.relation === "shared_device" || e.relation === "connected") {
+            edgeColor = "#38bdf8";
+            width = 2.0;
+            tooltip = `Shared Hardware Device (${e.count || 1} links)`;
+          } else if (e.relation === "transaction" || e.relation === "burst_tx") {
+            edgeColor = "#2dd4bf";
+            width = 1.4;
+            tooltip = `Merchant Transaction Burst (${e.count || 1} txs)`;
+          }
+
+          allCanvasEdges.push({
+            id: `${ring.ring_id}__${e.from}__${e.to}__${e.relation}`,
+            ring_id: ring.ring_id,
+            from: `${ring.ring_id}__${e.from}`,
+            to: `${ring.ring_id}__${e.to}`,
+            color: { color: edgeColor, highlight: "#facc15", hover: "#facc15" },
+            dashes: dashes,
+            width: width,
+            title: tooltip,
+            smooth: { type: "continuous", roundness: 0.25 }
+          });
+        });
+      });
+
+      // Inter-Syndicate Continuum Corridor Edges connecting consecutive rings
+      for (let i = 0; i < rings.length - 1; i++) {
+        const r1 = rings[i];
+        const r2 = rings[i + 1];
+        if (r1.graph && r1.graph.nodes && r1.graph.nodes.length &&
+            r2.graph && r2.graph.nodes && r2.graph.nodes.length) {
+          allCanvasEdges.push({
+            id: `continuum_${r1.ring_id}_${r2.ring_id}`,
+            from: `${r1.ring_id}__${r1.graph.nodes[0].id}`,
+            to: `${r2.ring_id}__${r2.graph.nodes[0].id}`,
+            color: { color: "rgba(250, 204, 21, 0.22)", highlight: "#facc15", hover: "#facc15" },
+            dashes: [6, 8],
+            width: 1.4,
+            title: `Inter-Syndicate Trail: Ring #${r1.ring_id} ➔ Ring #${r2.ring_id} (Chain Vector)`,
+            smooth: { type: "curvedCW", roundness: 0.15 }
+          });
+        }
+      }
+
+      globalNodesDataSet = new vis.DataSet(allCanvasNodes);
+      globalEdgesDataSet = new vis.DataSet(allCanvasEdges);
+
+      const data = { nodes: globalNodesDataSet, edges: globalEdgesDataSet };
+
+      const options = {
+        layout: {
+          randomSeed: 42,
+          improvedLayout: false
+        },
+        physics: {
+          enabled: false // Exact canonical spatial placement with custom zero-gravity floating
+        },
+        interaction: {
+          hover: true,
+          tooltipDelay: 80,
+          zoomView: true,
+          dragView: true,
+          dragNodes: true,
+          zoomSpeed: 0.5
+        }
+      };
+
+      if (network) {
+        network.destroy();
+      }
+      network = new vis.Network(container, data, options);
+
+      // Node Drag Handling for custom floating interaction
+      network.on("dragStart", function(params) {
+        if (params.nodes && params.nodes.length > 0) {
+          draggedCanvasNodeId = params.nodes[0];
+        }
+      });
+
+      network.on("dragEnd", function() {
+        if (draggedCanvasNodeId) {
+          const positions = network.getPositions([draggedCanvasNodeId]);
+          const pos = positions[draggedCanvasNodeId];
+          if (pos) {
+            const foundNode = allCanvasNodes.find(n => n.id === draggedCanvasNodeId);
+            if (foundNode) {
+              foundNode.baseX = pos.x;
+              foundNode.baseY = pos.y;
+            }
+          }
+          draggedCanvasNodeId = null;
+        }
+      });
+
+      // Canvas Label Rendering in afterDrawing
+      network.on("afterDrawing", function(ctx) {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+        const positions = network.getPositions();
+        const activeRing = allRings[activeIndex];
+        if (!activeRing) { ctx.restore(); return; }
+
+        for (let i = 0; i < allCanvasNodes.length; i++) {
+          const node = allCanvasNodes[i];
+          if (activeFilters[node.group] === false) continue;
+
+          const isActiveRingNode = (node.ring_id === activeRing.ring_id);
+          const pos = positions[node.id];
+          if (!pos) continue;
+
+          const domPos = network.canvasToDOM({ x: pos.x, y: pos.y });
+
+          // Skip drawing if outside viewport
+          if (domPos.x < -80 || domPos.x > container.clientWidth + 80 ||
+              domPos.y < -80 || domPos.y > container.clientHeight + 80) {
+            continue;
+          }
+
+          // At low zoom, only show active ring labels to avoid clutter
+          if (!isActiveRingNode && network.getScale() < 0.65) continue;
+
+          const labelText = node.actualLabel;
+          const yOffset = (node.group === "device" ? 22 : (node.group === "merchant" ? 20 : 18));
+          const textX = domPos.x;
+          const textY = domPos.y + yOffset;
+
+          ctx.font = isActiveRingNode ? "600 11px 'JetBrains Mono', monospace" : "500 10px 'JetBrains Mono', monospace";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          const textWidth = ctx.measureText(labelText).width;
+          ctx.fillStyle = isActiveRingNode ? "rgba(17, 18, 22, 0.92)" : "rgba(17, 18, 22, 0.70)";
+          ctx.beginPath();
+          if (ctx.roundRect) {
+            ctx.roundRect(textX - textWidth / 2 - 5, textY - 8, textWidth + 10, 16, 4);
+          } else {
+            ctx.rect(textX - textWidth / 2 - 5, textY - 8, textWidth + 10, 16);
+          }
+          ctx.fill();
+
+          const isFrozen = (node.group === "user" && frozenRings.has(node.ring_id));
+          let strokeColor = node.group === "user" ? (isFrozen ? "rgba(239, 68, 68, 0.5)" : "rgba(250, 204, 21, 0.4)") : (node.group === "device" ? "rgba(56, 189, 248, 0.4)" : "rgba(52, 211, 153, 0.4)");
+          if (!isActiveRingNode) strokeColor = "rgba(156, 163, 175, 0.25)";
+          ctx.strokeStyle = strokeColor;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+
+          let textColor = node.group === "user" ? (isFrozen ? "#ef4444" : "#facc15") : (node.group === "device" ? "#38bdf8" : "#34d399");
+          if (!isActiveRingNode) textColor = "rgba(156, 163, 175, 0.65)";
+          ctx.fillStyle = textColor;
+          ctx.fillText(labelText, textX, textY);
+        }
+
+        ctx.restore();
+      });
+
+      // Interactive Click on Any Node (Selects ring & opens inspector)
+      network.on("click", function(params) {
+        if (params.nodes && params.nodes.length > 0) {
+          const clickedCanvasId = params.nodes[0];
+          const nodeObj = allCanvasNodes.find(n => n.id === clickedCanvasId);
+          if (nodeObj) {
+            if (nodeObj.ring_id !== allRings[activeIndex].ring_id) {
+              const targetIdx = allRings.findIndex(r => r.ring_id === nodeObj.ring_id);
+              if (targetIdx !== -1) {
+                selectRing(targetIdx, false);
+              }
+            }
+            showNodeInspector(clickedCanvasId);
+          }
+        } else {
+          closeNodeInspector();
+        }
+      });
+
+      startFloatingEngine();
+    }
+
+    function startFloatingEngine() {
+      if (floatAnimFrameId) cancelAnimationFrame(floatAnimFrameId);
+
+      let lastTime = 0;
+      function floatStep(now) {
+        floatAnimFrameId = requestAnimationFrame(floatStep);
+
+        if (!floatingEnabled || !network || !globalNodesDataSet) return;
+        if (isCameraInFlight) return; // Keep camera flight completely smooth
+
+        // ~35-40fps throttle for buttery performance
+        if (now - lastTime < 28) return;
+        lastTime = now;
+
+        const t = now * 0.001;
+        const activeRing = allRings[activeIndex];
+        if (!activeRing) return;
+
+        // Gently float nodes belonging to active ring & adjacent rings
+        const updates = [];
+        for (let i = 0; i < allCanvasNodes.length; i++) {
+          const n = allCanvasNodes[i];
+          if (draggedCanvasNodeId === n.id) continue;
+          if (Math.abs(n.ring_id - activeRing.ring_id) > 2) continue;
+
+          const ox = Math.sin(t * n.speedX + n.phase) * n.ampX;
+          const oy = Math.cos(t * n.speedY + n.phase * 1.3) * n.ampY;
+
+          updates.push({
+            id: n.id,
+            x: n.baseX + ox,
+            y: n.baseY + oy
+          });
+        }
+
+        if (updates.length > 0) {
+          globalNodesDataSet.update(updates);
+        }
+      }
+
+      floatAnimFrameId = requestAnimationFrame(floatStep);
+    }
+
+    function toggleFloating() {
+      floatingEnabled = !floatingEnabled;
+      const btn = document.getElementById("float-toggle-btn");
+      const lbl = document.getElementById("float-label");
+      if (btn) btn.classList.toggle("active", floatingEnabled);
+      if (lbl) lbl.innerText = `Float: ${floatingEnabled ? 'On' : 'Off'}`;
+      showToast(`Floating animation: ${floatingEnabled ? 'Active' : 'Paused'}`);
+
+      // If paused, reset to base positions
+      if (!floatingEnabled && globalNodesDataSet) {
+        const resets = allCanvasNodes.map(n => ({ id: n.id, x: n.baseX, y: n.baseY }));
+        globalNodesDataSet.update(resets);
+      }
+    }
 
     function selectRing(index, forceRerender = false) {
       activeIndex = index;
@@ -9424,11 +9778,11 @@
 
       closeNodeInspector();
 
-      // Update Active States
+      // Update Active States on sidebar cards
       const cards = document.querySelectorAll(".ring-card-item");
       cards.forEach((c, i) => c.classList.toggle("active", i === index));
 
-      // Update Inspector Panel
+      // Update Inspector Panel Header & Signals
       document.getElementById("inspector-heading").innerText = `SYNDICATE #${ring.ring_id}`;
       document.getElementById("inspector-badge").innerText = `RANK #${ring.rank || index + 1}`;
       document.getElementById("threat-score-num").innerText = `${(ring.score * 100).toFixed(1)}%`;
@@ -9451,221 +9805,53 @@
         freezeBtn.style.background = "#ef4444";
         freezeBtn.style.color = "#ffffff";
       } else {
-        freezeBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Freeze Ring Accounts (Simulation)`;
+        freezeBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Freeze Syndicate Accounts`;
         freezeBtn.disabled = false;
         freezeBtn.style.opacity = "1";
         freezeBtn.style.background = "var(--yellow-primary)";
         freezeBtn.style.color = "#111215";
       }
 
-      // Render Account Chips
+      // Render Account Chips with exact canvas node IDs
       const chipsBox = document.getElementById("members-chips");
       chipsBox.innerHTML = ring.members.map(m => `
-        <span class="chip-account ${isFrozen ? 'frozen' : ''}" onclick="focusOnNode('user_${m}')">
+        <span class="chip-account ${isFrozen ? 'frozen' : ''}" onclick="focusOnNode('${ring.ring_id}__user_${m}')">
           User ${m} ${isFrozen ? '<span style="font-size: 8px; color: #ef4444;">[FROZEN]</span>' : ''}
         </span>
       `).join("");
 
-      // Only re-render graph if the ring actually changed or forced
-      if (!network || currentRenderedRingId !== ring.ring_id || forceRerender) {
-        renderGraph(ring.graph);
-        currentRenderedRingId = ring.ring_id;
+      // Update Node Colors across the Continuum: Active ring illuminates, others dim
+      if (globalNodesDataSet) {
+        const colorUpdates = allCanvasNodes.map(n => ({
+          id: n.id,
+          color: getNodeColor(n.group, frozenRings.has(n.ring_id), n.ring_id === ring.ring_id)
+        }));
+        globalNodesDataSet.update(colorUpdates);
+      }
+
+      // Smooth Continuation Camera Flight: glide along the universe from old ring to new ring!
+      const center = ringCenters[ring.ring_id];
+      if (center && network) {
+        isCameraInFlight = true;
+        network.moveTo({
+          position: center,
+          scale: 0.95,
+          animation: {
+            duration: 850,
+            easingFunction: "easeInOutCubic"
+          }
+        });
+        setTimeout(() => {
+          isCameraInFlight = false;
+        }, 900);
       }
     }
 
     function renderGraph(graphData) {
-      const container = document.getElementById("network-canvas");
-      if (!container || !graphData || !graphData.nodes) return;
-
-      // Filter Nodes
-      const visibleNodes = graphData.nodes.filter(n => activeFilters[n.group] !== false);
-      currentVisibleNodes = visibleNodes;
-      const visibleIds = new Set(visibleNodes.map(n => n.id));
-      const visibleEdges = (graphData.edges || []).filter(e => visibleIds.has(e.from) && visibleIds.has(e.to));
-
-      const ring = allRings[activeIndex];
-      const isFrozen = ring && frozenRings.has(ring.ring_id);
-
-      const nodes = new vis.DataSet(visibleNodes.map(n => {
-        let color = "#facc15";
-        let shape = "dot";
-        let size = 20;
-
-        if (n.group === "user") {
-          color = isFrozen ? "#ef4444" : "#facc15"; // Red if frozen, Electric Yellow otherwise
-          shape = "dot";
-          size = 20;
-        } else if (n.group === "device") {
-          color = "#38bdf8"; // Cyan Diamond
-          shape = "diamond";
-          size = 22;
-        } else if (n.group === "merchant") {
-          color = "#34d399"; // Mint Triangle
-          shape = "triangle";
-          size = 18;
-        }
-
-        const nodeObj = {
-          id: n.id,
-          label: " ", // High contrast constant-scale labels rendered via afterDrawing
-          actualLabel: n.label,
-          group: n.group,
-          color: {
-            background: color,
-            border: "#ffffff",
-            highlight: { background: "#ffffff", border: color }
-          },
-          borderWidth: 2,
-          shape: shape,
-          size: size,
-          shadow: { enabled: true, color: "rgba(0, 0, 0, 0.6)", size: 6, x: 0, y: 3 }
-        };
-
-        // Fixed canonical layout coordinates for rock-solid model stability
-        if (typeof n.x === "number" && typeof n.y === "number") {
-          nodeObj.x = n.x;
-          nodeObj.y = n.y;
-        }
-
-        return nodeObj;
-      }));
-
-      // Clean, airy edges matching exact relation types
-      const edges = new vis.DataSet(visibleEdges.map(e => {
-        let edgeColor = "#64748b";
-        let dashes = false;
-        let width = 1.6;
-        let tooltip = `Connected (${e.count || 1} links)`;
-
-        if (e.relation === "shared_ip") {
-          edgeColor = "#facc15";
-          dashes = [5, 5];
-          width = 2.0;
-          tooltip = `Shared IP Interconnection (${e.count || 1} links)`;
-        } else if (e.relation === "shared_device" || e.relation === "connected") {
-          edgeColor = "#38bdf8";
-          width = 2.0;
-          tooltip = `Shared Hardware Device (${e.count || 1} links)`;
-        } else if (e.relation === "transaction" || e.relation === "burst_tx") {
-          edgeColor = "#2dd4bf";
-          width = 1.4;
-          tooltip = `Merchant Transaction Burst (${e.count || 1} txs)`;
-        }
-
-        return {
-          from: e.from,
-          to: e.to,
-          color: { color: edgeColor, highlight: "#facc15", hover: "#facc15" },
-          dashes: dashes,
-          width: width,
-          title: tooltip,
-          smooth: { type: "continuous", roundness: 0.25 }
-        };
-      }));
-
-      const data = { nodes, edges };
-
-      // Physics configuration with fixed randomSeed for 100% deterministic layout
-      const options = {
-        layout: {
-          randomSeed: 42,
-          improvedLayout: false
-        },
-        physics: {
-          enabled: physicsState,
-          solver: "forceAtlas2Based",
-          forceAtlas2Based: {
-            gravitationalConstant: -460,
-            centralGravity: 0.002,
-            springLength: currentSpringLength,
-            springConstant: 0.035,
-            damping: 0.35,
-            avoidOverlap: 1.0
-          },
-          stabilization: {
-            enabled: true,
-            iterations: 120,
-            updateInterval: 25
-          }
-        },
-        interaction: {
-          hover: true,
-          tooltipDelay: 80,
-          zoomView: true,
-          dragView: true,
-          dragNodes: true,
-          zoomSpeed: 0.5
-        }
-      };
-
-      if (network) network.destroy();
-      network = new vis.Network(container, data, options);
-
-      // Once layout stabilizes, fit perfectly to frame and stop simulation for zero jitter
-      network.once("stabilizationIterationsDone", function() {
-        network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
-        network.stopSimulation();
-      });
-
-      // Constant screen text size & high-contrast visibility at all zoom levels
-      network.on("afterDrawing", function(ctx) {
-        ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-        const positions = network.getPositions();
-        ctx.font = "600 11px 'JetBrains Mono', monospace";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-
-        for (const node of currentVisibleNodes) {
-          const pos = positions[node.id];
-          if (!pos) continue;
-          const domPos = network.canvasToDOM({ x: pos.x, y: pos.y });
-
-          // Skip drawing if outside viewport
-          if (domPos.x < -60 || domPos.x > container.clientWidth + 60 ||
-              domPos.y < -60 || domPos.y > container.clientHeight + 60) {
-            continue;
-          }
-
-          const labelText = node.label;
-          const yOffset = (node.group === "device" ? 22 : (node.group === "merchant" ? 20 : 18));
-          const textX = domPos.x;
-          const textY = domPos.y + yOffset;
-
-          // Crisp dark background pill for high contrast
-          const textWidth = ctx.measureText(labelText).width;
-          ctx.fillStyle = "rgba(17, 18, 22, 0.92)";
-          ctx.beginPath();
-          if (ctx.roundRect) {
-            ctx.roundRect(textX - textWidth / 2 - 5, textY - 8, textWidth + 10, 16, 4);
-          } else {
-            ctx.rect(textX - textWidth / 2 - 5, textY - 8, textWidth + 10, 16);
-          }
-          ctx.fill();
-
-          // Subtle entity outline border
-          ctx.strokeStyle = node.group === "user" ? (isFrozen ? "rgba(239, 68, 68, 0.5)" : "rgba(250, 204, 21, 0.4)") : (node.group === "device" ? "rgba(56, 189, 248, 0.4)" : "rgba(52, 211, 153, 0.4)");
-          ctx.lineWidth = 0.8;
-          ctx.stroke();
-
-          // Text fill color
-          ctx.fillStyle = node.group === "user" ? (isFrozen ? "#ef4444" : "#facc15") : (node.group === "device" ? "#38bdf8" : "#34d399");
-          ctx.fillText(labelText, textX, textY);
-        }
-
-        ctx.restore();
-      });
-
-      // Interactive Node Inspector Trigger on Node Click
-      network.on("click", function(params) {
-        if (params.nodes.length > 0) {
-          const nodeId = params.nodes[0];
-          showNodeInspector(nodeId);
-        } else {
-          closeNodeInspector();
-        }
-      });
+      if (!globalNodesDataSet) {
+        buildUnifiedGraph(allRings);
+      }
+      resetGraphView();
     }
 
     function showNodeInspector(nodeId) {
@@ -9673,32 +9859,34 @@
       const card = document.getElementById("node-inspector");
       if (!card) return;
 
-      const ring = allRings[activeIndex];
-      const gNode = ring ? (ring.graph.nodes || []).find(n => n.id === nodeId) : null;
-      if (!gNode) return;
+      const nodeObj = allCanvasNodes.find(n => n.id === nodeId);
+      if (!nodeObj) return;
 
-      document.getElementById("inspect-id").innerText = gNode.label;
+      const ring = allRings.find(r => r.ring_id === nodeObj.ring_id);
+      if (!ring) return;
+
+      document.getElementById("inspect-id").innerText = nodeObj.actualLabel;
       const dot = document.getElementById("inspect-dot");
       const role = document.getElementById("inspect-role");
       const score = document.getElementById("inspect-score");
       const deg = document.getElementById("inspect-deg");
 
       // Count connected edges
-      const connectedEdges = (ring.graph.edges || []).filter(e => e.from === nodeId || e.to === nodeId);
+      const connectedEdges = allCanvasEdges.filter(e => e.from === nodeId || e.to === nodeId);
       deg.innerText = `${connectedEdges.length} connected hop${connectedEdges.length === 1 ? '' : 's'}`;
 
-      if (gNode.group === "user") {
+      if (nodeObj.group === "user") {
         const isFrozen = frozenRings.has(ring.ring_id);
         dot.style.background = isFrozen ? "#ef4444" : "var(--node-user)";
         role.innerText = "Syndicate Member Account";
         score.innerText = `Threat Risk: ${(ring.score * 100).toFixed(1)}%`;
         score.style.color = isFrozen ? "#ef4444" : "var(--yellow-primary)";
-      } else if (gNode.group === "device") {
+      } else if (nodeObj.group === "device") {
         dot.style.background = "var(--node-device)";
         role.innerText = "Shared Hardware Device (IMEI/MAC)";
         score.innerText = `Multiplexed by ${connectedEdges.length} Accounts`;
         score.style.color = "var(--node-device)";
-      } else if (gNode.group === "merchant") {
+      } else if (nodeObj.group === "merchant") {
         dot.style.background = "var(--node-merchant)";
         role.innerText = "Target Merchant Terminal";
         score.innerText = `Velocity: ${Math.round(ring.transaction_velocity)} tx/hr`;
@@ -9717,79 +9905,70 @@
     function isolateNodeNeighbors() {
       if (!inspectedNodeId || !network) return;
       focusOnNode(inspectedNodeId);
-      const ring = allRings[activeIndex];
-      if (!ring) return;
       const neighbors = new Set([inspectedNodeId]);
-      (ring.graph.edges || []).forEach(e => {
+      allCanvasEdges.forEach(e => {
         if (e.from === inspectedNodeId) neighbors.add(e.to);
         if (e.to === inspectedNodeId) neighbors.add(e.from);
       });
       network.selectNodes(Array.from(neighbors));
-      showToast(`Selected ${neighbors.size} adjacent hops for ${inspectedNodeId}`);
+      const cleanId = inspectedNodeId.includes('__') ? inspectedNodeId.split('__')[1] : inspectedNodeId;
+      showToast(`Selected ${neighbors.size} adjacent hops for ${cleanId}`);
     }
 
     function copyNodeId() {
       if (!inspectedNodeId) return;
-      navigator.clipboard.writeText(inspectedNodeId);
-      showToast(`Copied identifier: ${inspectedNodeId}`);
+      const cleanId = inspectedNodeId.includes('__') ? inspectedNodeId.split('__')[1] : inspectedNodeId;
+      navigator.clipboard.writeText(cleanId);
+      showToast(`Copied identifier: ${cleanId}`);
     }
 
     function resetGraphView() {
-      if (network) network.fit({ animation: { duration: 350, easingFunction: "easeInOutQuad" } });
-    }
-
-    function spreadGraph() {
-      currentSpringLength = (currentSpringLength === 260) ? 380 : 260;
-      const btn = document.getElementById("spread-btn");
-      const label = document.getElementById("spread-label");
-      label.innerText = currentSpringLength === 380 ? "Spread: Wide" : "Spread Out";
-      btn.classList.toggle("active", currentSpringLength === 380);
-
-      if (network) {
-        network.setOptions({
-          physics: {
-            enabled: true,
-            forceAtlas2Based: { springLength: currentSpringLength, gravitationalConstant: currentSpringLength === 380 ? -620 : -460 }
-          }
+      const ring = allRings[activeIndex];
+      if (ring && ringCenters[ring.ring_id] && network) {
+        isCameraInFlight = true;
+        network.moveTo({
+          position: ringCenters[ring.ring_id],
+          scale: 0.95,
+          animation: { duration: 600, easingFunction: "easeInOutCubic" }
         });
-        network.startSimulation();
-        setTimeout(() => {
-          if (network) network.stopSimulation();
-        }, 1200);
+        setTimeout(() => { isCameraInFlight = false; }, 650);
       }
     }
 
-    function togglePhysics() {
-      physicsState = !physicsState;
-      const label = document.getElementById("physics-label");
-      label.innerText = `Physics: ${physicsState ? 'On' : 'Off'}`;
+    function viewAllRingsGalaxy() {
       if (network) {
-        if (physicsState) {
-          network.setOptions({ physics: { enabled: true } });
-          network.startSimulation();
-        } else {
-          network.stopSimulation();
-          network.setOptions({ physics: { enabled: false } });
-        }
+        isCameraInFlight = true;
+        network.fit({
+          animation: { duration: 900, easingFunction: "easeInOutCubic" }
+        });
+        setTimeout(() => { isCameraInFlight = false; }, 950);
+        showToast("Displaying Full Multi-Syndicate Galaxy Continuum");
       }
     }
 
     function toggleFilter(type) {
       activeFilters[type] = !activeFilters[type];
       const btn = document.getElementById(`filter-${type}`);
-      btn.classList.toggle("active", activeFilters[type]);
-      const currentRing = allRings[activeIndex];
-      if (currentRing) renderGraph(currentRing.graph);
+      if (btn) btn.classList.toggle("active", activeFilters[type]);
+
+      if (globalNodesDataSet) {
+        const updates = allCanvasNodes
+          .filter(n => n.group === type)
+          .map(n => ({ id: n.id, hidden: activeFilters[type] === false }));
+        globalNodesDataSet.update(updates);
+      }
     }
 
     function focusOnNode(nodeId) {
       if (!network) return;
-      network.focus(nodeId, {
-        scale: 1.3,
-        animation: { duration: 500, easingFunction: "easeInOutQuad" }
+      const activeRing = allRings[activeIndex];
+      const targetId = nodeId.includes("__") ? nodeId : `${activeRing.ring_id}__${nodeId}`;
+      network.focus(targetId, {
+        scale: 1.25,
+        animation: { duration: 600, easingFunction: "easeInOutCubic" }
       });
-      network.selectNodes([nodeId]);
-      showNodeInspector(nodeId);
+      network.selectNodes([targetId]);
+      showNodeInspector(targetId);
     }
 
     async function executeFreezeAction() {
@@ -9975,7 +10154,7 @@
     window.addEventListener("resize", () => {
       if (network) {
         network.redraw();
-        network.fit();
+        resetGraphView();
       }
     });
 
