@@ -204,6 +204,62 @@ def get_enforcement_status() -> dict[str, Any]:
     }
 
 
+class GenerateGraphRequest(BaseModel):
+    seed: int | None = None
+    threshold: float = 0.5
+
+
+@app.post("/generate-graph")
+def generate_new_graph(request: GenerateGraphRequest | None = None) -> dict[str, Any]:
+    """Generate a fresh synthetic transaction graph and run real GNN inference."""
+    import random
+    from src.data_processing.generate_synthetic_graph import GeneratorConfig, generate_synthetic_graph
+
+    seed = request.seed if (request and request.seed is not None) else random.randint(10, 999999)
+    threshold = request.threshold if request else 0.5
+
+    config = GeneratorConfig(seed=seed)
+    data, nx_g, meta = generate_synthetic_graph(config)
+    torch.save({"data": data, "nx": nx_g, "metadata": meta}, GRAPH_PATH)
+    ENFORCEMENT_STATE.clear()
+
+    checkpoint = torch.load(MODEL_PATH, weights_only=False)
+    model = HeterogeneousMPNN()
+    model.load_state_dict(checkpoint["model_state"])
+    model.eval()
+
+    with torch.no_grad():
+        logits = model(data)
+        probabilities = logits.softmax(dim=-1)[:, 1]
+
+    rings = extract_rings(
+        data=data,
+        nx_graph=nx_g,
+        user_scores=probabilities,
+        threshold=threshold,
+        top_k=10,
+    )
+
+    for r in rings:
+        r["is_suspended"] = False
+
+    return {
+        "status": "success",
+        "message": f"Generated fresh transaction graph (Seed: {seed})",
+        "seed": seed,
+        "total_rings": len(rings),
+        "rings": rings,
+        "metadata": {
+            "num_users": int(data["user"].num_nodes),
+            "num_merchants": int(data["merchant"].num_nodes),
+            "num_devices": int(data["device"].num_nodes),
+            "total_transactions": int(data[("user", "transacts", "merchant")].num_edges),
+            "seed": seed,
+            "threshold": threshold,
+        },
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("api.main:app", host="0.0.0.0", port=8000, reload=True)
