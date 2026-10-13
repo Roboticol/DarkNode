@@ -2592,14 +2592,15 @@ html_template = """<!DOCTYPE html>
       const cx = (minX + maxX) / 2;
       const cy = (minY + maxY) / 2;
 
-      // Available viewing area ensuring top nodes clear floating toolbar (60px) and bottom nodes clear legend (50px)
+      // Exact default scale matching the reference screenshot: 0.58
       const canvasW = container.clientWidth || 800;
       const canvasH = container.clientHeight || 600;
 
       const availW = Math.max(200, canvasW - 90);
       const availH = Math.max(200, canvasH - 120);
 
-      const targetScale = Math.min(availW / w, availH / h, 1.0);
+      const maxFitScale = Math.min(availW / w, availH / h);
+      const targetScale = Math.min(0.58, maxFitScale > 0 ? maxFitScale : 0.58);
 
       network.moveTo({
         position: { x: cx, y: cy },
