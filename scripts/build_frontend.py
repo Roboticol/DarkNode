@@ -2264,6 +2264,38 @@ html_template = """<!DOCTYPE html>
           dragView: true,
           dragNodes: true,
           zoomSpeed: 0.5
+        },
+        groups: {
+          user: {
+            color: {
+              background: isFrozen ? "#ef4444" : "#facc15",
+              border: "#ffffff",
+              highlight: { background: "#ffffff", border: isFrozen ? "#ef4444" : "#facc15" },
+              hover: { background: isFrozen ? "#ef4444" : "#facc15", border: "#ffffff" }
+            },
+            shape: "dot",
+            size: 20
+          },
+          device: {
+            color: {
+              background: "#38bdf8",
+              border: "#ffffff",
+              highlight: { background: "#ffffff", border: "#38bdf8" },
+              hover: { background: "#38bdf8", border: "#ffffff" }
+            },
+            shape: "diamond",
+            size: 22
+          },
+          merchant: {
+            color: {
+              background: "#34d399",
+              border: "#ffffff",
+              highlight: { background: "#ffffff", border: "#34d399" },
+              hover: { background: "#34d399", border: "#ffffff" }
+            },
+            shape: "triangle",
+            size: 18
+          }
         }
       };
 
