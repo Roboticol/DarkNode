@@ -102,26 +102,93 @@
       line-height: 1;
     }
 
-    @keyframes nodeLightEffect {
-      0%, 25% {
-        color: #ffffff;
-        text-shadow: none;
-      }
-      42%, 78% {
+    @keyframes defectiveBulbBlink {
+      /* Steady on in vibrant yellow */
+      0%, 18% {
         color: var(--yellow-primary);
-        text-shadow: 0 0 6px rgba(250, 204, 21, 0.65), 0 0 12px rgba(250, 204, 21, 0.35);
       }
-      92%, 100% {
+      /* Rapid erratic voltage flutter (faster blinks) */
+      18.8% {
         color: #ffffff;
-        text-shadow: none;
+      }
+      19.6% {
+        color: var(--yellow-primary);
+      }
+      20.4% {
+        color: #ffffff;
+      }
+      21.2% {
+        color: var(--yellow-primary);
+      }
+      22.0% {
+        color: #ffffff;
+      }
+      23.2% {
+        color: var(--yellow-primary);
+      }
+      /* Steady burn */
+      23.3%, 42% {
+        color: var(--yellow-primary);
+      }
+      /* Single blink (one by one) */
+      42.8% {
+        color: #ffffff;
+      }
+      44.2% {
+        color: var(--yellow-primary);
+      }
+      /* Steady burn */
+      44.3%, 58% {
+        color: var(--yellow-primary);
+      }
+      /* Count by count pulse blinks: 1... 2... */
+      58.8% {
+        color: #ffffff;
+      }
+      60.0% {
+        color: var(--yellow-primary);
+      }
+      61.4% {
+        color: #ffffff;
+      }
+      62.6% {
+        color: var(--yellow-primary);
+      }
+      64.0% {
+        color: #ffffff;
+      }
+      65.2% {
+        color: var(--yellow-primary);
+      }
+      /* Steady burn */
+      65.3%, 78% {
+        color: var(--yellow-primary);
+      }
+      /* Quick micro-twitch */
+      78.8% {
+        color: #ffffff;
+      }
+      79.5% {
+        color: var(--yellow-primary);
+      }
+      80.3% {
+        color: #ffffff;
+      }
+      81.2% {
+        color: var(--yellow-primary);
+      }
+      /* Steady burn to completion of cycle */
+      81.3%, 100% {
+        color: var(--yellow-primary);
       }
     }
 
     .brand-title span.kicker {
-      color: #ffffff;
+      color: var(--yellow-primary);
       display: inline-block;
       font-weight: 800;
-      animation: nodeLightEffect 4.5s ease-in-out infinite;
+      text-shadow: none;
+      animation: defectiveBulbBlink 5.2s infinite;
     }
 
     .badge-pill {
