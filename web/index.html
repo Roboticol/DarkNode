@@ -74,6 +74,7 @@
       justify-content: space-between;
       flex-shrink: 0;
       z-index: 50;
+      position: relative;
     }
 
     .brand-group {
@@ -202,11 +203,15 @@
       border: 1px solid var(--yellow-border);
     }
 
-    /* Telemetry Stats */
+    /* Telemetry Stats - Centered in Middle of Header */
     .header-stats {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
       align-items: center;
       gap: 10px;
+      pointer-events: auto;
     }
 
     .stat-pill {
@@ -838,35 +843,247 @@
       border-bottom: 9px solid var(--node-merchant);
     }
 
-    /* Floating Settings Button at Right Bottom */
+    /* Floating Settings Button at Right Bottom - Pure Minimal Logo, No Backside Shape */
     .settings-floating-btn {
       position: fixed;
-      bottom: 16px;
-      right: 16px;
+      bottom: 18px;
+      right: 18px;
+      width: 38px;
+      height: 38px;
       display: flex;
       align-items: center;
-      gap: 7px;
-      background: rgba(25, 26, 27, 0.96);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--border-strong);
-      border-radius: 20px;
-      padding: 7px 14px;
-      color: var(--text-main);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
+      justify-content: center;
+      background: transparent !important;
+      background-color: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+      padding: 0;
+      color: #94a3b8;
       cursor: pointer;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
       z-index: 1000;
-      transition: all 0.2s ease;
+      transition: color 0.25s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .settings-floating-btn:hover {
-      background: #252628;
-      border-color: var(--yellow-primary);
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
       color: var(--yellow-primary);
-      box-shadow: 0 6px 24px rgba(250, 204, 21, 0.22);
-      transform: translateY(-1px);
+      transform: rotate(60deg) scale(1.18);
+    }
+
+    /* Notification Bell & Dropdown Flyout */
+    .notif-bell-container {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .notif-bell-btn {
+      position: relative;
+      padding: 0 10px;
+      height: 32px;
+    }
+
+    .notif-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: #ef4444;
+      color: #ffffff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 800;
+      min-width: 16px;
+      height: 16px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 3px;
+      border: 1.5px solid #191a1b;
+      box-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+    }
+
+    .notif-badge.hidden {
+      display: none;
+    }
+
+    .notif-badge.bump {
+      animation: notifBump 0.3s ease;
+    }
+
+    @keyframes notifBump {
+      0% { transform: scale(0.6); }
+      50% { transform: scale(1.35); }
+      100% { transform: scale(1); }
+    }
+
+    .notif-flyout {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 340px;
+      max-height: 420px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.85), 0 0 1px rgba(250, 204, 21, 0.25);
+      z-index: 1500;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: notifFlyoutIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes notifFlyoutIn {
+      from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .notif-flyout-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 14px;
+      background: #1e1f20;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .notif-flyout-title {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .notif-flyout-title svg {
+      color: var(--yellow-primary);
+    }
+
+    .notif-head-action {
+      background: transparent;
+      border: none;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: all 0.12s ease;
+    }
+
+    .notif-head-action:hover {
+      background: var(--bg-card-hover);
+      color: var(--yellow-primary);
+    }
+
+    .notif-flyout-list {
+      max-height: 290px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      padding: 6px;
+      gap: 5px;
+    }
+
+    .notif-item {
+      display: flex;
+      gap: 10px;
+      padding: 9px 11px;
+      border-radius: 7px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      transition: all 0.12s ease;
+    }
+
+    .notif-item:hover {
+      background: #252627;
+      border-color: var(--border-strong);
+    }
+
+    .notif-icon-col {
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 11px;
+    }
+
+    .notif-icon-col.critical {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+
+    .notif-icon-col.warning {
+      background: rgba(250, 204, 21, 0.15);
+      color: var(--yellow-primary);
+    }
+
+    .notif-icon-col.success {
+      background: rgba(52, 211, 153, 0.15);
+      color: #34d399;
+    }
+
+    .notif-icon-col.info {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+    }
+
+    .notif-body-col {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .notif-item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2px;
+    }
+
+    .notif-item-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .notif-item-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--text-dim);
+    }
+
+    .notif-item-desc {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .notif-empty-state {
+      padding: 24px 16px;
+      text-align: center;
+      font-size: 11.5px;
+      color: var(--text-dim);
+    }
+
+    .notif-flyout-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: #1a1b1c;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 10px;
+      color: var(--text-dim);
     }
 
     /* Settings Modal Specific Styles */
@@ -1144,30 +1361,49 @@
       background: rgba(239, 68, 68, 0.12);
     }
 
-    /* Toast Alert */
+    /* Toast Notification Bubble - Normal Notification (Come and Go with Sound) */
     .toast-popup {
       position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: var(--bg-card);
+      top: 68px;
+      right: 20px;
+      background: rgba(25, 26, 27, 0.96);
+      backdrop-filter: blur(10px);
       border: 1px solid var(--border-strong);
       border-left: 4px solid var(--yellow-primary);
-      border-radius: 8px;
-      padding: 10px 16px;
+      border-radius: 9px;
+      padding: 10px 14px;
       font-size: 12px;
       display: none;
       align-items: center;
-      gap: 10px;
-      z-index: 1000;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      gap: 12px;
+      z-index: 2500;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.75);
+      max-width: 360px;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+      animation: toastSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes toastSlideIn {
+      from { opacity: 0; transform: translateY(-12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .toast-popup.toast-exit {
+      animation: toastSlideOut 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes toastSlideOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-12px); }
     }
 
     .toast-dot-glow {
-      width: 7px;
-      height: 7px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background: var(--yellow-primary);
       box-shadow: 0 0 8px rgba(250, 204, 21, 0.8);
+      flex-shrink: 0;
     }
 
     /* Modals (User Guide & Benchmark) */
@@ -1444,29 +1680,40 @@
 
     <!-- Controls -->
     <div class="header-actions">
-      <!-- Generate Fresh Graph Button -->
-      <button class="btn btn-outline" id="new-graph-btn" onclick="generateNewGraph()" title="Generate a fresh batch of synthetic transactions and syndicate patterns">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-        New Graph
-      </button>
-
       <!-- Benchmark Modal Button -->
       <button class="btn btn-outline" onclick="openBenchmarkModal()" title="View Empirical Model Benchmarks vs Bank Rules">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
         Benchmark
       </button>
 
-      <!-- User Guide Modal Button -->
-      <button class="btn btn-outline" onclick="openGuideModal()" title="View System Architecture and Dashboard Operator Guide">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        User Guide
-      </button>
+      <!-- Notification Bell with Dropdown Beside Benchmark -->
+      <div class="notif-bell-container">
+        <button class="btn btn-outline notif-bell-btn" id="notif-bell-btn" onclick="toggleNotifDropdown(event)" title="Notifications & Compliance Audit Alerts">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="notif-badge" id="notif-badge">1</span>
+        </button>
 
-      <!-- Settings Modal Button -->
-      <button class="btn btn-outline" onclick="openSettingsModal()" title="Open System Configuration, API & Compliance Settings">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        Settings
-      </button>
+        <!-- Notification Flyout Dropdown -->
+        <div class="notif-flyout" id="notif-flyout" style="display: none;" onclick="event.stopPropagation()">
+          <div class="notif-flyout-head">
+            <div class="notif-flyout-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              Audit & System Notifications
+            </div>
+            <button class="notif-head-action" onclick="clearAllNotifications()">Clear All</button>
+          </div>
+          <div class="notif-flyout-list" id="notif-flyout-list">
+            <!-- Dynamic notifications injected by JavaScript -->
+          </div>
+          <div class="notif-flyout-footer">
+            <span id="notif-status-summary">Auto-logged to SAR trail</span>
+            <button class="notif-head-action" style="color: var(--yellow-primary);" onclick="triggerTestAlert()">Send Test Alert</button>
+          </div>
+        </div>
+      </div>
 
       <!-- Run Analysis Button with Intelligent Pipeline Execution -->
       <button class="btn btn-yellow" id="run-btn" onclick="fetchRings()">
@@ -1731,13 +1978,12 @@
 
   </div>
 
-  <!-- Fixed Floating Settings Trigger at Right Bottom of Page -->
-  <button class="settings-floating-btn" id="open-settings-bottom-btn" onclick="openSettingsModal()" title="System Configuration, API & SAR Compliance">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+  <!-- Fixed Floating Settings Trigger at Right Bottom of Page (Clean Logo Only, No Shape) -->
+  <button class="settings-floating-btn" id="open-settings-bottom-btn" onclick="openSettingsModal()" title="System Configuration & Compliance" aria-label="System Configuration">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="3"/>
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
     </svg>
-    <span>Settings</span>
   </button>
 
   <!-- Interactive System Settings & Compliance Modal -->
@@ -1931,8 +2177,28 @@
             </div>
           </div>
 
-          <!-- Card 6: System Documentation & Quick Navigation -->
-          <div class="settings-card">
+          <!-- Card 6: Graph Simulation & Batch Synthesis (Moved from Header to Settings) -->
+          <div class="settings-card" id="setting-card-graph">
+            <div class="settings-card-head">
+              <span class="settings-card-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                Graph Simulation & Synthesis
+              </span>
+              <span class="badge-pill" style="font-size: 9px;">SYNTHETIC BATCH</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted);">
+              Generate a fresh batch of synthetic transactions, device multiplexing, and circular smurfing structures.
+            </div>
+            <div>
+              <button class="btn btn-outline" id="settings-new-graph-btn" style="width: 100%; height: 34px;" onclick="closeSettingsModal(); generateNewGraph();">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                Synthesize New Graph Batch
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 7: System Documentation & Defaults -->
+          <div class="settings-card full-width">
             <div class="settings-card-head">
               <span class="settings-card-title">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
@@ -1940,18 +2206,14 @@
               </span>
             </div>
             <div style="font-size: 11px; color: var(--text-muted);">
-              Inspect mathematical model architecture, empirical benchmarks, or restore system factory defaults.
+              Inspect mathematical model architecture, operator workflows, or restore system factory defaults.
             </div>
-            <div style="display: flex; flex-direction: column; gap: 7px;">
-              <button class="btn btn-outline" style="height: 32px;" onclick="closeSettingsModal(); openGuideModal();">
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-outline" style="flex: 1; height: 32px;" onclick="closeSettingsModal(); openGuideModal();">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 Open Architecture & User Guide
               </button>
-              <button class="btn btn-outline" style="height: 32px;" onclick="closeSettingsModal(); openBenchmarkModal();">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
-                Open Model Benchmarks vs Rules
-              </button>
-              <button class="btn btn-outline" style="height: 32px; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" onclick="resetSettingsToDefault()">
+              <button class="btn btn-outline" style="flex: 1; height: 32px; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" onclick="resetSettingsToDefault()">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
                 Reset All Settings to Defaults
               </button>
@@ -2240,10 +2502,16 @@
     </div>
   </div>
 
-  <!-- Toast Alert -->
+  <!-- Toast Notification Bubble - Normal Notification (Come and Go with Sound) -->
   <div class="toast-popup" id="toast">
-    <div class="toast-dot-glow"></div>
-    <span id="toast-text">Action executed.</span>
+    <div class="toast-dot-glow" id="toast-glow"></div>
+    <div style="flex: 1; min-width: 0;">
+      <div id="toast-title" style="font-size: 11px; font-weight: 700; color: var(--text-main); margin-bottom: 2px;">Notification</div>
+      <div id="toast-text" style="font-size: 11px; color: var(--text-muted); line-height: 1.35;">Action executed.</div>
+    </div>
+    <button class="toast-close-btn" onclick="dismissToast()" title="Dismiss notification" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 2px; display: flex; align-items: center;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
   </div>
 
   <script>
@@ -9726,26 +9994,27 @@
     }
 
     async function generateNewGraph() {
-      const btn = document.getElementById("new-graph-btn");
+      const btns = [document.getElementById("new-graph-btn"), document.getElementById("settings-new-graph-btn")].filter(Boolean);
       const dot = document.getElementById("status-dot");
       const label = document.getElementById("status-label");
       const url = document.getElementById("api-url").value.trim().replace(/\/$/, "");
       const threshInput = document.getElementById("threshold-select");
       const currentThresh = threshInput ? parseFloat(threshInput.value) : 0.5;
 
-      if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = `
+      btns.forEach(b => {
+        b.disabled = true;
+        b.innerHTML = `
           <svg class="spin-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
           </svg>
           Generating...
         `;
-        btn.style.opacity = "0.85";
-      }
+        b.style.opacity = "0.85";
+      });
+
       dot.classList.add("active-infer");
       label.innerText = "SYNTHESIZING GRAPH...";
-      showToast("Generating fresh transaction graph and running GNN forward pass...");
+      showToast("Generating fresh transaction graph and running GNN forward pass...", "Graph Synthesis", "info");
 
       try {
         const res = await fetch(`${url}/generate-graph`, {
@@ -9764,19 +10033,19 @@
         }
         dot.classList.remove("offline", "active-infer");
         label.innerText = "LIVE API";
-        showToast(data.message || `Fresh graph generated (Seed: ${data.seed})`);
+        showToast(data.message || `Fresh graph generated (Seed: ${data.seed})`, "Graph Synthesis", "success");
       } catch (err) {
         console.warn("Backend unavailable for graph generation:", err);
-        showToast("Backend offline: Please start the FastAPI backend on port 8000");
+        showToast("Backend offline: Please start the FastAPI backend on port 8000", "Connection Error", "critical");
       } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = `
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-            New Graph
+        btns.forEach(b => {
+          b.disabled = false;
+          b.innerHTML = `
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            Synthesize New Graph Batch
           `;
-          btn.style.opacity = "1";
-        }
+          b.style.opacity = "1";
+        });
       }
 
       document.getElementById("stat-rings").innerText = allRings.length;
@@ -11079,6 +11348,8 @@
         closeBenchmarkModal();
         closeNodeInspector();
         hideSearchSuggestions();
+        const dropdown = document.getElementById("notif-flyout");
+        if (dropdown) dropdown.style.display = "none";
       }
     });
 
@@ -11087,15 +11358,245 @@
       if (searchBox && !searchBox.contains(e.target)) {
         hideSearchSuggestions();
       }
+      const notifContainer = document.querySelector(".notif-bell-container");
+      const notifFlyout = document.getElementById("notif-flyout");
+      if (notifContainer && notifFlyout && !notifContainer.contains(e.target)) {
+        notifFlyout.style.display = "none";
+      }
     });
 
-    function showToast(text) {
-      if (!isToastAlertEnabled) return;
+    // =========================================================================
+    // AUDIT NOTIFICATION & CHIME ENGINE (COME & GO TOASTS + SOUND + FLYOUT)
+    // =========================================================================
+    let notifications = [
+      {
+        id: 1,
+        title: "DarkNode GNN Engine Ready",
+        desc: "2-layer Heterogeneous MPNN inference model loaded with 10 syndicates in queue.",
+        type: "info",
+        time: "Just now",
+        timestamp: Date.now()
+      }
+    ];
+    let unreadNotifCount = 1;
+    let toastTimer = null;
+
+    function playNotificationSound(type = 'info') {
+      if (!isSoundAlertEnabled) return;
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const now = audioCtx.currentTime;
+        const osc1 = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        osc1.connect(gainNode);
+        osc2.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        if (type === 'critical') {
+          // Urgent double warning tone for high-threat mule syndicates
+          osc1.type = 'sawtooth';
+          osc2.type = 'sine';
+          osc1.frequency.setValueAtTime(659.25, now);
+          osc1.frequency.setValueAtTime(880, now + 0.1);
+          osc2.frequency.setValueAtTime(329.63, now);
+          osc2.frequency.setValueAtTime(440, now + 0.1);
+          gainNode.gain.setValueAtTime(0.14, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc1.start(now);
+          osc2.start(now);
+          osc1.stop(now + 0.35);
+          osc2.stop(now + 0.35);
+        } else {
+          // Normal harmonic bell chime
+          osc1.type = 'sine';
+          osc2.type = 'sine';
+          osc1.frequency.setValueAtTime(880, now); // A5
+          osc1.frequency.setValueAtTime(1318.51, now + 0.08); // E6
+          osc2.frequency.setValueAtTime(440, now);
+          osc2.frequency.setValueAtTime(659.25, now + 0.08);
+          gainNode.gain.setValueAtTime(0.12, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+          osc1.start(now);
+          osc2.start(now);
+          osc1.stop(now + 0.36);
+          osc2.stop(now + 0.36);
+        }
+      } catch (e) {
+        console.debug("Notification audio context unavailable:", e);
+      }
+    }
+
+    function dismissToast() {
       const toast = document.getElementById("toast");
       if (!toast) return;
-      document.getElementById("toast-text").innerText = text;
+      if (toastTimer) {
+        clearTimeout(toastTimer);
+        toastTimer = null;
+      }
+      toast.classList.add("toast-exit");
+      setTimeout(() => {
+        toast.style.display = "none";
+        toast.classList.remove("toast-exit");
+      }, 240);
+    }
+
+    function showToastNotification(title, text, type = "info") {
+      if (!isToastAlertEnabled) return;
+      const toast = document.getElementById("toast");
+      const titleEl = document.getElementById("toast-title");
+      const textEl = document.getElementById("toast-text");
+      const glowEl = document.getElementById("toast-glow");
+      if (!toast || !textEl) return;
+
+      if (titleEl) titleEl.innerText = title;
+      textEl.innerText = text;
+
+      if (type === "critical") {
+        toast.style.borderLeftColor = "#ef4444";
+        if (glowEl) {
+          glowEl.style.backgroundColor = "#ef4444";
+          glowEl.style.boxShadow = "0 0 8px rgba(239, 68, 68, 0.8)";
+        }
+      } else if (type === "success") {
+        toast.style.borderLeftColor = "#34d399";
+        if (glowEl) {
+          glowEl.style.backgroundColor = "#34d399";
+          glowEl.style.boxShadow = "0 0 8px rgba(52, 211, 153, 0.8)";
+        }
+      } else if (type === "warning") {
+        toast.style.borderLeftColor = "var(--yellow-primary)";
+        if (glowEl) {
+          glowEl.style.backgroundColor = "var(--yellow-primary)";
+          glowEl.style.boxShadow = "0 0 8px rgba(250, 204, 21, 0.8)";
+        }
+      } else {
+        toast.style.borderLeftColor = "#38bdf8";
+        if (glowEl) {
+          glowEl.style.backgroundColor = "#38bdf8";
+          glowEl.style.boxShadow = "0 0 8px rgba(56, 189, 248, 0.8)";
+        }
+      }
+
+      toast.classList.remove("toast-exit");
       toast.style.display = "flex";
-      setTimeout(() => { toast.style.display = "none"; }, 3500);
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        dismissToast();
+      }, 4200);
+    }
+
+    function pushNotification(title, desc, type = "info") {
+      const newNotif = {
+        id: Date.now(),
+        title: title,
+        desc: desc,
+        type: type,
+        time: "Just now",
+        timestamp: Date.now()
+      };
+      notifications.unshift(newNotif);
+      if (notifications.length > 25) notifications.pop();
+      unreadNotifCount++;
+      updateNotifBadge();
+      renderNotifList();
+
+      playNotificationSound(type);
+      showToastNotification(title, desc, type);
+    }
+
+    function showToast(text, title = "System Audit", type = "info") {
+      pushNotification(title, text, type);
+    }
+
+    function updateNotifBadge() {
+      const badge = document.getElementById("notif-badge");
+      if (!badge) return;
+      if (unreadNotifCount > 0) {
+        badge.innerText = unreadNotifCount > 9 ? "9+" : unreadNotifCount;
+        badge.classList.remove("hidden");
+        badge.classList.add("bump");
+        setTimeout(() => badge.classList.remove("bump"), 300);
+      } else {
+        badge.classList.add("hidden");
+      }
+    }
+
+    function renderNotifList() {
+      const list = document.getElementById("notif-flyout-list");
+      if (!list) return;
+
+      if (notifications.length === 0) {
+        list.innerHTML = `
+          <div class="notif-empty-state">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="margin-bottom: 6px; opacity: 0.5;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <div>No active notifications</div>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = notifications.map(n => {
+        let iconSvg = '';
+        if (n.type === 'critical') {
+          iconSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+        } else if (n.type === 'warning') {
+          iconSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+        } else if (n.type === 'success') {
+          iconSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>`;
+        } else {
+          iconSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
+        }
+
+        return `
+          <div class="notif-item">
+            <div class="notif-icon-col ${n.type}">
+              ${iconSvg}
+            </div>
+            <div class="notif-body-col">
+              <div class="notif-item-top">
+                <span class="notif-item-title">${n.title}</span>
+                <span class="notif-item-time">${n.time}</span>
+              </div>
+              <div class="notif-item-desc">${n.desc}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleNotifDropdown(e) {
+      if (e) e.stopPropagation();
+      const dropdown = document.getElementById("notif-flyout");
+      if (!dropdown) return;
+      const isHidden = dropdown.style.display === "none";
+      dropdown.style.display = isHidden ? "flex" : "none";
+      if (isHidden) {
+        unreadNotifCount = 0;
+        updateNotifBadge();
+        renderNotifList();
+      }
+    }
+
+    function clearAllNotifications() {
+      notifications = [];
+      unreadNotifCount = 0;
+      updateNotifBadge();
+      renderNotifList();
+      showToastNotification("Audit Log Cleared", "All notification items have been purged.", "info");
+    }
+
+    function triggerTestAlert() {
+      pushNotification(
+        "Critical Syndicate Alert",
+        "Syndicate #3 crossed the 0.80 risk threshold. 12 mule accounts flagged for review.",
+        "critical"
+      );
     }
 
     window.addEventListener("resize", () => {
@@ -11106,6 +11607,8 @@
     });
 
     window.addEventListener("DOMContentLoaded", () => {
+      renderNotifList();
+      updateNotifBadge();
       fetchRings();
     });
   </script>
