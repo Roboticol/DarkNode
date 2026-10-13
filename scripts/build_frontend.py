@@ -218,9 +218,10 @@ html_template = """<!DOCTYPE html>
     }
 
     .badge-pill {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      font-weight: 600;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-size: 11px;
+      font-weight: 700;
       padding: 2px 8px;
       border-radius: 6px;
       background: var(--bg-card);
@@ -252,7 +253,8 @@ html_template = """<!DOCTYPE html>
     }
 
     .stat-val {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-variant-numeric: tabular-nums;
       font-weight: 700;
       color: var(--text-main);
     }
@@ -471,9 +473,10 @@ html_template = """<!DOCTYPE html>
     .tier-tab-btn {
       flex: 1;
       height: 25px;
-      font-size: 10px;
+      font-size: 10.5px;
       font-weight: 700;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-variant-numeric: tabular-nums;
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
       border-radius: 6px;
@@ -599,9 +602,10 @@ html_template = """<!DOCTYPE html>
     }
 
     .suggestion-tag {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
-      font-weight: 600;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-size: 9.5px;
+      font-weight: 700;
       padding: 2px 6px;
       border-radius: 4px;
       background: var(--bg-input);
@@ -673,8 +677,9 @@ html_template = """<!DOCTYPE html>
     }
 
     .ring-risk-tag {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-size: 10.5px;
       font-weight: 700;
       padding: 2px 6px;
       border-radius: 5px;
@@ -695,6 +700,9 @@ html_template = """<!DOCTYPE html>
       display: flex;
       align-items: center;
       gap: 4px;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
     }
 
     .raw-stat-pill svg {
@@ -912,7 +920,8 @@ html_template = """<!DOCTYPE html>
     }
 
     .inspect-val {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-variant-numeric: tabular-nums;
       font-weight: 700;
       color: var(--text-main);
     }
@@ -1018,8 +1027,9 @@ html_template = """<!DOCTYPE html>
       right: -4px;
       background: var(--yellow-primary);
       color: #131415;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-size: 10px;
       font-weight: 800;
       min-width: 16px;
       height: 16px;
@@ -1183,8 +1193,10 @@ html_template = """<!DOCTYPE html>
     }
 
     .notif-item-time {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-size: 9.5px;
+      font-weight: 600;
       color: var(--text-dim);
     }
 
@@ -1491,7 +1503,8 @@ html_template = """<!DOCTYPE html>
     }
 
     .hero-score-val {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-variant-numeric: tabular-nums;
       font-size: 30px;
       font-weight: 800;
       line-height: 1;
@@ -1508,8 +1521,9 @@ html_template = """<!DOCTYPE html>
     }
 
     .hero-rank-badge {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-size: 10.5px;
       font-weight: 700;
       padding: 3px 8px;
       border-radius: 5px;
@@ -1567,7 +1581,8 @@ html_template = """<!DOCTYPE html>
     }
 
     .signal-metric-val {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-variant-numeric: tabular-nums;
       font-weight: 700;
       color: var(--text-main);
     }
@@ -1586,8 +1601,9 @@ html_template = """<!DOCTYPE html>
     }
 
     .chip-account {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-size: 10.5px;
       font-weight: 600;
       padding: 3px 8px;
       border-radius: 5px;
@@ -1867,22 +1883,25 @@ html_template = """<!DOCTYPE html>
     }
 
     .bench-score-dim {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-variant-numeric: tabular-nums;
       font-size: 18px;
       font-weight: 700;
       color: var(--text-muted);
     }
 
     .bench-score-bright {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-variant-numeric: tabular-nums;
       font-size: 22px;
       font-weight: 800;
       color: var(--yellow-primary);
     }
 
     .bench-delta-tag {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-size: 10.5px;
       font-weight: 700;
       padding: 2px 7px;
       border-radius: 5px;
@@ -2486,7 +2505,7 @@ html_template = """<!DOCTYPE html>
             <div>
               <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
                 <label>SPRING REPULSION DISTANCE</label>
-                <span id="spring-len-val" style="font-family: 'JetBrains Mono', monospace; color: var(--yellow-primary);">260px</span>
+                <span id="spring-len-val" style="font-family: 'Plus Jakarta Sans', sans-serif; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--yellow-primary);">260px</span>
               </div>
               <input type="range" id="spring-slider" min="180" max="420" step="20" value="260" style="width: 100%; accent-color: var(--yellow-primary); cursor: pointer;" oninput="onSpringSliderChange(this.value)">
             </div>
@@ -2512,14 +2531,14 @@ html_template = """<!DOCTYPE html>
             </div>
           </div>
 
-          <!-- Card 7: System Documentation, Architecture, SOP Manuals & Real AML Data (4 Separate Modules) -->
+          <!-- Card 7: System Documentation, Architecture & SOP Manuals (3 Separate Modules) -->
           <div class="settings-card full-width" id="setting-card-docs" data-category="docs">
             <div class="settings-card-head">
               <span class="settings-card-title">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                Architecture, User Guide, SOP & Real AML Data
+                Architecture, User Guide & SOP Manuals
               </span>
-              <span class="badge-pill" style="font-size: 9px; color: var(--yellow-primary); border-color: var(--yellow-border);">4 INDEPENDENT MODULES</span>
+              <span class="badge-pill" style="font-size: 9px; color: var(--yellow-primary); border-color: var(--yellow-border);">3 INDEPENDENT MODULES</span>
             </div>
             <div style="font-size: 11px; color: var(--text-muted);">
               Access standalone operational manuals, mathematical heterogeneous GNN architecture specifications, and AML compliance officer protocols.
@@ -2561,19 +2580,6 @@ html_template = """<!DOCTYPE html>
                 <div class="doc-subcard-desc">Step-by-step AML investigation SOP, decision matrix, emergency account quarantine & FinCEN SAR filing.</div>
                 <button class="btn btn-outline doc-subcard-btn" onclick="openInstructionsModal()">
                   Open Instructions
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </button>
-              </div>
-
-              <!-- Option 4: Real-World AML Data Section -->
-              <div class="doc-subcard">
-                <div class="doc-subcard-icon" style="color: #10b981; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25);">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                </div>
-                <div class="doc-subcard-title">Real AML Data Section</div>
-                <div class="doc-subcard-desc">Switch left sidebar from Synthetic Data to source-verified FATF/FinCEN money mule typologies, verified banks & device telemetry.</div>
-                <button class="btn btn-outline doc-subcard-btn" onclick="switchDatasetSection('real'); closeSettingsModal();">
-                  Switch to Real AML Data
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </button>
               </div>
@@ -3893,7 +3899,7 @@ html_template = """<!DOCTYPE html>
         ctx.setTransform(1, 0, 0, 1, 0, 0);
 
         const positions = network.getPositions();
-        ctx.font = "600 11px 'JetBrains Mono', monospace";
+        ctx.font = "600 11px 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
