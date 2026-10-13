@@ -40,7 +40,7 @@
       --node-merchant: #34d399;
       
       --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.45);
-      --shadow-glow: 0 0 16px rgba(250, 204, 21, 0.2);
+      --shadow-glow: none;
       
       --radius: 12px;
       --radius-sm: 8px;
@@ -91,7 +91,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: var(--shadow-glow);
+      box-shadow: none;
     }
 
     .brand-title {
@@ -264,18 +264,18 @@
       height: 7px;
       border-radius: 50%;
       background: #34d399;
-      box-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
+      box-shadow: none;
       transition: all 0.2s ease;
     }
 
     .status-dot.offline {
       background: var(--yellow-primary);
-      box-shadow: 0 0 8px rgba(250, 204, 21, 0.6);
+      box-shadow: none;
     }
 
     .status-dot.active-infer {
       background: var(--yellow-primary);
-      box-shadow: 0 0 10px rgba(250, 204, 21, 0.9);
+      box-shadow: none;
     }
 
     .status-text {
@@ -305,12 +305,12 @@
     .btn-yellow {
       background: var(--yellow-primary);
       color: #131415;
-      box-shadow: 0 2px 10px rgba(250, 204, 21, 0.25);
+      box-shadow: none;
     }
 
     .btn-yellow:hover:not(:disabled) {
       background: var(--yellow-hover);
-      box-shadow: 0 4px 14px rgba(250, 204, 21, 0.35);
+      box-shadow: none;
     }
 
     .btn-outline {
@@ -416,7 +416,7 @@
       background: rgba(250, 204, 21, 0.14);
       border-color: var(--yellow-primary);
       color: var(--yellow-primary);
-      box-shadow: 0 0 12px rgba(250, 204, 21, 0.16);
+      box-shadow: none;
     }
 
     .ring-subtitle-tag {
@@ -528,7 +528,7 @@
       backdrop-filter: blur(12px);
       border: 1px solid var(--border-strong);
       border-radius: 8px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(250, 204, 21, 0.08);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8);
       z-index: 100;
       display: none;
       max-height: 330px;
@@ -621,7 +621,7 @@
     .ring-card-item.active {
       background: #28292a;
       border-color: var(--yellow-primary);
-      box-shadow: 0 2px 10px rgba(250, 204, 21, 0.15);
+      box-shadow: none;
     }
 
     .ring-card-item.active::before {
@@ -783,7 +783,7 @@
     }
 
     #filter-user.active:hover {
-      box-shadow: 0 0 8px rgba(250, 204, 21, 0.25);
+      box-shadow: none;
     }
 
     #filter-device {
@@ -799,7 +799,7 @@
     }
 
     #filter-device.active:hover {
-      box-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
+      box-shadow: none;
     }
 
     #filter-merchant {
@@ -815,7 +815,7 @@
     }
 
     #filter-merchant.active:hover {
-      box-shadow: 0 0 8px rgba(52, 211, 153, 0.25);
+      box-shadow: none;
     }
 
     /* Floating Node Inspector Card */
@@ -1004,7 +1004,7 @@
       justify-content: center;
       padding: 0 3px;
       border: 1.5px solid #191a1b;
-      box-shadow: 0 0 8px rgba(250, 204, 21, 0.7);
+      box-shadow: none;
       transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
     }
 
@@ -1031,7 +1031,7 @@
       background: var(--bg-card);
       border: 1px solid var(--border-strong);
       border-radius: 10px;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.85), 0 0 1px rgba(250, 204, 21, 0.25);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.85);
       z-index: 1500;
       display: flex;
       flex-direction: column;
@@ -1627,7 +1627,7 @@
       height: 8px;
       border-radius: 50%;
       background: var(--yellow-primary);
-      box-shadow: 0 0 8px rgba(250, 204, 21, 0.8);
+      box-shadow: none;
       flex-shrink: 0;
     }
 
@@ -1657,7 +1657,7 @@
       max-height: 86vh;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), var(--shadow-glow);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
       overflow: hidden;
     }
 
@@ -1977,15 +1977,13 @@
         <span class="badge-pill" id="rings-count-badge">10 total</span>
       </div>
 
-      <!-- 2-Section Dataset Switcher: Actual Data (Default) vs Real AML Data -->
+      <!-- 2-Section Dataset Switcher: Synthetic Data vs Real AML Data -->
       <div class="dataset-switcher-row">
-        <button class="dataset-tab-btn active" id="dataset-tab-actual" onclick="switchDatasetSection('actual')" title="Default Dataset: Actual GNN Simulation Graph Data">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
-          <span>Actual Data (Default)</span>
+        <button class="dataset-tab-btn active" id="dataset-tab-actual" onclick="switchDatasetSection('actual')" title="Synthetic Dataset: GNN Heterogeneous Simulation Graph">
+          Synthetic Data
         </button>
-        <button class="dataset-tab-btn" id="dataset-tab-real" onclick="switchDatasetSection('real')" title="Source-Verified Real AML Dataset (FATF/FinCEN Typologies, Verified Banks & Devices)">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <span>Real AML Data</span>
+        <button class="dataset-tab-btn" id="dataset-tab-real" onclick="switchDatasetSection('real')" title="Real AML Dataset: Source-Verified Banks, Devices & Regulatory Typologies">
+          Real AML Data
         </button>
       </div>
 
@@ -2548,7 +2546,7 @@
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 </div>
                 <div class="doc-subcard-title">Real AML Data Section</div>
-                <div class="doc-subcard-desc">Switch left sidebar to source-verified FATF/FinCEN money mule typologies, verified banks & device telemetry.</div>
+                <div class="doc-subcard-desc">Switch left sidebar from Synthetic Data to source-verified FATF/FinCEN money mule typologies, verified banks & device telemetry.</div>
                 <button class="btn btn-outline doc-subcard-btn" onclick="switchDatasetSection('real'); closeSettingsModal();">
                   Switch to Real AML Data
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -19944,7 +19942,7 @@
         showToast("Switched to Real AML Data: 12 source-verified syndicates with FATF/FinCEN typologies", "Real AML Dataset", "success");
       } else {
         allRings = [...ACTUAL_RINGS];
-        showToast("Switched to Actual Data (Default): 10 baseline GNN simulation syndicates", "Actual Dataset", "info");
+        showToast("Switched to Synthetic Data: 10 baseline GNN simulation syndicates", "Synthetic Dataset", "info");
       }
 
       // Update counters
@@ -21811,19 +21809,19 @@
         toast.style.borderLeftColor = "#ef4444";
         if (glowEl) {
           glowEl.style.backgroundColor = "#ef4444";
-          glowEl.style.boxShadow = "0 0 8px rgba(239, 68, 68, 0.8)";
+          glowEl.style.boxShadow = "none";
         }
       } else if (type === "success") {
         toast.style.borderLeftColor = "#34d399";
         if (glowEl) {
           glowEl.style.backgroundColor = "#34d399";
-          glowEl.style.boxShadow = "0 0 8px rgba(52, 211, 153, 0.8)";
+          glowEl.style.boxShadow = "none";
         }
       } else {
         toast.style.borderLeftColor = "var(--yellow-primary)";
         if (glowEl) {
           glowEl.style.backgroundColor = "var(--yellow-primary)";
-          glowEl.style.boxShadow = "0 0 10px rgba(250, 204, 21, 0.9)";
+          glowEl.style.boxShadow = "none";
         }
       }
 
