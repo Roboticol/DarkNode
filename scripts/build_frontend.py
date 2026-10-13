@@ -4721,7 +4721,7 @@ html_template = """<!DOCTYPE html>
         rows.push(["Merchant_Terminal", m, "TARGET_BURST"]);
       });
 
-      const csvContent = rows.map(r => r.map(c => typeof c === 'string' && c.includes(',') ? `"${c}"` : c).join(",")).join("\r\n");
+      const csvContent = rows.map(r => r.map(c => typeof c === 'string' && c.includes(',') ? `"${c}"` : c).join(",")).join(String.fromCharCode(13, 10));
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
