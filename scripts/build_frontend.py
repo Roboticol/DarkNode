@@ -31,15 +31,15 @@ html_template = """<!DOCTYPE html>
 
   <style>
     :root {
-      /* Pure Neutral Dark Grey Theme (#292929) */
-      --bg-base: #1e1e1e;
-      --bg-panel: #252525;
-      --bg-card: #292929;
-      --bg-card-hover: #333333;
-      --bg-input: #202020;
+      /* Deep Neutral Dark Charcoal Theme (#191a1b) */
+      --bg-base: #131415;
+      --bg-panel: #191a1b;
+      --bg-card: #202122;
+      --bg-card-hover: #28292a;
+      --bg-input: #141516;
       
-      --border-subtle: #383838;
-      --border-strong: #484848;
+      --border-subtle: #2c2d2e;
+      --border-strong: #3b3c3e;
       
       --text-main: #f3f4f6;
       --text-muted: #9ca3af;
@@ -233,7 +233,7 @@ html_template = """<!DOCTYPE html>
 
     .btn-yellow {
       background: var(--yellow-primary);
-      color: #181818;
+      color: #131415;
       box-shadow: 0 2px 10px rgba(250, 204, 21, 0.25);
     }
 
@@ -298,7 +298,7 @@ html_template = """<!DOCTYPE html>
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(37, 37, 37, 0.6);
+      background: rgba(25, 26, 27, 0.7);
     }
 
     .panel-title {
@@ -399,7 +399,7 @@ html_template = """<!DOCTYPE html>
       top: calc(100% + 2px);
       left: 10px;
       right: 10px;
-      background: rgba(41, 41, 41, 0.98);
+      background: rgba(25, 26, 27, 0.98);
       backdrop-filter: blur(12px);
       border: 1px solid var(--border-strong);
       border-radius: 8px;
@@ -494,7 +494,7 @@ html_template = """<!DOCTYPE html>
     }
 
     .ring-card-item.active {
-      background: #333333;
+      background: #28292a;
       border-color: var(--yellow-primary);
       box-shadow: 0 2px 10px rgba(250, 204, 21, 0.15);
     }
@@ -557,7 +557,7 @@ html_template = """<!DOCTYPE html>
       min-width: 0;
       height: 100%;
       position: relative;
-      background: #242424;
+      background: #191a1b;
       display: flex;
       flex-direction: column;
     }
@@ -570,8 +570,8 @@ html_template = """<!DOCTYPE html>
       height: 100%;
       min-height: 450px;
       overflow: hidden;
-      background-color: #242424;
-      background-image: radial-gradient(#3a3a3a 1.2px, transparent 1.2px);
+      background-color: #191a1b;
+      background-image: radial-gradient(#2c2d2e 1.2px, transparent 1.2px);
       background-size: 24px 24px;
     }
 
@@ -591,7 +591,7 @@ html_template = """<!DOCTYPE html>
       display: flex;
       align-items: center;
       gap: 6px;
-      background: rgba(41, 41, 41, 0.94);
+      background: rgba(25, 26, 27, 0.94);
       backdrop-filter: blur(8px);
       border: 1px solid var(--border-subtle);
       border-radius: 8px;
@@ -651,7 +651,7 @@ html_template = """<!DOCTYPE html>
       position: absolute;
       top: 56px;
       left: 14px;
-      background: rgba(41, 41, 41, 0.96);
+      background: rgba(25, 26, 27, 0.96);
       backdrop-filter: blur(10px);
       border: 1px solid var(--border-strong);
       border-left: 3.5px solid var(--yellow-primary);
@@ -734,7 +734,7 @@ html_template = """<!DOCTYPE html>
       display: flex;
       align-items: center;
       gap: 12px;
-      background: rgba(41, 41, 41, 0.94);
+      background: rgba(25, 26, 27, 0.94);
       backdrop-filter: blur(8px);
       border: 1px solid var(--border-subtle);
       border-radius: 7px;
@@ -942,7 +942,7 @@ html_template = """<!DOCTYPE html>
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(20, 20, 20, 0.85);
+      background: rgba(10, 10, 11, 0.85);
       backdrop-filter: blur(6px);
       z-index: 2000;
       display: none;
@@ -1188,7 +1188,7 @@ html_template = """<!DOCTYPE html>
     <div class="brand-group">
       <div class="brand-logo-mark">
         <!-- Raw Network Graph Node Glyph -->
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#181818" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><line x1="12" y1="9" x2="19" y2="6.5"/><line x1="12" y1="15" x2="5" y2="17.5"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#131415" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><line x1="12" y1="9" x2="19" y2="6.5"/><line x1="12" y1="15" x2="5" y2="17.5"/></svg>
       </div>
       <div class="brand-title">
         Dark <span class="kicker">Node</span>
@@ -1517,7 +1517,7 @@ html_template = """<!DOCTYPE html>
       <div class="modal-head">
         <div class="modal-title-group">
           <div class="brand-logo-mark" style="width:24px; height:24px;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#181818" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><line x1="12" y1="9" x2="19" y2="6.5"/><line x1="12" y1="15" x2="5" y2="17.5"/></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#131415" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><line x1="12" y1="9" x2="19" y2="6.5"/><line x1="12" y1="15" x2="5" y2="17.5"/></svg>
           </div>
           <div class="modal-title">
             DarkNode Operator Guide & Architecture
@@ -1653,7 +1653,7 @@ html_template = """<!DOCTYPE html>
       <div class="modal-head">
         <div class="modal-title-group">
           <div class="brand-logo-mark" style="width:24px; height:24px;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#181818" stroke-width="2.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#131415" stroke-width="2.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
           </div>
           <div class="modal-title">
             DarkNode Empirical Benchmark — GNN vs Bank Rules
@@ -2124,7 +2124,7 @@ html_template = """<!DOCTYPE html>
         freezeBtn.disabled = false;
         freezeBtn.style.opacity = "1";
         freezeBtn.style.background = "var(--yellow-primary)";
-        freezeBtn.style.color = "#181818";
+        freezeBtn.style.color = "#131415";
       }
 
       // Render Account Chips
@@ -2393,7 +2393,7 @@ html_template = """<!DOCTYPE html>
 
           // Crisp dark background pill for high contrast
           const textWidth = ctx.measureText(labelText).width;
-          ctx.fillStyle = "rgba(41, 41, 41, 0.94)";
+          ctx.fillStyle = "rgba(25, 26, 27, 0.94)";
           ctx.beginPath();
           if (ctx.roundRect) {
             ctx.roundRect(textX - textWidth / 2 - 5, textY - 8, textWidth + 10, 16, 4);
