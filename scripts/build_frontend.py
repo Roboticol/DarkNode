@@ -1604,7 +1604,8 @@ html_template = """<!DOCTYPE html>
       document.getElementById("rings-count-badge").innerText = `${allRings.length} total`;
       renderRingsList(allRings);
       if (allRings.length > 0) {
-        selectRing(0);
+        const targetIdx = (activeIndex >= 0 && activeIndex < allRings.length) ? activeIndex : 0;
+        selectRing(targetIdx, false);
       }
     }
 
@@ -1650,7 +1651,9 @@ html_template = """<!DOCTYPE html>
       renderRingsList(filtered);
     }
 
-    function selectRing(index) {
+    let currentRenderedRingId = null;
+
+    function selectRing(index, forceRerender = false) {
       activeIndex = index;
       const ring = allRings[index];
       if (!ring) return;
@@ -1695,8 +1698,11 @@ html_template = """<!DOCTYPE html>
         </span>
       `).join("");
 
-      // Render Graph
-      renderGraph(ring.graph);
+      // Only re-render graph if the ring actually changed or forced
+      if (!network || currentRenderedRingId !== ring.ring_id || forceRerender) {
+        renderGraph(ring.graph);
+        currentRenderedRingId = ring.ring_id;
+      }
     }
 
     function renderGraph(graphData) {
@@ -1731,7 +1737,7 @@ html_template = """<!DOCTYPE html>
           size = 18;
         }
 
-        return {
+        const nodeObj = {
           id: n.id,
           label: " ", // High contrast constant-scale labels rendered via afterDrawing
           actualLabel: n.label,
@@ -1746,6 +1752,14 @@ html_template = """<!DOCTYPE html>
           size: size,
           shadow: { enabled: true, color: "rgba(0, 0, 0, 0.6)", size: 6, x: 0, y: 3 }
         };
+
+        // Fixed canonical layout coordinates for rock-solid model stability
+        if (typeof n.x === "number" && typeof n.y === "number") {
+          nodeObj.x = n.x;
+          nodeObj.y = n.y;
+        }
+
+        return nodeObj;
       }));
 
       // Clean, airy edges matching exact relation types
@@ -1783,8 +1797,12 @@ html_template = """<!DOCTYPE html>
 
       const data = { nodes, edges };
 
-      // Physics configuration (settles calmly and cleanly into spacious layout)
+      // Physics configuration with fixed randomSeed for 100% deterministic layout
       const options = {
+        layout: {
+          randomSeed: 42,
+          improvedLayout: false
+        },
         physics: {
           enabled: physicsState,
           solver: "forceAtlas2Based",
@@ -1798,7 +1816,7 @@ html_template = """<!DOCTYPE html>
           },
           stabilization: {
             enabled: true,
-            iterations: 160,
+            iterations: 120,
             updateInterval: 25
           }
         },
