@@ -1410,21 +1410,16 @@ html_template = """<!DOCTYPE html>
       color: var(--yellow-primary);
     }
 
-    /* Documentation subcard grid (responsive 4 columns) */
+    /* Documentation subcard grid (responsive 3 columns) */
     .docs-three-col-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-top: 6px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 10px;
+      width: 100%;
     }
 
-    @media (max-width: 1024px) {
-      .docs-three-col-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 640px) {
+    @media (max-width: 860px) {
       .docs-three-col-grid {
         grid-template-columns: 1fr;
       }
@@ -1433,12 +1428,15 @@ html_template = """<!DOCTYPE html>
     .doc-subcard {
       background: var(--bg-panel);
       border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      padding: 12px;
+      border-radius: 9px;
+      padding: 15px;
       display: flex;
       flex-direction: column;
       gap: 8px;
       transition: all 0.15s ease;
+      min-width: 0;
+      height: 100%;
+      box-sizing: border-box;
     }
 
     .doc-subcard:hover {
@@ -1448,9 +1446,9 @@ html_template = """<!DOCTYPE html>
     }
 
     .doc-subcard-icon {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
+      width: 32px;
+      height: 32px;
+      border-radius: 7px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1458,23 +1456,31 @@ html_template = """<!DOCTYPE html>
     }
 
     .doc-subcard-title {
-      font-size: 12px;
-      font-weight: 700;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
       color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .doc-subcard-desc {
-      font-size: 11px;
+      font-family: var(--font-sans);
+      font-size: 11.5px;
       color: var(--text-muted);
-      line-height: 1.4;
+      line-height: 1.45;
       flex: 1;
+      margin-bottom: 4px;
     }
 
     .doc-subcard-btn {
       width: 100%;
-      height: 30px;
-      font-size: 11px;
-      margin-top: 4px;
+      height: 32px;
+      font-family: var(--font-sans);
+      font-size: 11.5px;
+      font-weight: 600;
+      margin-top: auto;
       display: flex;
       align-items: center;
       justify-content: center;
