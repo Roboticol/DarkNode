@@ -2084,14 +2084,6 @@ html_template = """<!DOCTYPE html>
             <span class="inspect-lbl">Connected Hops</span>
             <span class="inspect-val" id="inspect-deg">4 links</span>
           </div>
-          <div class="inspect-field" id="inspect-meta-box-1" style="display: none;">
-            <span class="inspect-lbl" id="inspect-meta-lbl-1">Institution</span>
-            <span class="inspect-val" id="inspect-meta-val-1">--</span>
-          </div>
-          <div class="inspect-field" id="inspect-meta-box-2" style="display: none;">
-            <span class="inspect-lbl" id="inspect-meta-lbl-2">Verification</span>
-            <span class="inspect-val" id="inspect-meta-val-2">--</span>
-          </div>
           <div class="inspect-actions">
             <button class="btn btn-outline" style="height: 26px; font-size: 10px; flex: 1;" onclick="isolateNodeNeighbors()">Focus Hops</button>
             <button class="btn btn-yellow" style="height: 26px; font-size: 10px; flex: 1;" onclick="copyNodeId()">Copy ID</button>
@@ -2138,16 +2130,6 @@ html_template = """<!DOCTYPE html>
           <div class="hero-rank-badge" id="threat-rank-pill">
             RANK #1
           </div>
-        </div>
-
-        <!-- Verified Regulatory Typology (FATF / FinCEN) -->
-        <div style="background: rgba(250, 204, 21, 0.05); border: 1px solid rgba(250, 204, 21, 0.2); border-radius: 8px; padding: 10px 12px; margin-bottom: 2px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-            <span style="font-size: 9.5px; font-weight: 800; color: var(--yellow-primary); text-transform: uppercase; letter-spacing: 0.05em;" id="typology-authority">FATF / FINCEN SPEC</span>
-            <span style="font-size: 9px; font-family: 'JetBrains Mono', monospace; color: var(--text-dim);" id="typology-code">FIN-2021-A003</span>
-          </div>
-          <div style="font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 3px;" id="typology-title">High-Velocity Smurfing Funnel</div>
-          <div style="font-size: 10px; color: var(--text-muted); line-height: 1.4;" id="typology-desc">Rapid pass-through structuring: Micro-deposits just below BSA threshold.</div>
         </div>
 
         <!-- Evidence Signals -->
@@ -3361,18 +3343,6 @@ html_template = """<!DOCTYPE html>
       const ringLbl = document.getElementById("settings-active-ring-lbl");
       if (ringLbl) ringLbl.innerText = `Syndicate #${ring.ring_id} (Score: ${(ring.score * 100).toFixed(1)}%)`;
 
-      // Update Verified Regulatory Typology Box
-      if (ring.typology) {
-        const authEl = document.getElementById("typology-authority");
-        const codeEl = document.getElementById("typology-code");
-        const titleEl = document.getElementById("typology-title");
-        const descEl = document.getElementById("typology-desc");
-        if (authEl) authEl.innerText = ring.typology.authority || "FATF / FINCEN SPEC";
-        if (codeEl) codeEl.innerText = ring.typology.typology_code || "";
-        if (titleEl) titleEl.innerText = ring.typology.name || "Coordinated Mule Syndicate";
-        if (descEl) descEl.innerText = ring.typology.description || "";
-      }
-
       // Handle freeze state for this ring
       const freezeBtn = document.getElementById("freeze-btn");
       const isFrozen = frozenRings.has(ring.ring_id);
@@ -3390,18 +3360,13 @@ html_template = """<!DOCTYPE html>
         freezeBtn.style.color = "#131415";
       }
 
-      // Render Account Chips with verified bank names & account numbers
+      // Render Account Chips
       const chipsBox = document.getElementById("members-chips");
-      chipsBox.innerHTML = ring.members.map(m => {
-        const uNode = (ring.graph.nodes || []).find(n => n.id === `user_${m}`);
-        const label = uNode ? uNode.label : `User ${m}`;
-        const title = uNode ? uNode.title : `User ${m}`;
-        return `
-          <span class="chip-account ${isFrozen ? 'frozen' : ''}" onclick="focusOnNode('user_${m}')" title="${title}">
-            ${label} ${isFrozen ? '<span style="font-size: 8px; color: #ef4444;">[FROZEN]</span>' : ''}
-          </span>
-        `;
-      }).join("");
+      chipsBox.innerHTML = ring.members.map(m => `
+        <span class="chip-account ${isFrozen ? 'frozen' : ''}" onclick="focusOnNode('user_${m}')">
+          User ${m} ${isFrozen ? '<span style="font-size: 8px; color: #ef4444;">[FROZEN]</span>' : ''}
+        </span>
+      `).join("");
 
       // Only re-render graph if the ring actually changed or forced
       if (!network || currentRenderedRingId !== ring.ring_id || forceRerender) {
@@ -3729,53 +3694,6 @@ html_template = """<!DOCTYPE html>
         role.innerText = "Target Merchant Terminal";
         score.innerText = `Velocity: ${Math.round(ring.transaction_velocity)} tx/hr`;
         score.style.color = "var(--node-merchant)";
-      }
-
-      const mBox1 = document.getElementById("inspect-meta-box-1");
-      const mLbl1 = document.getElementById("inspect-meta-lbl-1");
-      const mVal1 = document.getElementById("inspect-meta-val-1");
-      const mBox2 = document.getElementById("inspect-meta-box-2");
-      const mLbl2 = document.getElementById("inspect-meta-lbl-2");
-      const mVal2 = document.getElementById("inspect-meta-val-2");
-
-      if (gNode.profile) {
-        if (gNode.group === "user") {
-          if (mBox1) {
-            mBox1.style.display = "flex";
-            mLbl1.innerText = "Institution / BIC";
-            mVal1.innerText = `${gNode.profile.bank_short || gNode.profile.bank_name} (${gNode.profile.swift_bic || 'SWIFT'})`;
-          }
-          if (mBox2) {
-            mBox2.style.display = "flex";
-            mLbl2.innerText = "Holder & KYC";
-            mVal2.innerText = `${gNode.profile.name} • ${gNode.profile.kyc_tier}`;
-          }
-        } else if (gNode.group === "device") {
-          if (mBox1) {
-            mBox1.style.display = "flex";
-            mLbl1.innerText = "Hardware Spec";
-            mVal1.innerText = `${gNode.profile.model}`;
-          }
-          if (mBox2) {
-            mBox2.style.display = "flex";
-            mLbl2.innerText = "Luhn IMEI / OS";
-            mVal2.innerText = `${gNode.profile.imei_masked} (${gNode.profile.os})`;
-          }
-        } else if (gNode.group === "merchant") {
-          if (mBox1) {
-            mBox1.style.display = "flex";
-            mLbl1.innerText = "ISO 18245 MCC";
-            mVal1.innerText = `MCC ${gNode.profile.mcc} • ${gNode.profile.category}`;
-          }
-          if (mBox2) {
-            mBox2.style.display = "flex";
-            mLbl2.innerText = "Settlement Sink";
-            mVal2.innerText = `${gNode.profile.settlement_type}`;
-          }
-        }
-      } else {
-        if (mBox1) mBox1.style.display = "none";
-        if (mBox2) mBox2.style.display = "none";
       }
 
       card.style.display = "block";

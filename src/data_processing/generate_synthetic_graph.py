@@ -32,13 +32,6 @@ import numpy as np
 import torch
 from torch_geometric.data import HeteroData
 
-from src.data_processing.real_aml_data import (
-    generate_verified_device_profile,
-    generate_verified_merchant_profile,
-    generate_verified_user_profile,
-    get_verified_ring_typology,
-)
-
 
 @dataclass(frozen=True)
 class GeneratorConfig:
@@ -133,23 +126,12 @@ def generate_synthetic_graph(
     graph = nx.MultiDiGraph()
     start_time = datetime(2025, 1, 1, tzinfo=timezone.utc)
 
-    # Generate logical, source-verified profiles for financial entities
-    user_profiles: dict[int, dict[str, Any]] = {
-        uid: generate_verified_user_profile(uid, rng) for uid in range(config.num_users)
-    }
-    merchant_profiles: dict[int, dict[str, Any]] = {
-        mid: generate_verified_merchant_profile(mid, rng) for mid in range(config.num_merchants)
-    }
-    device_profiles: dict[int, dict[str, Any]] = {
-        did: generate_verified_device_profile(did, rng) for did in range(config.num_devices)
-    }
-
     for user_id in range(config.num_users):
-        graph.add_node(("user", user_id), node_type="user", **user_profiles[user_id])
+        graph.add_node(("user", user_id), node_type="user")
     for merchant_id in range(config.num_merchants):
-        graph.add_node(("merchant", merchant_id), node_type="merchant", **merchant_profiles[merchant_id])
+        graph.add_node(("merchant", merchant_id), node_type="merchant")
     for device_id in range(config.num_devices):
-        graph.add_node(("device", device_id), node_type="device", **device_profiles[device_id])
+        graph.add_node(("device", device_id), node_type="device")
 
     user_ips: dict[int, str] = {}
     user_devices: dict[int, int] = {}
@@ -246,15 +228,13 @@ def generate_synthetic_graph(
                     minutes=transaction_offset // 3,
                     seconds=transaction_offset % 3,
                 )
-                # BSA structuring: deliberate smurfing between $8,500 and $9,950 to evade $10k CTR filings
-                structured_amount = round(float(rng.uniform(8500.0, 9950.0)), 2)
                 _add_transaction(
                     graph,
                     transactions,
                     member,
                     rng.choice(merchant_pool),
                     timestamp,
-                    structured_amount,
+                    float(np_rng.lognormal(mean=3.4, sigma=0.35)),
                     True,
                     ring_id,
                     transaction_id,
@@ -267,15 +247,13 @@ def generate_synthetic_graph(
                 days=rng.randrange(90),
                 minutes=rng.randrange(24 * 60),
             )
-            # Legitimate consumer transactions ($15 - $450)
-            legit_amount = round(float(np_rng.lognormal(mean=3.8, sigma=0.85)), 2)
             _add_transaction(
                 graph,
                 transactions,
                 user_id,
                 rng.randrange(config.num_merchants),
                 timestamp,
-                legit_amount,
+                float(np_rng.lognormal(mean=3.0, sigma=0.8)),
                 False,
                 -1,
                 transaction_id,
@@ -347,12 +325,6 @@ def generate_synthetic_graph(
         },
         "user_devices": user_devices,
         "user_ips": user_ips,
-        "user_profiles": user_profiles,
-        "device_profiles": device_profiles,
-        "merchant_profiles": merchant_profiles,
-        "ring_typologies": {
-            ring_id: get_verified_ring_typology(ring_id) for ring_id in range(ring_count)
-        },
     }
     return data, graph, metadata
 
