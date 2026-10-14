@@ -2085,7 +2085,7 @@ html_template = """<!DOCTYPE html>
       border: 1px solid var(--border-strong);
       border-radius: 16px;
       padding: 28px 22px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 35px rgba(250, 204, 21, 0.08);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -2109,7 +2109,7 @@ html_template = """<!DOCTYPE html>
       border-radius: 8px;
       background: #131415;
       position: relative;
-      box-shadow: 0 0 16px rgba(250, 204, 21, 0.25);
+      box-shadow: none;
       animation: phoneRotateLandscape 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
       display: flex;
       align-items: center;
@@ -2121,7 +2121,7 @@ html_template = """<!DOCTYPE html>
         transform: rotate(0deg);
       }
       45%, 75% {
-        transform: rotate(90deg);
+        transform: rotate(-90deg);
       }
       92%, 100% {
         transform: rotate(0deg);
@@ -2156,22 +2156,32 @@ html_template = """<!DOCTYPE html>
       height: 6px;
       background: var(--yellow-primary);
       border-radius: 50%;
-      box-shadow: 0 0 8px var(--yellow-primary);
+      box-shadow: none;
     }
 
     .rotate-hint-arc {
       position: absolute;
-      top: -6px;
+      top: -8px;
       right: -8px;
       color: var(--yellow-primary);
-      opacity: 0.85;
-      animation: rotateArcPulse 2.8s ease-in-out infinite;
+      opacity: 0.9;
+      transform-origin: center center;
+      animation: rotateArcMove 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
 
-    @keyframes rotateArcPulse {
-      0%, 20% { opacity: 0.3; transform: scale(0.9); }
-      50% { opacity: 1; transform: scale(1.1); }
-      80%, 100% { opacity: 0.3; transform: scale(0.9); }
+    @keyframes rotateArcMove {
+      0%, 15% {
+        transform: rotate(0deg) translate(0, 0);
+        opacity: 0.6;
+      }
+      45%, 75% {
+        transform: rotate(-35deg) translate(-6px, 2px);
+        opacity: 1;
+      }
+      92%, 100% {
+        transform: rotate(0deg) translate(0, 0);
+        opacity: 0.6;
+      }
     }
 
     .orientation-tag {
@@ -2195,7 +2205,7 @@ html_template = """<!DOCTYPE html>
       height: 6px;
       border-radius: 50%;
       background: var(--yellow-primary);
-      box-shadow: 0 0 6px var(--yellow-primary);
+      box-shadow: none;
     }
 
     .orientation-title {
@@ -2548,7 +2558,7 @@ html_template = """<!DOCTYPE html>
 
       <div class="orientation-instructions">
         <div class="instruction-step">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-1.19"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38L2.06 6"/></svg>
           Rotate phone horizontally to unlock
         </div>
         <button class="btn btn-bypass" onclick="dismissOrientationModal()" title="Bypass orientation check for portrait preview">
