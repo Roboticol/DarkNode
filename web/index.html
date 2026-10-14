@@ -358,9 +358,11 @@
       flex: 1;
       gap: 12px;
       padding: 12px 16px;
-      height: calc(100vh - 56px);
+      min-height: 0;
+      height: calc(100% - 56px);
       overflow: hidden;
       box-sizing: border-box;
+      position: relative;
     }
 
     /* Panels */
@@ -379,6 +381,63 @@
       width: 320px;
       flex-shrink: 0;
       height: 100%;
+      transition: width 0.2s ease, opacity 0.2s ease;
+    }
+
+    .sidebar-left.collapsed, .sidebar-right.collapsed {
+      display: none !important;
+    }
+
+    .panel-collapse-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.12s ease;
+    }
+
+    .panel-collapse-btn:hover {
+      color: var(--yellow-primary);
+      background: var(--bg-card);
+    }
+
+    .sidebar-expand-pill {
+      position: absolute;
+      top: 52px;
+      z-index: 15;
+      display: none;
+      align-items: center;
+      gap: 5px;
+      background: rgba(25, 26, 27, 0.94);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 7px;
+      padding: 5px 9px;
+      color: var(--yellow-primary);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: var(--shadow-card);
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .sidebar-expand-pill:hover {
+      background: var(--bg-card);
+      border-color: var(--yellow-primary);
+    }
+
+    .sidebar-expand-pill.left {
+      left: 14px;
+    }
+
+    .sidebar-expand-pill.right {
+      right: 14px;
     }
 
     .panel-header-clean {
@@ -724,11 +783,17 @@
       flex: 1;
       width: 100%;
       height: 100%;
-      min-height: 450px;
+      min-height: 0;
       overflow: hidden;
       background-color: #191a1b;
       background-image: radial-gradient(#2c2d2e 1.2px, transparent 1.2px);
       background-size: 24px 24px;
+    }
+
+    @media (min-width: 1100px) and (min-height: 650px) {
+      .canvas-outer {
+        min-height: 450px;
+      }
     }
 
     #network-canvas {
@@ -1488,6 +1553,7 @@
       flex-shrink: 0;
       height: 100%;
       overflow-y: auto;
+      transition: width 0.2s ease, opacity 0.2s ease;
     }
 
     .inspector-content {
@@ -2176,6 +2242,254 @@
         padding: 8px 14px;
       }
     }
+
+    /* ==========================================================================
+       Full-Screen Responsive Layout for Mobile Landscape & Mobile Desktop Site
+       Zero-Scroll, Zero-Letterbox, 100% Screen Edge-to-Edge Fit
+       ========================================================================== */
+    @media screen and (max-height: 580px) and (orientation: landscape), screen and (max-width: 1024px) and (orientation: landscape) {
+      header {
+        height: 42px;
+        padding: 0 10px;
+      }
+
+      .brand-group {
+        gap: 6px;
+      }
+
+      .brand-logo-mark {
+        width: 22px;
+        height: 22px;
+      }
+
+      .brand-logo-mark svg {
+        width: 12px;
+        height: 12px;
+      }
+
+      .brand-title {
+        font-size: 14px;
+      }
+
+      .badge-pill {
+        font-size: 9.5px;
+        padding: 1px 5px;
+      }
+
+      .header-stats {
+        gap: 5px;
+      }
+
+      .stat-pill {
+        padding: 2.5px 6px;
+        font-size: 10px;
+        gap: 3px;
+      }
+
+      .header-actions {
+        gap: 5px;
+      }
+
+      .header-actions .btn {
+        height: 28px;
+        padding: 0 8px;
+        font-size: 11px;
+        gap: 4px;
+      }
+
+      .header-actions .btn svg {
+        width: 11px;
+        height: 11px;
+      }
+
+      .api-box {
+        display: none;
+      }
+
+      .workspace {
+        gap: 8px;
+        padding: 6px 8px;
+        height: calc(100% - 42px);
+      }
+
+      .sidebar-left {
+        width: 220px;
+        min-width: 190px;
+        max-width: 250px;
+      }
+
+      .sidebar-right {
+        width: 230px;
+        min-width: 200px;
+        max-width: 260px;
+      }
+
+      .panel-header-clean {
+        padding: 7px 10px;
+      }
+
+      .panel-title {
+        font-size: 10.5px;
+      }
+
+      .dataset-switcher-row {
+        padding: 0 6px 6px 6px;
+        gap: 4px;
+      }
+
+      .dataset-tab-btn {
+        height: 24px;
+        font-size: 10px;
+      }
+
+      .tier-filter-row {
+        padding: 0 6px 6px 6px;
+        gap: 3px;
+      }
+
+      .tier-tab-btn {
+        height: 22px;
+        font-size: 9.5px;
+      }
+
+      .search-box-clean {
+        padding: 5px 8px;
+      }
+
+      .search-input-clean {
+        padding: 4px 6px;
+        font-size: 10.5px;
+      }
+
+      .rings-list-scroll {
+        padding: 6px;
+        gap: 4px;
+      }
+
+      .ring-card-item {
+        padding: 6px 8px;
+        gap: 3px;
+      }
+
+      .ring-label {
+        font-size: 11px;
+      }
+
+      .ring-risk-tag {
+        font-size: 9.5px;
+        padding: 1px 5px;
+      }
+
+      .ring-card-bottom {
+        font-size: 10px;
+        gap: 8px;
+      }
+
+      .inspector-content {
+        padding: 8px 10px;
+        gap: 8px;
+      }
+
+      .hero-risk-box {
+        padding: 8px 10px;
+      }
+
+      .hero-score-val {
+        font-size: 20px;
+      }
+
+      .hero-score-sub {
+        font-size: 9px;
+      }
+
+      .block-title {
+        font-size: 10px;
+        margin-bottom: 5px;
+      }
+
+      .signal-item-row {
+        padding: 5px 7px;
+        font-size: 10px;
+      }
+
+      .signal-prefix-tag {
+        font-size: 8px;
+        padding: 1px 3px;
+      }
+
+      .user-chips-grid {
+        max-height: 75px;
+        padding: 5px;
+        gap: 3px;
+      }
+
+      .chip-account {
+        font-size: 9.5px;
+        padding: 2px 5px;
+      }
+
+      .canvas-bar {
+        top: 6px;
+        left: 6px;
+        padding: 2px 5px;
+        gap: 3px;
+      }
+
+      .canvas-pill-btn {
+        height: 22px;
+        padding: 0 6px;
+        font-size: 9.5px;
+        gap: 3px;
+      }
+
+      .canvas-filter-bar {
+        top: 6px;
+        right: 6px;
+        padding: 2px 5px;
+        gap: 3px;
+      }
+
+      .canvas-filter-bar .canvas-pill-btn {
+        height: 22px;
+        padding: 0 6px;
+        font-size: 9.5px;
+      }
+
+      .canvas-legend {
+        bottom: 6px;
+        left: 6px;
+        padding: 3px 8px;
+        font-size: 9.5px;
+        gap: 8px;
+      }
+
+      .settings-floating-btn {
+        bottom: 10px;
+        right: 10px;
+        width: 30px;
+        height: 30px;
+      }
+    }
+
+    /* Fallback portrait preview layout (if user clicks Preview in Portrait bypass) */
+    @media screen and (max-width: 900px) and (orientation: portrait) {
+      .workspace {
+        flex-direction: column;
+        overflow-y: auto;
+        height: auto;
+        gap: 10px;
+      }
+      .sidebar-left, .sidebar-right {
+        width: 100% !important;
+        height: auto;
+        max-height: 300px;
+      }
+      .viewport-center {
+        min-height: 340px;
+        height: 340px;
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
@@ -2308,7 +2622,12 @@
     <div class="panel-card sidebar-left">
       <div class="panel-header-clean">
         <span class="panel-title">Detected Syndicates</span>
-        <span class="badge-pill" id="rings-count-badge">10 total</span>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span class="badge-pill" id="rings-count-badge">10 total</span>
+          <button class="panel-collapse-btn" onclick="toggleSidebar('left')" title="Collapse Panel">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+        </div>
       </div>
 
       <!-- 2-Section Dataset Switcher: Synthetic Data vs Real AML Data -->
@@ -2419,6 +2738,16 @@
 
     <!-- Panel 2: Center Viewport (Network Graph Canvas) -->
     <div class="panel-card viewport-center">
+      <!-- Collapsed Panel Expand Pills -->
+      <button id="expand-left-btn" class="sidebar-expand-pill left" onclick="toggleSidebar('left')" title="Open Rings Panel">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg>
+        <span>Rings</span>
+      </button>
+      <button id="expand-right-btn" class="sidebar-expand-pill right" onclick="toggleSidebar('right')" title="Open Telemetry Panel">
+        <span>Telemetry</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+
       <!-- Floating Toolbar -->
       <div class="canvas-bar">
         <button class="canvas-pill-btn active" onclick="resetGraphView()">
@@ -2503,7 +2832,12 @@
     <div class="panel-card sidebar-right">
       <div class="panel-header-clean">
         <span class="panel-title" id="inspector-heading">SYNDICATE #3</span>
-        <span class="badge-pill" id="inspector-badge">RANK #1</span>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span class="badge-pill" id="inspector-badge">RANK #1</span>
+          <button class="panel-collapse-btn" onclick="toggleSidebar('right')" title="Collapse Panel">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
       </div>
 
       <div class="inspector-content">
@@ -21100,12 +21434,17 @@
       // Constant screen text size & high-contrast visibility at all zoom levels
       network.on("afterDrawing", function(ctx) {
         ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        const dpr = window.devicePixelRatio || 1;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         const positions = network.getPositions();
         ctx.font = "600 11.5px 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
+
+        const currentScale = network.getScale ? network.getScale() : 1.0;
+        const ring = allRings[activeIndex];
+        const isFrozen = ring && frozenRings.has(ring.ring_id);
 
         for (const node of currentVisibleNodes) {
           const pos = positions[node.id];
@@ -21118,10 +21457,11 @@
             continue;
           }
 
-          const labelText = node.label;
-          const yOffset = (node.group === "device" ? 22 : (node.group === "merchant" ? 20 : 18));
+          const labelText = node.actualLabel || node.label;
+          const nodeBaseSize = (node.group === "device" ? 22 : (node.group === "merchant" ? 18 : 18));
+          const nodeScreenRadius = Math.max(8, Math.min(36, nodeBaseSize * currentScale));
           const textX = domPos.x;
-          const textY = domPos.y + yOffset;
+          const textY = domPos.y + nodeScreenRadius + 12;
 
           // Crisp dark background pill for high contrast
           const textWidth = ctx.measureText(labelText).width;
@@ -22376,76 +22716,45 @@
       adjustMobileFit();
     }
 
+    function toggleSidebar(side) {
+      if (side === 'left') {
+        const sb = document.querySelector('.sidebar-left');
+        const pill = document.getElementById('expand-left-btn');
+        if (!sb) return;
+        const isCollapsed = sb.classList.toggle('collapsed');
+        if (pill) pill.style.display = isCollapsed ? 'flex' : 'none';
+      } else if (side === 'right') {
+        const sb = document.querySelector('.sidebar-right');
+        const pill = document.getElementById('expand-right-btn');
+        if (!sb) return;
+        const isCollapsed = sb.classList.toggle('collapsed');
+        if (pill) pill.style.display = isCollapsed ? 'flex' : 'none';
+      }
+      setTimeout(() => {
+        if (network) {
+          network.redraw();
+          fitGraphToScreen(true);
+        }
+      }, 150);
+    }
+
     function adjustMobileFit() {
       const wrapper = document.getElementById("app-viewport-wrapper");
       if (!wrapper) return;
 
-      const winW = window.innerWidth;
-      const winH = window.innerHeight;
-      const isPortrait = winH > winW;
+      // Reset any inline dimensions so CSS media queries handle edge-to-edge layout cleanly
+      wrapper.style.position = "";
+      wrapper.style.width = "100%";
+      wrapper.style.height = "100%";
+      wrapper.style.top = "";
+      wrapper.style.left = "";
+      wrapper.style.transform = "";
+      wrapper.style.margin = "";
 
-      const isTouchOrMobile = ('ontouchstart' in window) || 
-                              (navigator.maxTouchPoints > 0) || 
-                              /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-      // On PC and laptop screens (widescreen desktop resolution): keep 100% native untouched
-      if (!isTouchOrMobile && winW >= 1200 && winH >= 650) {
-        wrapper.style.position = "";
-        wrapper.style.transform = "";
-        wrapper.style.width = "100%";
-        wrapper.style.height = "100%";
-        wrapper.style.top = "";
-        wrapper.style.left = "";
-        wrapper.style.margin = "";
-        return;
-      }
-
-      // If mobile portrait is previewed via bypass button:
-      if (isPortrait) {
-        const targetW = 1260;
-        const scale = Math.min(winW / targetW, 1);
-        wrapper.style.position = "absolute";
-        wrapper.style.width = targetW + "px";
-        wrapper.style.height = "100vh";
-        wrapper.style.top = "0";
-        wrapper.style.left = "0";
-        wrapper.style.transform = `scale(${scale})`;
-        wrapper.style.transformOrigin = "top left";
-        return;
-      }
-
-      // On mobile landscape & mobile desktop-mode:
-      // Dynamically match the exact aspect ratio of the phone screen so it fits 100% full screen
-      // with ZERO letterbox black bars!
-      const targetH = 640;
-      const aspect = winW / winH;
-      const minW = 1180;
-
-      let targetW, scale;
-      if (aspect >= minW / targetH) {
-        // Modern widescreen phone (16:9, 19.5:9, 20:9, 21:9):
-        // Width expands to fill the entire screen horizontally and vertically with 0px margins
-        targetW = Math.round(targetH * aspect);
-        scale = winH / targetH;
-        wrapper.style.position = "absolute";
-        wrapper.style.width = targetW + "px";
-        wrapper.style.height = targetH + "px";
-        wrapper.style.top = "0";
-        wrapper.style.left = "0";
-        wrapper.style.transform = `scale(${scale})`;
-        wrapper.style.transformOrigin = "top left";
-      } else {
-        // Less wide screens: scale to fit width and center vertically
-        targetW = minW;
-        scale = winW / targetW;
-        wrapper.style.position = "absolute";
-        wrapper.style.width = targetW + "px";
-        wrapper.style.height = targetH + "px";
-        wrapper.style.top = "50%";
-        wrapper.style.left = "0";
-        wrapper.style.transform = `translateY(-50%) scale(${scale})`;
-        wrapper.style.transformOrigin = "top left";
-      }
+      // Ensure window scroll stays locked at top-left with zero drift
+      window.scrollTo(0, 0);
+      if (document.body) document.body.scrollTop = 0;
+      if (document.documentElement) document.documentElement.scrollTop = 0;
 
       if (typeof network !== "undefined" && network) {
         network.redraw();
