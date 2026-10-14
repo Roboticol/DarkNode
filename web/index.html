@@ -2048,7 +2048,7 @@
 
     /* Automatically trigger overlay on portrait orientation on phones/narrow viewports */
     @media screen and (max-width: 900px) and (orientation: portrait), screen and (max-height: 520px) and (orientation: portrait) {
-      .orientation-overlay:not(.dismissed) {
+      .orientation-overlay {
         display: flex !important;
       }
     }
@@ -2227,20 +2227,6 @@
 
     .instruction-step svg {
       color: var(--yellow-primary);
-    }
-
-    .btn-bypass {
-      font-size: 10.5px;
-      height: 26px;
-      padding: 0 12px;
-      color: var(--text-dim);
-      border: none;
-      background: transparent;
-      cursor: pointer;
-    }
-    .btn-bypass:hover {
-      color: var(--text-muted);
-      background: var(--bg-card);
     }
 
     /* Modals & Dialogs optimization in mobile landscape */
@@ -2541,9 +2527,6 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38L2.06 6"/></svg>
           Rotate phone horizontally to unlock
         </div>
-        <button class="btn btn-bypass" onclick="dismissOrientationModal()" title="Bypass orientation check for portrait preview">
-          Preview in Portrait
-        </button>
       </div>
     </div>
   </div>
@@ -22709,25 +22692,9 @@
       const isNarrowPortrait = isPortrait && (isTouchOrMobile || window.innerWidth <= 900);
 
       if (overlay) {
-        if (isNarrowPortrait && !overlay.classList.contains("dismissed")) {
-          overlay.style.display = "flex";
-        } else {
-          overlay.style.display = "none";
-          if (!isPortrait) {
-            overlay.classList.remove("dismissed");
-          }
-        }
+        overlay.style.display = isNarrowPortrait ? "flex" : "none";
       }
 
-      adjustMobileFit();
-    }
-
-    function dismissOrientationModal() {
-      const overlay = document.getElementById("orientation-overlay");
-      if (overlay) {
-        overlay.classList.add("dismissed");
-        overlay.style.display = "none";
-      }
       adjustMobileFit();
     }
 
