@@ -2389,7 +2389,7 @@ html_template = """<!DOCTYPE html>
             </div>
             <div>
               <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">ENDPOINT BASE URL</label>
-              <input type="text" id="api-url" class="settings-input" value="http://localhost:8000" placeholder="http://localhost:8000" onkeydown="if(event.key==='Enter') testApiConnection()">
+              <input type="text" id="api-url" class="settings-input" value="https://darknode.onrender.com" placeholder="https://darknode.onrender.com" onkeydown="if(event.key==='Enter') testApiConnection()">
             </div>
             <div id="api-ping-result" style="font-size: 10.5px; font-family: 'JetBrains Mono', monospace; min-height: 16px;"></div>
             <div style="display: flex; gap: 8px;">
@@ -4645,7 +4645,7 @@ html_template = """<!DOCTYPE html>
 
     async function testApiConnection() {
       const input = document.getElementById("api-url");
-      const url = input ? input.value.trim().replace(/\/$/, "") : "http://localhost:8000";
+      const url = input ? input.value.trim().replace(/\/$/, "") : "https://darknode.onrender.com";
       const dot = document.getElementById("status-dot");
       const label = document.getElementById("status-label");
       const pingResult = document.getElementById("api-ping-result");
@@ -4815,7 +4815,7 @@ html_template = """<!DOCTYPE html>
 
     function resetSettingsToDefault() {
       const input = document.getElementById("api-url");
-      if (input) input.value = "http://localhost:8000";
+      if (input) input.value = "https://darknode.onrender.com";
 
       const pingResult = document.getElementById("api-ping-result");
       if (pingResult) pingResult.innerHTML = "";

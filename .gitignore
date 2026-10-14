@@ -19,3 +19,8 @@ data/*.pt
 .coverage
 htmlcov/
 
+# Local & Deployment Artifacts
+*.docx
+.vercel
+
+

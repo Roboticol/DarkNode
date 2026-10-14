@@ -150,26 +150,40 @@ Navigate to `http://localhost:3000` to inspect the live force-directed fraud rin
 
 ---
 
+## Deployment & Production Links
+
+| Service | Platform | Production URL | Status |
+| :--- | :--- | :--- | :---: |
+| **Interactive Dashboard (Frontend)** | **Vercel** | **[https://darknode-app.vercel.app](https://darknode-app.vercel.app)** <br> *(Mirror: [https://darknode-ai.vercel.app](https://darknode-ai.vercel.app))* | 🟢 Live |
+| **GNN Inference Engine (Backend)** | **Render** | **[https://darknode.onrender.com](https://darknode.onrender.com)** <br> *(Health check: `/health`)* | 🟢 Configured |
+
+---
+
 ## Deployment Instructions
 
 ### Backend (Render)
-1. In [Render Dashboard](https://dashboard.render.com/), create a new **Web Service** linked to your repository.
-2. Configuration:
-   - **Environment**: Python 3
+DarkNode includes a root `render.yaml` blueprint for one-click deployment:
+1. In [Render Dashboard](https://dashboard.render.com/), click **New +** > **Blueprint** (or create a **Web Service** linked to `https://github.com/adittt18/DarkNode`).
+2. Configuration auto-loaded from `render.yaml`:
+   - **Service Name**: `darknode`
+   - **Environment**: Python 3 (3.11.9)
    - **Root Directory**: `.`
    - **Build Command**: `pip install -r api/requirements.txt`
    - **Start Command**: `uvicorn api.main:app --host 0.0.0.0 --port $PORT`
+   - **Health Check Path**: `/health`
 3. **Resource Optimization Note**:
-   - `api/requirements.txt` is pre-configured with CPU-only PyTorch (`--extra-index-url https://download.pytorch.org/whl/cpu`) which should keep the build image under Render's free tier slug and 512 MB memory threshold.
-   - For low-memory instances, set environment variable `WEB_CONCURRENCY=1`.
-4. The health endpoint `GET /health` is configured for zero-downtime uptime monitoring.
+   - `api/requirements.txt` is pre-configured with CPU-only PyTorch (`--extra-index-url https://download.pytorch.org/whl/cpu`) to keep memory below 512 MB.
+   - Low-memory environment variable `WEB_CONCURRENCY=1` is enabled by default.
 
 ### Frontend (Vercel)
-1. Go to [Vercel](https://vercel.com/) and click **Add New Project**.
-2. Select your repository.
-3. Set **Root Directory** to `web`.
-4. Leave build settings empty (Pure HTML/JS static deployment).
-5. Deploy! In the live dashboard, enter your Render API endpoint in the top header to stream live graph data.
+The static intelligence console is deployed to Vercel:
+- **Production Domains**: [https://darknode-app.vercel.app](https://darknode-app.vercel.app) & [https://darknode-ai.vercel.app](https://darknode-ai.vercel.app)
+- Pre-configured to point securely (HTTPS) to `https://darknode.onrender.com`.
+- CLI Deployment command:
+  ```bash
+  cd web
+  vercel --prod --yes
+  ```
 
 ---
 
