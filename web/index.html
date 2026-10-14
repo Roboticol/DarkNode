@@ -804,11 +804,25 @@
       height: 100% !important;
     }
 
-    /* Floating Graph Bar */
-    .canvas-bar {
+    /* Floating Top Controls Container */
+    .canvas-top-controls {
       position: absolute;
       top: 14px;
       left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+      z-index: 12;
+      flex-wrap: wrap;
+    }
+
+    /* Floating Graph Bar */
+    .canvas-bar {
+      position: static;
+      pointer-events: auto;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -818,7 +832,6 @@
       border-radius: 8px;
       padding: 5px 8px;
       box-shadow: var(--shadow-card);
-      z-index: 10;
     }
 
     .canvas-pill-btn {
@@ -836,6 +849,7 @@
       gap: 6px;
       transition: all 0.12s ease;
       font-family: inherit;
+      white-space: nowrap;
     }
 
     .canvas-pill-btn:hover {
@@ -851,9 +865,8 @@
 
     /* Floating Entity Filter Bar (Top Right) */
     .canvas-filter-bar {
-      position: absolute;
-      top: 14px;
-      right: 14px;
+      position: static;
+      pointer-events: auto;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -863,7 +876,26 @@
       border-radius: 8px;
       padding: 5px 8px;
       box-shadow: var(--shadow-card);
-      z-index: 10;
+    }
+
+    .filter-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 4px;
+    }
+    .filter-dot.user-dot { background: var(--node-user); }
+    .filter-dot.device-dot { background: var(--node-device); border-radius: 2px; }
+    .filter-dot.merchant-dot { background: var(--node-merchant); clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+
+    /* Mobile Tactical Pills & Backdrop (Hidden on Desktop) */
+    .mobile-tactical-pill {
+      display: none;
+    }
+
+    .mobile-drawer-backdrop {
+      display: none;
     }
 
     #filter-user {
@@ -2248,8 +2280,9 @@
        ========================================================================== */
     @media screen and (max-height: 580px) and (orientation: landscape), screen and (max-width: 1024px) and (orientation: landscape) {
       header {
-        height: 42px;
+        height: 38px;
         padding: 0 10px;
+        border-bottom: 1px solid var(--border-subtle);
       }
 
       .brand-group {
@@ -2257,32 +2290,28 @@
       }
 
       .brand-logo-mark {
-        width: 22px;
-        height: 22px;
+        width: 20px;
+        height: 20px;
       }
 
       .brand-logo-mark svg {
-        width: 12px;
-        height: 12px;
+        width: 11px;
+        height: 11px;
       }
 
       .brand-title {
-        font-size: 14px;
+        font-size: 13px;
+        letter-spacing: 0.04em;
       }
 
       .badge-pill {
-        font-size: 9.5px;
+        font-size: 9px;
         padding: 1px 5px;
       }
 
+      /* Clean header: hide noisy stats pills on mobile */
       .header-stats {
-        gap: 5px;
-      }
-
-      .stat-pill {
-        padding: 2.5px 6px;
-        font-size: 10px;
-        gap: 3px;
+        display: none !important;
       }
 
       .header-actions {
@@ -2290,49 +2319,194 @@
       }
 
       .header-actions .btn {
-        height: 28px;
+        height: 26px;
         padding: 0 8px;
-        font-size: 11px;
+        font-size: 10.5px;
         gap: 4px;
       }
 
       .header-actions .btn svg {
-        width: 11px;
-        height: 11px;
+        width: 10px;
+        height: 10px;
       }
 
       .api-box {
         display: none;
       }
 
+      /* Workspace: The center graph expands into 100% full screen */
       .workspace {
-        gap: 8px;
-        padding: 6px 8px;
-        height: calc(100% - 42px);
+        position: relative;
+        gap: 0;
+        padding: 0;
+        height: calc(100% - 38px);
+        width: 100%;
+        overflow: hidden;
       }
 
+      .viewport-center {
+        width: 100% !important;
+        height: 100% !important;
+        flex: 1 1 100%;
+        border-radius: 0;
+        border: none;
+        position: relative;
+      }
+
+      /* Desktop expand pills hidden on mobile */
+      .sidebar-expand-pill {
+        display: none !important;
+      }
+
+      /* Off-Canvas Tactical Drawers for Mobile Landscape */
       .sidebar-left {
-        width: 220px;
-        min-width: 190px;
-        max-width: 250px;
+        position: absolute;
+        top: 6px;
+        bottom: 6px;
+        left: 6px;
+        width: 290px;
+        max-width: 84vw;
+        height: auto;
+        z-index: 50;
+        transform: translateX(calc(-100% - 14px));
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+        opacity: 0;
+        pointer-events: none;
+        background: rgba(16, 17, 19, 0.96);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(250, 204, 21, 0.3);
+        border-radius: 12px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85);
+        display: flex !important;
+        flex-direction: column;
+      }
+
+      .sidebar-left.mobile-open {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
       }
 
       .sidebar-right {
-        width: 230px;
-        min-width: 200px;
-        max-width: 260px;
+        position: absolute;
+        top: 6px;
+        bottom: 6px;
+        right: 6px;
+        width: 305px;
+        max-width: 86vw;
+        height: auto;
+        z-index: 50;
+        transform: translateX(calc(100% + 14px));
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+        opacity: 0;
+        pointer-events: none;
+        background: rgba(16, 17, 19, 0.96);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(250, 204, 21, 0.3);
+        border-radius: 12px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85);
+        display: flex !important;
+        flex-direction: column;
+      }
+
+      .sidebar-right.mobile-open {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      /* Mobile Drawer Backdrop Scrim */
+      .mobile-drawer-backdrop {
+        display: block;
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+        z-index: 45;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+      }
+
+      .mobile-drawer-backdrop.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      /* Floating Tactical Pills at Bottom of Canvas */
+      .mobile-tactical-pill {
+        display: inline-flex !important;
+        align-items: center;
+        gap: 6px;
+        position: absolute;
+        bottom: 8px;
+        z-index: 25;
+        height: 28px;
+        padding: 0 10px;
+        background: rgba(18, 19, 21, 0.92);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(250, 204, 21, 0.35);
+        border-radius: 20px;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+        transition: all 0.15s ease;
+        font-family: inherit;
+      }
+
+      .mobile-tactical-pill:active {
+        transform: scale(0.96);
+        border-color: var(--yellow-primary);
+      }
+
+      .mobile-tactical-pill.left {
+        left: 8px;
+      }
+
+      .mobile-tactical-pill.right {
+        right: 8px;
+      }
+
+      .pill-counter {
+        background: rgba(250, 204, 21, 0.15);
+        color: var(--yellow-primary);
+        font-size: 9px;
+        font-weight: 700;
+        padding: 1px 5px;
+        border-radius: 10px;
+        border: 1px solid rgba(250, 204, 21, 0.3);
+      }
+
+      .pill-threat-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #ef4444;
+        box-shadow: 0 0 6px rgba(239, 68, 68, 0.8);
+      }
+
+      .pill-score {
+        color: var(--yellow-primary);
+        font-weight: 700;
+        font-size: 10px;
       }
 
       .panel-header-clean {
-        padding: 7px 10px;
+        padding: 8px 12px;
       }
 
       .panel-title {
-        font-size: 10.5px;
+        font-size: 11px;
       }
 
       .dataset-switcher-row {
-        padding: 0 6px 6px 6px;
+        padding: 0 8px 6px 8px;
         gap: 4px;
       }
 
@@ -2342,7 +2516,7 @@
       }
 
       .tier-filter-row {
-        padding: 0 6px 6px 6px;
+        padding: 0 8px 6px 8px;
         gap: 3px;
       }
 
@@ -2352,21 +2526,21 @@
       }
 
       .search-box-clean {
-        padding: 5px 8px;
+        padding: 6px 8px;
       }
 
       .search-input-clean {
-        padding: 4px 6px;
-        font-size: 10.5px;
+        padding: 5px 8px;
+        font-size: 11px;
       }
 
       .rings-list-scroll {
-        padding: 6px;
-        gap: 4px;
+        padding: 8px;
+        gap: 5px;
       }
 
       .ring-card-item {
-        padding: 6px 8px;
+        padding: 7px 9px;
         gap: 3px;
       }
 
@@ -2385,7 +2559,7 @@
       }
 
       .inspector-content {
-        padding: 8px 10px;
+        padding: 10px 12px;
         gap: 8px;
       }
 
@@ -2427,11 +2601,19 @@
         padding: 2px 5px;
       }
 
-      .canvas-bar {
-        top: 6px;
-        left: 6px;
+      /* Unified Canvas Top Controls: Left Actions & Right Filters Separated with Zero Overlap */
+      .canvas-top-controls {
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        gap: 6px;
+      }
+
+      .canvas-bar, .canvas-filter-bar {
         padding: 2px 5px;
         gap: 3px;
+        border-radius: 6px;
+        background: rgba(18, 19, 21, 0.92);
       }
 
       .canvas-pill-btn {
@@ -2441,32 +2623,36 @@
         gap: 3px;
       }
 
-      .canvas-filter-bar {
-        top: 6px;
-        right: 6px;
-        padding: 2px 5px;
-        gap: 3px;
-      }
-
       .canvas-filter-bar .canvas-pill-btn {
         height: 22px;
         padding: 0 6px;
         font-size: 9.5px;
       }
 
+      /* Compact Centered Legend at Bottom */
       .canvas-legend {
-        bottom: 6px;
-        left: 6px;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
         padding: 3px 8px;
-        font-size: 9.5px;
+        font-size: 9px;
         gap: 8px;
+        background: rgba(18, 19, 21, 0.88);
+        border-radius: 14px;
+      }
+
+      .node-inspector-card {
+        top: 38px;
+        left: 8px;
+        width: 230px;
+        padding: 8px 10px;
       }
 
       .settings-floating-btn {
-        bottom: 10px;
-        right: 10px;
-        width: 30px;
-        height: 30px;
+        bottom: 42px;
+        right: 8px;
+        width: 26px;
+        height: 26px;
       }
     }
 
@@ -2615,6 +2801,8 @@
 
   <!-- Spacious Workspace (3 Floating Panels) -->
   <div class="workspace">
+    <!-- Backdrop Scrim for Mobile Landscape Drawers -->
+    <div id="mobile-drawer-backdrop" class="mobile-drawer-backdrop" onclick="closeMobileDrawers()"></div>
 
     <!-- Panel 1: Left Rings Directory -->
     <div class="panel-card sidebar-left">
@@ -2746,31 +2934,39 @@
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
 
-      <!-- Floating Toolbar -->
-      <div class="canvas-bar">
-        <button class="canvas-pill-btn active" onclick="resetGraphView()">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
-          Fit View
-        </button>
-        <button class="canvas-pill-btn active" id="spin-btn" onclick="toggleSpinAnimation()">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-          <span id="spin-label">Orbit Spin: On</span>
-        </button>
-        <button class="canvas-pill-btn" id="spread-btn" onclick="spreadGraph()">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
-          <span id="spread-label">Spread Out</span>
-        </button>
-        <button class="canvas-pill-btn active" id="physics-toggle" onclick="togglePhysics()">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          <span id="physics-label">Physics: On</span>
-        </button>
-      </div>
+      <!-- Floating Top Controls (Actions Left, Filters Right - Zero Overlap Flexbox) -->
+      <div class="canvas-top-controls">
+        <div class="canvas-bar">
+          <button class="canvas-pill-btn active" onclick="resetGraphView()" title="Fit entire network graph into view">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+            <span class="btn-text">Fit View</span>
+          </button>
+          <button class="canvas-pill-btn active" id="spin-btn" onclick="toggleSpinAnimation()" title="Toggle slow 3D orbital camera rotation">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            <span id="spin-label" class="btn-text">Orbit: On</span>
+          </button>
+          <button class="canvas-pill-btn" id="spread-btn" onclick="spreadGraph()" title="Spread nodes outward for better visibility">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            <span id="spread-label" class="btn-text">Spread Out</span>
+          </button>
+          <button class="canvas-pill-btn active" id="physics-toggle" onclick="togglePhysics()" title="Toggle force-directed physics engine">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span id="physics-label" class="btn-text">Physics: On</span>
+          </button>
+        </div>
 
-      <!-- Floating Entity Filter Bar (Top Right) -->
-      <div class="canvas-filter-bar">
-        <button class="canvas-pill-btn active" id="filter-user" onclick="toggleFilter('user')" title="Toggle Syndicate Member Accounts">Users</button>
-        <button class="canvas-pill-btn active" id="filter-device" onclick="toggleFilter('device')" title="Toggle Shared Hardware Devices">Devices</button>
-        <button class="canvas-pill-btn active" id="filter-merchant" onclick="toggleFilter('merchant')" title="Toggle Target Merchant Terminals">Merchants</button>
+        <!-- Floating Entity Filter Bar (Top Right) -->
+        <div class="canvas-filter-bar">
+          <button class="canvas-pill-btn active" id="filter-user" onclick="toggleFilter('user')" title="Toggle Syndicate Member Accounts">
+            <span class="filter-dot user-dot"></span>Users
+          </button>
+          <button class="canvas-pill-btn active" id="filter-device" onclick="toggleFilter('device')" title="Toggle Shared Hardware Devices">
+            <span class="filter-dot device-dot"></span>Devices
+          </button>
+          <button class="canvas-pill-btn active" id="filter-merchant" onclick="toggleFilter('merchant')" title="Toggle Target Merchant Terminals">
+            <span class="filter-dot merchant-dot"></span>Merchants
+          </button>
+        </div>
       </div>
 
       <!-- Interactive Node Inspector Floating Card -->
@@ -2824,6 +3020,20 @@
           <span>Target Merchant</span>
         </div>
       </div>
+
+      <!-- Mobile Floating Tactical Pills (Visible on Mobile Landscape) -->
+      <button id="mobile-rings-trigger" class="mobile-tactical-pill left" onclick="toggleMobileDrawer('left')" title="Open Syndicate Rings">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        <span>Syndicates</span>
+        <span class="pill-counter" id="mobile-rings-count">10</span>
+      </button>
+
+      <button id="mobile-telemetry-trigger" class="mobile-tactical-pill right" onclick="toggleMobileDrawer('right')" title="Open Ring Telemetry">
+        <span class="pill-threat-dot"></span>
+        <span id="mobile-telemetry-label">Telemetry</span>
+        <span class="pill-score" id="mobile-telemetry-score">94.2%</span>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
     </div>
 
     <!-- Panel 3: Right Inspector & Evidence Panel -->
@@ -20604,6 +20814,8 @@
       if (statRings) statRings.innerText = allRings.length;
       const countBadge = document.getElementById("rings-count-badge");
       if (countBadge) countBadge.innerText = `${allRings.length} total`;
+      const mobCnt = document.getElementById("mobile-rings-count");
+      if (mobCnt) mobCnt.innerText = allRings.length;
 
       const critCount = allRings.filter(r => r.score >= CRITICAL_CUTOFF).length;
       const elevCount = allRings.filter(r => r.score < CRITICAL_CUTOFF).length;
@@ -20698,6 +20910,8 @@
 
       document.getElementById("stat-rings").innerText = allRings.length;
       document.getElementById("rings-count-badge").innerText = `${allRings.length} total`;
+      const mobCntFetch = document.getElementById("mobile-rings-count");
+      if (mobCntFetch) mobCntFetch.innerText = allRings.length;
 
       // Update tier filter counts dynamically
       const critCount = allRings.filter(r => r.score >= CRITICAL_CUTOFF).length;
@@ -20837,6 +21051,8 @@
 
       document.getElementById("stat-rings").innerText = allRings.length;
       document.getElementById("rings-count-badge").innerText = `${allRings.length} total`;
+      const mobCntReseed = document.getElementById("mobile-rings-count");
+      if (mobCntReseed) mobCntReseed.innerText = allRings.length;
 
       const critCount = allRings.filter(r => r.score >= CRITICAL_CUTOFF).length;
       const elevCount = allRings.filter(r => r.score < CRITICAL_CUTOFF).length;
@@ -21126,6 +21342,17 @@
       if (!ring) return;
 
       closeNodeInspector();
+
+      // Update Mobile Floating Trigger Pills
+      const mobScore = document.getElementById("mobile-telemetry-score");
+      if (mobScore) mobScore.innerText = `${(ring.score * 100).toFixed(1)}%`;
+      const mobLabel = document.getElementById("mobile-telemetry-label");
+      if (mobLabel) mobLabel.innerText = `Ring #${ring.ring_id}`;
+
+      // Auto-close mobile drawer on selection so the user sees the newly focused ring freely
+      if (typeof isMobileLandscapeMode === "function" && isMobileLandscapeMode()) {
+        closeMobileDrawers();
+      }
 
       // Update Active States
       const cards = document.querySelectorAll(".ring-card-item");
@@ -21750,7 +21977,7 @@
       const btn = document.getElementById("spin-btn");
       const lbl = document.getElementById("spin-label");
       if (btn) btn.classList.toggle("active", isSpinningEnabled);
-      if (lbl) lbl.innerText = `Orbit Spin: ${isSpinningEnabled ? 'On' : 'Off'}`;
+      if (lbl) lbl.innerText = `Orbit: ${isSpinningEnabled ? 'On' : 'Off'}`;
 
       const orbCheck = document.getElementById("setting-orbit-toggle");
       if (orbCheck) orbCheck.checked = isSpinningEnabled;
@@ -22698,7 +22925,16 @@
       adjustMobileFit();
     }
 
+    function isMobileLandscapeMode() {
+      return (window.innerHeight <= 580 && window.matchMedia("(orientation: landscape)").matches) ||
+             (window.innerWidth <= 1024 && window.matchMedia("(orientation: landscape)").matches);
+    }
+
     function toggleSidebar(side) {
+      if (isMobileLandscapeMode()) {
+        toggleMobileDrawer(side);
+        return;
+      }
       if (side === 'left') {
         const sb = document.querySelector('.sidebar-left');
         const pill = document.getElementById('expand-left-btn');
@@ -22718,6 +22954,33 @@
           fitGraphToScreen(true);
         }
       }, 150);
+    }
+
+    function toggleMobileDrawer(side) {
+      const leftSb = document.querySelector('.sidebar-left');
+      const rightSb = document.querySelector('.sidebar-right');
+      const backdrop = document.getElementById('mobile-drawer-backdrop');
+
+      if (side === 'left') {
+        if (!leftSb) return;
+        const isOpen = leftSb.classList.toggle('mobile-open');
+        if (rightSb) rightSb.classList.remove('mobile-open');
+        if (backdrop) backdrop.classList.toggle('active', isOpen);
+      } else if (side === 'right') {
+        if (!rightSb) return;
+        const isOpen = rightSb.classList.toggle('mobile-open');
+        if (leftSb) leftSb.classList.remove('mobile-open');
+        if (backdrop) backdrop.classList.toggle('active', isOpen);
+      }
+    }
+
+    function closeMobileDrawers() {
+      const leftSb = document.querySelector('.sidebar-left');
+      const rightSb = document.querySelector('.sidebar-right');
+      const backdrop = document.getElementById('mobile-drawer-backdrop');
+      if (leftSb) leftSb.classList.remove('mobile-open');
+      if (rightSb) rightSb.classList.remove('mobile-open');
+      if (backdrop) backdrop.classList.remove('active');
     }
 
     function adjustMobileFit() {
