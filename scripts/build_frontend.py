@@ -1968,9 +1968,277 @@ html_template = """<!DOCTYPE html>
       height: 100%;
       background: var(--yellow-primary);
     }
+
+    /* ==========================================================================
+       Mobile Responsive & Landscape Orientation Enforcer
+       ========================================================================== */
+    .app-viewport-wrapper {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Mobile Landscape Enforcer Overlay */
+    .orientation-overlay {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 999999;
+      background: rgba(19, 20, 21, 0.97);
+      backdrop-filter: blur(16px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    /* Automatically trigger overlay on portrait orientation on phones/narrow viewports */
+    @media screen and (max-width: 900px) and (orientation: portrait), screen and (max-height: 520px) and (orientation: portrait) {
+      .orientation-overlay:not(.dismissed) {
+        display: flex !important;
+      }
+    }
+
+    .orientation-content {
+      max-width: 360px;
+      width: 100%;
+      background: #191a1b;
+      border: 1px solid var(--border-strong);
+      border-radius: 16px;
+      padding: 28px 22px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 35px rgba(250, 204, 21, 0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .orientation-icon-container {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .phone-frame {
+      width: 38px;
+      height: 62px;
+      border: 2px solid var(--yellow-primary);
+      border-radius: 8px;
+      background: #131415;
+      position: relative;
+      box-shadow: 0 0 16px rgba(250, 204, 21, 0.25);
+      animation: phoneRotateLandscape 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @keyframes phoneRotateLandscape {
+      0%, 15% {
+        transform: rotate(0deg);
+      }
+      45%, 75% {
+        transform: rotate(90deg);
+      }
+      92%, 100% {
+        transform: rotate(0deg);
+      }
+    }
+
+    .phone-speaker {
+      position: absolute;
+      top: 3px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 8px;
+      height: 2px;
+      background: var(--border-strong);
+      border-radius: 1px;
+    }
+
+    .phone-screen {
+      width: 28px;
+      height: 46px;
+      background: #1c1d1e;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .phone-pulse-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--yellow-primary);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--yellow-primary);
+    }
+
+    .rotate-hint-arc {
+      position: absolute;
+      top: -6px;
+      right: -8px;
+      color: var(--yellow-primary);
+      opacity: 0.85;
+      animation: rotateArcPulse 2.8s ease-in-out infinite;
+    }
+
+    @keyframes rotateArcPulse {
+      0%, 20% { opacity: 0.3; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.1); }
+      80%, 100% { opacity: 0.3; transform: scale(0.9); }
+    }
+
+    .orientation-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--yellow-primary);
+      background: var(--yellow-bg);
+      border: 1px solid var(--yellow-border);
+      padding: 3px 8px;
+      border-radius: 5px;
+      margin-bottom: 12px;
+      letter-spacing: 0.05em;
+    }
+
+    .pulse-indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--yellow-primary);
+      box-shadow: 0 0 6px var(--yellow-primary);
+    }
+
+    .orientation-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .orientation-subtitle {
+      font-size: 11.5px;
+      line-height: 1.5;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .orientation-instructions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .instruction-step {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 7px 14px;
+      border-radius: 7px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .instruction-step svg {
+      color: var(--yellow-primary);
+    }
+
+    .btn-bypass {
+      font-size: 10.5px;
+      height: 26px;
+      padding: 0 12px;
+      color: var(--text-dim);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    .btn-bypass:hover {
+      color: var(--text-muted);
+      background: var(--bg-card);
+    }
+
+    /* Modals & Dialogs optimization in mobile landscape */
+    @media screen and (max-height: 550px) {
+      .modal-backdrop {
+        padding: 8px;
+      }
+      .modal-window {
+        max-height: 94vh;
+      }
+      .modal-head {
+        padding: 8px 14px;
+      }
+    }
   </style>
 </head>
 <body>
+
+  <!-- Mobile Landscape Orientation Enforcer Modal -->
+  <div id="orientation-overlay" class="orientation-overlay">
+    <div class="orientation-content">
+      <div class="orientation-icon-container">
+        <div class="phone-frame">
+          <div class="phone-screen">
+            <div class="phone-pulse-dot"></div>
+          </div>
+          <div class="phone-speaker"></div>
+        </div>
+        <div class="rotate-hint-arc">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="orientation-tag">
+        <span class="pulse-indicator"></span>
+        TACTICAL CONSOLE LOCKED
+      </div>
+      <h2 class="orientation-title">FLIP TO LANDSCAPE</h2>
+      <p class="orientation-subtitle">
+        DarkNode Graph Intelligence requires a widescreen view to display multi-entity syndicates, transaction telemetry, and live GNN topology.
+      </p>
+
+      <div class="orientation-instructions">
+        <div class="instruction-step">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-1.19"/></svg>
+          Rotate phone horizontally to unlock
+        </div>
+        <button class="btn btn-bypass" onclick="dismissOrientationModal()" title="Bypass orientation check for portrait preview">
+          Preview in Portrait
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Responsive Scaled Application Container -->
+  <div id="app-viewport-wrapper" class="app-viewport-wrapper">
 
   <!-- Top Header Navigation -->
   <header>
@@ -2325,6 +2593,7 @@ html_template = """<!DOCTYPE html>
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
     </svg>
   </button>
+  </div><!-- end #app-viewport-wrapper -->
 
   <!-- Interactive System Settings & Compliance Modal -->
   <div class="modal-backdrop" id="settings-modal" onclick="closeSettingsModal(event)">
@@ -5232,14 +5501,120 @@ html_template = """<!DOCTYPE html>
       );
     }
 
+    /* Mobile Landscape Fit & Orientation Handlers */
+    function checkOrientation() {
+      const overlay = document.getElementById("orientation-overlay");
+      const isPortrait = window.innerHeight > window.innerWidth;
+      
+      const isTouchOrMobile = ('ontouchstart' in window) || 
+                              (navigator.maxTouchPoints > 0) || 
+                              /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      const isNarrowPortrait = isPortrait && (isTouchOrMobile || window.innerWidth <= 900);
+
+      if (overlay) {
+        if (isNarrowPortrait && !overlay.classList.contains("dismissed")) {
+          overlay.style.display = "flex";
+        } else {
+          overlay.style.display = "none";
+          if (!isPortrait) {
+            overlay.classList.remove("dismissed");
+          }
+        }
+      }
+
+      adjustMobileFit();
+    }
+
+    function dismissOrientationModal() {
+      const overlay = document.getElementById("orientation-overlay");
+      if (overlay) {
+        overlay.classList.add("dismissed");
+        overlay.style.display = "none";
+      }
+      adjustMobileFit();
+    }
+
+    function adjustMobileFit() {
+      const wrapper = document.getElementById("app-viewport-wrapper");
+      if (!wrapper) return;
+
+      const winW = window.innerWidth;
+      const winH = window.innerHeight;
+      const isPortrait = winH > winW;
+
+      const isTouchOrMobile = ('ontouchstart' in window) || 
+                              (navigator.maxTouchPoints > 0) || 
+                              /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+      // On PC and laptop screens (widescreen desktop resolution): keep 100% native untouched
+      if (!isTouchOrMobile && winW >= 1200 && winH >= 650) {
+        wrapper.style.position = "";
+        wrapper.style.transform = "";
+        wrapper.style.width = "100%";
+        wrapper.style.height = "100%";
+        wrapper.style.top = "";
+        wrapper.style.left = "";
+        wrapper.style.margin = "";
+        return;
+      }
+
+      // If mobile portrait is previewed via bypass button:
+      if (isPortrait) {
+        const targetW = 1260;
+        const scale = Math.min(winW / targetW, 1);
+        wrapper.style.position = "absolute";
+        wrapper.style.width = targetW + "px";
+        wrapper.style.height = "100vh";
+        wrapper.style.top = "0";
+        wrapper.style.left = "0";
+        wrapper.style.transform = `scale(${scale})`;
+        wrapper.style.transformOrigin = "top left";
+        return;
+      }
+
+      // On mobile landscape & mobile desktop-mode:
+      // Canonical desktop proportions for DarkNode tactical console
+      const targetW = 1280;
+      const targetH = 680;
+
+      const scaleX = winW / targetW;
+      const scaleY = winH / targetH;
+      const scale = Math.min(scaleX, scaleY);
+
+      wrapper.style.position = "absolute";
+      wrapper.style.width = targetW + "px";
+      wrapper.style.height = targetH + "px";
+      wrapper.style.top = "50%";
+      wrapper.style.left = "50%";
+      wrapper.style.transform = `translate(-50%, -50%) scale(${scale})`;
+      wrapper.style.transformOrigin = "center center";
+
+      if (typeof network !== "undefined" && network) {
+        network.redraw();
+      }
+    }
+
     window.addEventListener("resize", () => {
+      checkOrientation();
       if (network) {
         network.redraw();
         fitGraphToScreen(false);
       }
     });
 
+    window.addEventListener("orientationchange", () => {
+      setTimeout(checkOrientation, 100);
+    });
+
+    if (window.screen && window.screen.orientation) {
+      window.screen.orientation.addEventListener("change", () => {
+        setTimeout(checkOrientation, 100);
+      });
+    }
+
     window.addEventListener("DOMContentLoaded", () => {
+      checkOrientation();
       renderNotifList();
       updateNotifBadge();
       fetchRings();
