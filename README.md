@@ -162,8 +162,10 @@ Navigate to `http://localhost:3000` to inspect the live force-directed fraud rin
 ## Deployment Instructions
 
 ### Backend (Render)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/adittt18/DarkNode)
+
 DarkNode includes a root `render.yaml` blueprint for one-click deployment:
-1. In [Render Dashboard](https://dashboard.render.com/), click **New +** > **Blueprint** (or create a **Web Service** linked to `https://github.com/adittt18/DarkNode`).
+1. Click the button above or in [Render Dashboard](https://dashboard.render.com/) select **New +** > **Blueprint** linked to `https://github.com/adittt18/DarkNode`.
 2. Configuration auto-loaded from `render.yaml`:
    - **Service Name**: `darknode`
    - **Environment**: Python 3 (3.11.9)
