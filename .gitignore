@@ -24,3 +24,6 @@ htmlcov/
 .vercel
 
 
+
+.vercel
+.env*
