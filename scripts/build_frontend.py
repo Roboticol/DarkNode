@@ -34,10 +34,10 @@ html_template = """<!DOCTYPE html>
   <title>DarkNode — Fraud Syndicate Graph Intelligence</title>
   <!-- Vis-network CDN -->
   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-  <!-- Inter, JetBrains Mono & Silkscreen Fonts -->
+  <!-- Inter, JetBrains Mono & Press Start 2P Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Press+Start+2P&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -1620,22 +1620,22 @@ html_template = """<!DOCTYPE html>
       gap: 14px;
     }
 
-    /* Hero Threat Risk Box & Animated Meter */
+    /* Hero Threat Risk Box & Pixel Meter */
     .hero-risk-box {
       background: #131822;
-      border: 1px solid #1f2633;
+      border: 1px solid #1e2634;
       border-radius: 12px;
       padding: 12px 16px;
       display: flex;
       align-items: center;
       gap: 16px;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
     }
 
     .hero-meter-wrap {
       flex-shrink: 0;
-      width: 66px;
-      height: 66px;
+      width: 58px;
+      height: 58px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1643,8 +1643,8 @@ html_template = """<!DOCTYPE html>
     }
 
     .hero-meter-svg {
-      width: 66px;
-      height: 66px;
+      width: 58px;
+      height: 58px;
       overflow: visible;
       display: block;
     }
@@ -1656,33 +1656,32 @@ html_template = """<!DOCTYPE html>
     .hero-meter-fill {
       stroke: #ff6b6b;
       stroke-linecap: butt;
-      transform-origin: 35px 35px;
-      transition: stroke-dashoffset 1.1s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease;
-      filter: drop-shadow(0 0 5px rgba(255, 107, 107, 0.45));
-      animation: threatMeterPulse 3s ease-in-out infinite;
+      transform-origin: 29px 29px;
+      transition: stroke-dashoffset 1s cubic-bezier(0.2, 0.9, 0.3, 1), stroke 0.3s ease;
+      animation: threatMeterPulse 2.8s ease-in-out infinite;
     }
 
     .hero-meter-icon {
-      transform-origin: 35px 35px;
+      transform-origin: 29px 29px;
       animation: threatIconBreathe 2.4s ease-in-out infinite;
     }
 
     @keyframes threatMeterPulse {
       0%, 100% {
-        filter: drop-shadow(0 0 3px rgba(255, 107, 107, 0.35));
+        filter: drop-shadow(0 0 2px rgba(255, 107, 107, 0.4));
       }
       50% {
-        filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.8));
+        filter: drop-shadow(0 0 7px rgba(255, 107, 107, 0.85));
       }
     }
 
     @keyframes threatIconBreathe {
       0%, 100% {
         transform: scale(1);
-        opacity: 0.9;
+        opacity: 0.92;
       }
       50% {
-        transform: scale(1.08);
+        transform: scale(1.1);
         opacity: 1;
       }
     }
@@ -1696,38 +1695,37 @@ html_template = """<!DOCTYPE html>
     }
 
     .hero-score-val {
-      font-family: 'Silkscreen', var(--font-mono), monospace;
-      font-size: 23px;
-      font-weight: 700;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 16px;
+      font-weight: 400;
       line-height: 1.1;
       color: #e8ecf3;
       letter-spacing: -0.01em;
     }
 
     .hero-score-sub {
-      font-family: 'Silkscreen', var(--font-mono), monospace;
-      font-size: 8.5px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7.5px;
       font-weight: 400;
       color: #9aa4b8;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-top: 4px;
+      letter-spacing: 0.04em;
+      margin-top: 6px;
     }
 
     .hero-rank-badge {
-      font-family: 'Silkscreen', var(--font-mono), monospace;
-      font-size: 8.5px;
-      font-weight: 700;
-      padding: 3px 8px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7.5px;
+      font-weight: 400;
+      padding: 4px 8px;
       border-radius: 5px;
       background: #30222b;
       color: #ff6b6b;
-      border: 1px solid rgba(255, 107, 107, 0.25);
-      letter-spacing: 0.08em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
       margin-top: 6px;
       display: inline-block;
-      transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+      transition: background 0.3s ease, color 0.3s ease;
     }
 
     .block-title {
@@ -2655,31 +2653,32 @@ html_template = """<!DOCTYPE html>
       }
 
       .hero-risk-box {
-        padding: 8px 12px;
-        gap: 12px;
+        padding: 8px 10px;
+        gap: 10px;
       }
 
       .hero-meter-wrap {
-        width: 52px;
-        height: 52px;
+        width: 46px;
+        height: 46px;
       }
 
       .hero-meter-svg {
-        width: 52px;
-        height: 52px;
+        width: 46px;
+        height: 46px;
       }
 
       .hero-score-val {
-        font-size: 19px;
+        font-size: 13px;
       }
 
       .hero-score-sub {
-        font-size: 7.5px;
+        font-size: 6.5px;
+        margin-top: 4px;
       }
 
       .hero-rank-badge {
-        font-size: 7.5px;
-        padding: 2px 6px;
+        font-size: 6.5px;
+        padding: 3px 6px;
         margin-top: 4px;
       }
 
@@ -3170,16 +3169,16 @@ html_template = """<!DOCTYPE html>
         <!-- Hero Threat Score Card -->
         <div class="hero-risk-box">
           <div class="hero-meter-wrap">
-            <svg class="hero-meter-svg" viewBox="0 0 70 70" width="66" height="66">
+            <svg class="hero-meter-svg" viewBox="0 0 58 58" width="58" height="58">
               <!-- Dark track circle -->
-              <circle class="hero-meter-track" cx="35" cy="35" r="26" fill="none" stroke="#1f2633" stroke-width="7" />
-              <!-- Animated Progress circle (Circumference ~163.36) -->
-              <circle id="threat-meter-circle" class="hero-meter-fill" cx="35" cy="35" r="26" fill="none" stroke="#ff6b6b" stroke-width="7" stroke-dasharray="163.36" stroke-dashoffset="163.36" stroke-linecap="butt" transform="rotate(-90 35 35)" />
+              <circle class="hero-meter-track" cx="29" cy="29" r="25" fill="none" stroke="#1f2633" stroke-width="6" />
+              <!-- Animated Progress circle (Circumference = 157.08) -->
+              <circle id="threat-meter-circle" class="hero-meter-fill" cx="29" cy="29" r="25" fill="none" stroke="#ff6b6b" stroke-width="6" stroke-dasharray="157.08" stroke-dashoffset="157.08" stroke-linecap="butt" transform="rotate(-90 29 29)" />
               <!-- Centered Alert Triangle Icon -->
               <g id="threat-meter-icon" class="hero-meter-icon">
-                <path id="threat-meter-icon-path" d="M 35 23.5 L 43.8 39.8 A 1.2 1.2 0 0 1 42.7 41.5 L 27.3 41.5 A 1.2 1.2 0 0 1 26.2 39.8 Z" fill="none" stroke="#ff6b6b" stroke-width="1.8" stroke-linejoin="round" />
-                <line id="threat-meter-icon-line" x1="35" y1="28.5" x2="35" y2="33.5" stroke="#ff6b6b" stroke-width="1.8" stroke-linecap="round" />
-                <circle id="threat-meter-icon-dot" cx="35" cy="37" r="0.9" fill="#ff6b6b" />
+                <path id="threat-meter-icon-path" d="M 29 22 L 36.5 35 A 1 1 0 0 1 35.6 36.2 L 22.4 36.2 A 1 1 0 0 1 21.5 35 Z" fill="none" stroke="#ff6b6b" stroke-width="1.6" stroke-linejoin="round" />
+                <line id="threat-meter-icon-line" x1="29" y1="26" x2="29" y2="30" stroke="#ff6b6b" stroke-width="1.6" stroke-linecap="round" />
+                <circle id="threat-meter-icon-dot" cx="29" cy="33" r="0.8" fill="#ff6b6b" />
               </g>
             </svg>
           </div>
@@ -4609,7 +4608,7 @@ html_template = """<!DOCTYPE html>
 
     function updateThreatMeter(score) {
       const clampedScore = Math.min(Math.max(Number(score) || 0, 0), 1);
-      const circumference = 163.363; // 2 * Math.PI * 26
+      const circumference = 157.08; // 2 * Math.PI * 25
       const targetOffset = circumference * (1 - clampedScore);
 
       const circle = document.getElementById("threat-meter-circle");
