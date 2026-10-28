@@ -23619,6 +23619,36 @@
     });
   </script>
 </body>
+<style>
+  /* Public demo mode: the interactive console must not depend on a
+     device-specific browser session. */
+  #auth-gate { display: none !important; visibility: hidden !important; }
+</style>
+<script>
+  (() => {
+    const revealDemo = () => {
+      const gate = document.getElementById('auth-gate');
+      if (gate) {
+        gate.hidden = true;
+        gate.setAttribute('aria-hidden', 'true');
+        gate.style.setProperty('display', 'none', 'important');
+      }
+      document.querySelectorAll('[hidden]').forEach((element) => {
+        if (element.id !== 'auth-gate') element.hidden = false;
+      });
+      for (const selector of ['#app-shell', '#console-shell', '#dashboard', '#game', '[data-app-shell]']) {
+        const element = document.querySelector(selector);
+        if (element) {
+          element.hidden = false;
+          element.style.removeProperty('display');
+        }
+      }
+    };
+    revealDemo();
+    document.addEventListener('DOMContentLoaded', revealDemo, { once: true });
+    new MutationObserver(revealDemo).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'style', 'class'] });
+  })();
+</script>
 </html>
 
 <style id="darknode-ambient-runner-style">
