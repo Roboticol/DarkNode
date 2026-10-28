@@ -2825,10 +2825,10 @@ html_template = """<!DOCTYPE html>
         width: 100%;
       }
     }
-    /* Restricted DarkNode access gate */
-    body:not(.authenticated) #app-viewport-wrapper { display: none; }
-    body.authenticated #auth-gate { display: none; }
-    #auth-gate { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; overflow: auto; padding: 28px; background: radial-gradient(circle at 18% 20%, rgba(250,204,21,.07), transparent 32%), radial-gradient(circle at 86% 76%, rgba(56,189,248,.06), transparent 30%), var(--bg-base); font-family: var(--font-sans); }
+    /* Restricted DarkNode access gate - demo default active */
+    #auth-gate { display: none !important; }
+    #ambient-darknode { display: none !important; visibility: hidden !important; }
+    #app-viewport-wrapper { display: flex !important; visibility: visible !important; }
     .auth-shell { width: min(1040px, 100%); min-height: 620px; display: grid; grid-template-columns: 1.08fr .92fr; overflow: hidden; border: 1px solid var(--border-subtle); border-radius: 18px; background: rgba(25,26,27,.94); box-shadow: 0 28px 80px rgba(0,0,0,.48), inset 0 1px rgba(255,255,255,.03); }
     .auth-visual { position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 42px; overflow: hidden; background: linear-gradient(145deg,#1b1c1d 0%,#151617 100%); border-right: 1px solid var(--border-subtle); }
     .auth-visual::before { content: ''; position: absolute; width: 420px; height: 420px; border: 1px solid rgba(250,204,21,.12); border-radius: 50%; top: 120px; left: 10%; box-shadow: 0 0 0 34px rgba(250,204,21,.025), 0 0 0 88px rgba(250,204,21,.018); animation: authOrbit 14s linear infinite; }
@@ -2867,7 +2867,7 @@ html_template = """<!DOCTYPE html>
     @media (max-width: 760px) { #auth-gate { padding: 14px; } .auth-shell { grid-template-columns: 1fr; min-height: auto; } .auth-visual { min-height: 300px; padding: 26px; border-right: 0; border-bottom: 1px solid var(--border-subtle); } .auth-title { font-size: 34px; } .auth-form-panel { padding: 28px 22px; } }
   </style>
 </head>
-<body>
+<body class="authenticated">
 
   <section id="auth-gate" aria-label="Restricted DarkNode access">
     <div class="auth-shell">
@@ -6462,32 +6462,26 @@ html_template = """<!DOCTYPE html>
     function unlockDarkNode() { sessionStorage.setItem("darknode_access", JSON.stringify({ employee: document.getElementById("auth-employee-id").value.trim().toUpperCase(), sector: document.getElementById("auth-sector").value, issuedAt: Date.now() })); document.body.classList.add("authenticated"); setAuthMessage("Access verified. Establishing monitored session…", true); }
     function initAuthGate() { if (sessionStorage.getItem("darknode_access")) document.body.classList.add("authenticated"); document.getElementById("auth-signin-tab")?.addEventListener("click", () => setAuthMode("signin")); document.getElementById("auth-request-tab")?.addEventListener("click", () => setAuthMode("signup")); document.getElementById("auth-form")?.addEventListener("submit", (event) => { event.preventDefault(); if (event.currentTarget.dataset.mode === "signup") { if (!document.getElementById("auth-organization").value.trim() || !document.getElementById("auth-access-reason").value.trim()) return setAuthMessage("Organization and operational reason are required."); return setAuthMessage("Enrollment submitted for operations review. Console access remains locked until approval.", true); } const error = validateEmployeeAccess(); if (error) return setAuthMessage(error); unlockDarkNode(); }); }
     window.addEventListener("DOMContentLoaded", () => {
+      try {
+        if (!sessionStorage.getItem("darknode_access")) {
+          sessionStorage.setItem("darknode_access", JSON.stringify({
+            employee: "DN-AML-001",
+            sector: "AML",
+            issuedAt: Date.now()
+          }));
+        }
+      } catch (e) {
+        /* ignore storage restrictions */
+      }
+      document.body.classList.add("authenticated");
       initAuthGate();
       checkOrientation();
-      if (sessionStorage.getItem("darknode_access")) { renderNotifList(); updateNotifBadge(); fetchRings(); }
+      renderNotifList();
+      updateNotifBadge();
+      fetchRings();
     });
   </script>
 </body>
-<script>
-  (function () {
-    document.documentElement.classList.add("darknode-demo");
-    document.body.classList.add("authenticated");
-    function unlock() {
-      document.body.classList.add("authenticated");
-      var gate = document.getElementById("auth-gate");
-      if (gate) { gate.style.display = "none"; gate.hidden = true; }
-      var app = document.getElementById("app-viewport-wrapper");
-      if (app) { app.style.display = "flex"; app.hidden = false; }
-    }
-    unlock();
-    document.addEventListener("DOMContentLoaded", unlock);
-  })();
-</script>
-<style>
-  #ambient-darknode { display: none !important; visibility: hidden !important; }
-  #auth-gate { display: none !important; visibility: hidden !important; }
-  body:has(#ambient-darknode) > *:not(#ambient-darknode) { visibility: visible !important; }
-</style>
 </html>
 """
 
