@@ -3666,6 +3666,24 @@ html_template = """<!DOCTYPE html>
               </button>
             </div>
           </div>
+
+          <!-- Card 9: Simple Log Out Option (Last Item in Settings) -->
+          <div class="settings-card full-width" id="setting-card-logout" data-category="all" style="border: 1px solid var(--border-subtle); background: var(--bg-card); margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;">
+              <div>
+                <div style="font-weight: 600; font-size: 13px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Log Out
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                  Sign out of your active operator session and return to the login gateway.
+                </div>
+              </div>
+              <button class="btn btn-outline" style="height: 32px; padding: 0 16px; color: #f87171; border-color: rgba(248, 113, 113, 0.4); background: rgba(248, 113, 113, 0.08); font-size: 11.5px; font-weight: 600; cursor: pointer;" onclick="logoutDarkNode()">
+                Log Out
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -5950,7 +5968,7 @@ html_template = """<!DOCTYPE html>
       const cards = document.querySelectorAll('.settings-card');
       cards.forEach(c => {
         const cat = c.getAttribute('data-category');
-        if (tab === 'all') {
+        if (tab === 'all' || cat === 'all') {
           c.style.display = 'flex';
         } else if (cat === tab) {
           c.style.display = 'flex';
@@ -7185,9 +7203,16 @@ html_template = """<!DOCTYPE html>
       }
     }
 
-    window.lockConsole = function() {
+    function logoutDarkNode() {
+      closeSettingsModal();
       sessionStorage.removeItem("darknode_access");
       document.body.classList.remove("authenticated");
+      showToast("Signed out successfully. Console locked.", "Session Closed", "info");
+    }
+    window.logoutDarkNode = logoutDarkNode;
+
+    window.lockConsole = function() {
+      logoutDarkNode();
     };
 
     window.addEventListener("DOMContentLoaded", () => {
