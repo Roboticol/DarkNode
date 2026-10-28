@@ -6483,6 +6483,11 @@ html_template = """<!DOCTYPE html>
     document.addEventListener("DOMContentLoaded", unlock);
   })();
 </script>
+<style>
+  #ambient-darknode { display: none !important; visibility: hidden !important; }
+  #auth-gate { display: none !important; visibility: hidden !important; }
+  body:has(#ambient-darknode) > *:not(#ambient-darknode) { visibility: visible !important; }
+</style>
 </html>
 """
 
