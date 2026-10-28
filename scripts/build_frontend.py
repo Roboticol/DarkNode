@@ -1341,7 +1341,7 @@ html_template = """<!DOCTYPE html>
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 12px;
+      padding: 3px 12px;
       background: #1a1b1c;
       border-top: 1px solid var(--border-subtle);
       font-size: 10px;
@@ -1622,21 +1622,25 @@ html_template = """<!DOCTYPE html>
 
     /* Hero Threat Risk Box & Pixel Meter */
     .hero-risk-box {
-      background: #131822;
-      border: 1px solid #1a202b;
-      border-radius: 12px;
-      padding: 11px 14px;
+      background: var(--bg-card);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 10px;
+      padding: 10px 12px;
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 13px;
       box-sizing: border-box;
+      min-height: 80px;
+      overflow: hidden;
     }
 
     .hero-meter-wrap {
-      flex-shrink: 0;
+      flex: 0 0 58px;
       width: 58px;
       height: 58px;
       display: flex;
+      visibility: visible;
+      opacity: 1;
       align-items: center;
       justify-content: center;
       position: relative;
@@ -1647,16 +1651,34 @@ html_template = """<!DOCTYPE html>
       height: 58px;
       overflow: visible;
       display: block;
+      flex: 0 0 58px;
+    }
+
+    .hero-meter-percent {
+      fill: #ff6b6b;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 6px;
+      font-weight: 700;
+      pointer-events: none;
     }
 
     .hero-meter-track {
-      stroke: #1f2633;
+      stroke: #273244;
+    }
+
+    .hero-meter-percent {
+      fill: #ff6b6b;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 6px;
+      font-weight: 700;
+      pointer-events: none;
     }
 
     .hero-meter-fill {
       stroke: #ff6b6b;
       stroke-linecap: butt;
-      transform-origin: 29px 29px;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
       transition: stroke-dashoffset 1.1s cubic-bezier(0.16, 1, 0.3, 1);
       animation: threatMeterBreathe 2.4s ease-in-out infinite;
     }
@@ -1692,45 +1714,47 @@ html_template = """<!DOCTYPE html>
       align-items: flex-start;
       justify-content: space-between;
       height: 54px;
+      flex: 1 1 auto;
       min-width: 0;
       box-sizing: border-box;
       padding: 1px 0;
     }
 
     .hero-score-val {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 14px;
-      font-weight: 400;
+      font-family: var(--font-sans);
+      font-size: 24px;
+      font-weight: 700;
       line-height: 1;
       color: #e8ecf3;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.04em;
       margin: 0;
       padding: 0;
     }
 
     .hero-score-sub {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 6px;
-      font-weight: 400;
+      font-family: var(--font-mono);
+      font-size: 8px;
+      font-weight: 600;
       line-height: 1;
       color: #9aa4b8;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.08em;
       margin: 0;
       padding: 0;
     }
 
     .hero-rank-badge {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 6px;
-      font-weight: 400;
+      font-family: var(--font-mono);
+      font-size: 7px;
+      font-weight: 700;
       line-height: 1;
       height: 17px;
       padding: 0 8px;
       border-radius: 4px;
-      background: #30222b;
+      background: rgba(255, 107, 107, 0.12);
+      letter-spacing: 0.08em;
       color: #ff6b6b;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       margin: 0;
       display: inline-flex;
@@ -1785,6 +1809,8 @@ html_template = """<!DOCTYPE html>
       color: var(--text-muted);
       display: inline-flex;
       align-items: center;
+      min-width: 0;
+      line-height: 1.25;
     }
 
     .signal-metric-val {
@@ -2664,18 +2690,20 @@ html_template = """<!DOCTYPE html>
       }
 
       .hero-risk-box {
-        padding: 8px 10px;
+        padding: 10px 10px;
         gap: 10px;
       }
 
       .hero-meter-wrap {
-        width: 46px;
-        height: 46px;
+        flex: 0 0 58px;
+        width: 58px;
+        height: 58px;
       }
 
       .hero-meter-svg {
-        width: 46px;
-        height: 46px;
+        width: 58px;
+        height: 58px;
+        flex: 0 0 58px;
       }
 
       .hero-risk-details {
@@ -2684,15 +2712,15 @@ html_template = """<!DOCTYPE html>
       }
 
       .hero-score-val {
-        font-size: 11px;
+        font-size: 18px;
       }
 
       .hero-score-sub {
-        font-size: 5px;
+        font-size: 7px;
       }
 
       .hero-rank-badge {
-        font-size: 5px;
+        font-size: 6px;
         height: 14px;
         padding: 0 5px;
       }
@@ -2797,9 +2825,60 @@ html_template = """<!DOCTYPE html>
         width: 100%;
       }
     }
+    /* Restricted DarkNode access gate */
+    body:not(.authenticated) #app-viewport-wrapper { display: none; }
+    body.authenticated #auth-gate { display: none; }
+    #auth-gate { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; overflow: auto; padding: 28px; background: radial-gradient(circle at 18% 20%, rgba(250,204,21,.07), transparent 32%), radial-gradient(circle at 86% 76%, rgba(56,189,248,.06), transparent 30%), var(--bg-base); font-family: var(--font-sans); }
+    .auth-shell { width: min(1040px, 100%); min-height: 620px; display: grid; grid-template-columns: 1.08fr .92fr; overflow: hidden; border: 1px solid var(--border-subtle); border-radius: 18px; background: rgba(25,26,27,.94); box-shadow: 0 28px 80px rgba(0,0,0,.48), inset 0 1px rgba(255,255,255,.03); }
+    .auth-visual { position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 42px; overflow: hidden; background: linear-gradient(145deg,#1b1c1d 0%,#151617 100%); border-right: 1px solid var(--border-subtle); }
+    .auth-visual::before { content: ''; position: absolute; width: 420px; height: 420px; border: 1px solid rgba(250,204,21,.12); border-radius: 50%; top: 120px; left: 10%; box-shadow: 0 0 0 34px rgba(250,204,21,.025), 0 0 0 88px rgba(250,204,21,.018); animation: authOrbit 14s linear infinite; }
+    .auth-visual::after { content: ''; position: absolute; width: 7px; height: 7px; border-radius: 50%; background: var(--yellow-primary); top: 148px; left: 28%; box-shadow: 0 0 18px var(--yellow-primary); animation: authOrbitDot 14s linear infinite; transform-origin: 145px 182px; }
+    .auth-brand { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; }
+    .auth-brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; color: #131415; background: var(--yellow-primary); box-shadow: 0 0 24px rgba(250,204,21,.18); }
+    .auth-brand-name { font-size: 19px; font-weight: 700; letter-spacing: -.03em; }
+    .auth-brand-tag { margin-left: 4px; padding: 4px 7px; border: 1px solid var(--yellow-border); border-radius: 5px; color: var(--yellow-primary); font: 600 9px var(--font-mono); letter-spacing: .08em; }
+    .auth-visual-copy { position: relative; z-index: 1; max-width: 420px; }
+    .auth-kicker { display: flex; align-items: center; gap: 8px; color: var(--yellow-primary); font: 600 10px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; }
+    .auth-kicker::before { content: ''; width: 24px; height: 1px; background: var(--yellow-primary); box-shadow: 0 0 8px var(--yellow-primary); }
+    .auth-title { margin-top: 16px; color: #f3f4f6; font-size: clamp(32px,4vw,52px); line-height: 1.03; letter-spacing: -.055em; }
+    .auth-description { margin-top: 18px; max-width: 380px; color: var(--text-muted); font-size: 14px; line-height: 1.7; }
+    .auth-status-row { position: relative; z-index: 1; display: flex; gap: 10px; flex-wrap: wrap; }
+    .auth-status { display: inline-flex; align-items: center; gap: 7px; padding: 8px 10px; border: 1px solid var(--border-subtle); border-radius: 7px; color: var(--text-muted); font: 500 9px var(--font-mono); background: rgba(20,21,22,.7); }
+    .auth-status i { width: 6px; height: 6px; border-radius: 50%; background: #34d399; box-shadow: 0 0 8px #34d399; }
+    .auth-form-panel { display: flex; align-items: center; padding: 42px; background: var(--bg-card); }
+    .auth-form-wrap { width: 100%; max-width: 360px; margin: auto; }
+    .auth-form-heading { font-size: 24px; letter-spacing: -.04em; }
+    .auth-form-subheading { margin-top: 8px; color: var(--text-muted); font-size: 12px; line-height: 1.5; }
+    .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 26px 0 22px; padding: 4px; border: 1px solid var(--border-subtle); border-radius: 8px; background: var(--bg-input); }
+    .auth-tab { border: 0; border-radius: 5px; padding: 9px; color: var(--text-dim); background: transparent; font: 600 10px var(--font-mono); cursor: pointer; }
+    .auth-tab.active { color: #131415; background: var(--yellow-primary); }
+    .auth-field { display: block; margin-top: 14px; color: var(--text-muted); font: 600 9px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
+    .auth-field input, .auth-field select { display: block; width: 100%; margin-top: 7px; padding: 12px 13px; border: 1px solid var(--border-subtle); border-radius: 7px; outline: none; color: var(--text-main); background: var(--bg-input); font: 500 12px var(--font-sans); transition: border-color .2s, box-shadow .2s; }
+    .auth-field input:focus, .auth-field select:focus { border-color: var(--yellow-dim); box-shadow: 0 0 0 3px rgba(250,204,21,.1); }
+    .auth-submit { width: 100%; margin-top: 22px; padding: 13px 16px; border: 0; border-radius: 7px; color: #131415; background: var(--yellow-primary); font: 700 11px var(--font-mono); letter-spacing: .06em; cursor: pointer; transition: transform .2s, background .2s; }
+    .auth-submit:hover { transform: translateY(-1px); background: var(--yellow-hover); }
+    .auth-note { margin-top: 16px; color: var(--text-dim); font-size: 10px; line-height: 1.55; text-align: center; }
+    .auth-message { min-height: 18px; margin-top: 12px; color: #f87171; font: 600 10px var(--font-mono); line-height: 1.5; }
+    .auth-message.success { color: #34d399; }
+    .auth-request-fields { display: none; }
+    .auth-request-fields.visible { display: block; }
+    @keyframes authOrbit { to { transform: rotate(360deg); } }
+    @keyframes authOrbitDot { to { transform: rotate(360deg); } }
+    @media (max-width: 760px) { #auth-gate { padding: 14px; } .auth-shell { grid-template-columns: 1fr; min-height: auto; } .auth-visual { min-height: 300px; padding: 26px; border-right: 0; border-bottom: 1px solid var(--border-subtle); } .auth-title { font-size: 34px; } .auth-form-panel { padding: 28px 22px; } }
   </style>
 </head>
 <body>
+
+  <section id="auth-gate" aria-label="Restricted DarkNode access">
+    <div class="auth-shell">
+      <div class="auth-visual">
+        <div class="auth-brand"><div class="auth-brand-mark"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><path d="M12 9 19 6.5M12 15 5 17.5"/></svg></div><span class="auth-brand-name">DarkNode</span><span class="auth-brand-tag">GNN-MPNN</span></div>
+        <div class="auth-visual-copy"><div class="auth-kicker">Restricted intelligence network</div><h1 class="auth-title">See the pattern.<br><span style="color:var(--yellow-primary)">Stop the ring.</span></h1><p class="auth-description">A controlled workspace for authorized financial-crime, AML, fraud-intelligence, and risk operations teams.</p></div>
+        <div class="auth-status-row"><span class="auth-status"><i></i> ENCRYPTED SESSION</span><span class="auth-status"><i></i> ACCESS MONITORED</span><span class="auth-status"><i></i> GNN TELEMETRY ONLINE</span></div>
+      </div>
+      <div class="auth-form-panel"><div class="auth-form-wrap"><h2 class="auth-form-heading" id="auth-form-title">Sign in to DarkNode</h2><p class="auth-form-subheading" id="auth-form-subtitle">Use your approved employee identity to enter the intelligence console.</p><div class="auth-tabs"><button class="auth-tab active" type="button" id="auth-signin-tab">SIGN IN</button><button class="auth-tab" type="button" id="auth-request-tab">REQUEST ACCESS</button></div><form id="auth-form" novalidate><label class="auth-field">Work email<input id="auth-email" type="email" autocomplete="username" placeholder="name@approved-organization.gov" required></label><label class="auth-field">Employee ID<input id="auth-employee-id" type="text" autocomplete="off" placeholder="DN-AML-0042" required></label><label class="auth-field">Authorized sector<select id="auth-sector"><option value="AML">AML / Financial Crime</option><option value="FRAUD">Fraud Intelligence</option><option value="RISK">Risk &amp; Compliance</option><option value="FIU">Financial Intelligence Unit</option></select></label><label class="auth-field" id="auth-password-field">Passphrase<input id="auth-password" type="password" autocomplete="current-password" placeholder="Enter your secure passphrase" required></label><div class="auth-request-fields" id="auth-request-fields"><label class="auth-field">Organization<input id="auth-organization" type="text" placeholder="Your institution or agency"></label><label class="auth-field">Reason for access<input id="auth-access-reason" type="text" placeholder="Describe your approved operational need"></label></div><button class="auth-submit" id="auth-submit" type="submit">VERIFY EMPLOYEE ACCESS</button><div class="auth-message" id="auth-message" role="status" aria-live="polite"></div></form><p class="auth-note">Access is limited to approved personnel and selected operational sectors. All sessions are audited.</p></div></div>
+    </div>
+  </section>
 
   <!-- Mobile Landscape Orientation Enforcer Modal -->
   <div id="orientation-overlay" class="orientation-overlay">
@@ -3186,14 +3265,14 @@ html_template = """<!DOCTYPE html>
           <div class="hero-meter-wrap">
             <svg class="hero-meter-svg" viewBox="0 0 58 58" width="58" height="58">
               <!-- Dark track circle -->
-              <circle class="hero-meter-track" cx="29" cy="29" r="25" fill="none" stroke="#1f2633" stroke-width="6" />
+              <circle class="hero-meter-track" cx="29" cy="29" r="25" fill="none" stroke="#273244" stroke-width="6" />
               <!-- Animated Progress circle (Circumference = 157.08) -->
-              <circle id="threat-meter-circle" class="hero-meter-fill" cx="29" cy="29" r="25" fill="none" stroke="#ff6b6b" stroke-width="6" stroke-dasharray="157.08" stroke-dashoffset="157.08" stroke-linecap="butt" transform="rotate(-90 29 29)" />
+              <circle id="threat-meter-circle" class="hero-meter-fill" cx="29" cy="29" r="25" fill="none" stroke="#ff6b6b" stroke-width="6" stroke-dasharray="157.08" stroke-dashoffset="157.08" stroke-linecap="butt" />
               <!-- Centered Alert Triangle Icon -->
               <g id="threat-meter-icon" class="hero-meter-icon">
-                <path id="threat-meter-icon-path" d="M 29 23.5 L 36 34.5 A 0.8 0.8 0 0 1 35.3 35.5 L 22.7 35.5 A 0.8 0.8 0 0 1 22 34.5 Z" fill="none" stroke="#ff6b6b" stroke-width="1.5" stroke-linejoin="round" />
-                <line id="threat-meter-icon-line" x1="29" y1="26.5" x2="29" y2="29.5" stroke="#ff6b6b" stroke-width="1.5" stroke-linecap="round" />
-                <circle id="threat-meter-icon-dot" cx="29" cy="32.2" r="0.75" fill="#ff6b6b" />
+                <path id="threat-meter-icon-path" d="M 29 21.5 L 36.8 35 A 0.9 0.9 0 0 1 36 36.2 L 22 36.2 A 0.9 0.9 0 0 1 21.2 35 Z" fill="none" stroke="#ff6b6b" stroke-width="1.8" stroke-linejoin="round" />
+                <line id="threat-meter-icon-line" x1="29" y1="25.5" x2="29" y2="30" stroke="#ff6b6b" stroke-width="1.8" stroke-linecap="round" />
+                <circle id="threat-meter-icon-dot" cx="29" cy="33.5" r="0.9" fill="#ff6b6b" />
               </g>
             </svg>
           </div>
@@ -4623,10 +4702,9 @@ html_template = """<!DOCTYPE html>
 
     function updateThreatMeter(score) {
       const clampedScore = Math.min(Math.max(Number(score) || 0, 0), 1);
-      const circumference = 157.08; // 2 * Math.PI * 25
-      const targetOffset = circumference * (1 - clampedScore);
-
       const circle = document.getElementById("threat-meter-circle");
+      const circumference = circle ? circle.getTotalLength() : (2 * Math.PI * 25);
+      const targetOffset = circumference * (1 - clampedScore);
       if (circle) {
         circle.style.strokeDashoffset = targetOffset;
         circle.style.stroke = "#ff6b6b";
@@ -6377,11 +6455,16 @@ html_template = """<!DOCTYPE html>
       });
     }
 
+    const DARKNODE_AUTH_POLICY = { approvedDomains: ["darknode.gov", "aml.gov", "fiu.gov", "bank.example"], sectorPrefixes: { AML: "DN-AML-", FRAUD: "DN-FRD-", RISK: "DN-RSK-", FIU: "DN-FIU-" } };
+    function setAuthMessage(message, success = false) { const node = document.getElementById("auth-message"); if (!node) return; node.textContent = message; node.classList.toggle("success", success); }
+    function setAuthMode(mode) { const request = mode === "signup"; document.getElementById("auth-signin-tab")?.classList.toggle("active", !request); document.getElementById("auth-request-tab")?.classList.toggle("active", request); document.getElementById("auth-form-title").textContent = request ? "Create an access request" : "Sign in to DarkNode"; document.getElementById("auth-form-subtitle").textContent = request ? "Register your employee profile for operations-desk approval." : "Use your approved employee identity to enter the intelligence console."; document.getElementById("auth-password-field").style.display = request ? "none" : "block"; document.getElementById("auth-request-fields").classList.toggle("visible", request); document.getElementById("auth-submit").textContent = request ? "SUBMIT ENROLLMENT" : "VERIFY EMPLOYEE ACCESS"; document.getElementById("auth-form").dataset.mode = mode; setAuthMessage(""); }
+    function validateEmployeeAccess() { const email = document.getElementById("auth-email").value.trim().toLowerCase(); const employeeId = document.getElementById("auth-employee-id").value.trim().toUpperCase(); const sector = document.getElementById("auth-sector").value; const password = document.getElementById("auth-password").value; const domain = email.split("@")[1] || ""; if (!email || !email.includes("@") || !DARKNODE_AUTH_POLICY.approvedDomains.includes(domain)) return "This organization is not approved for DarkNode access."; if (!/^DN-[A-Z]{3,5}-[0-9]{3,6}$/.test(employeeId) || !employeeId.startsWith(DARKNODE_AUTH_POLICY.sectorPrefixes[sector])) return "Employee ID does not match the selected authorized sector."; if (password.length < 8) return "Your secure passphrase must contain at least 8 characters."; return ""; }
+    function unlockDarkNode() { sessionStorage.setItem("darknode_access", JSON.stringify({ employee: document.getElementById("auth-employee-id").value.trim().toUpperCase(), sector: document.getElementById("auth-sector").value, issuedAt: Date.now() })); document.body.classList.add("authenticated"); setAuthMessage("Access verified. Establishing monitored session…", true); }
+    function initAuthGate() { if (sessionStorage.getItem("darknode_access")) document.body.classList.add("authenticated"); document.getElementById("auth-signin-tab")?.addEventListener("click", () => setAuthMode("signin")); document.getElementById("auth-request-tab")?.addEventListener("click", () => setAuthMode("signup")); document.getElementById("auth-form")?.addEventListener("submit", (event) => { event.preventDefault(); if (event.currentTarget.dataset.mode === "signup") { if (!document.getElementById("auth-organization").value.trim() || !document.getElementById("auth-access-reason").value.trim()) return setAuthMessage("Organization and operational reason are required."); return setAuthMessage("Enrollment submitted for operations review. Console access remains locked until approval.", true); } const error = validateEmployeeAccess(); if (error) return setAuthMessage(error); unlockDarkNode(); }); }
     window.addEventListener("DOMContentLoaded", () => {
+      initAuthGate();
       checkOrientation();
-      renderNotifList();
-      updateNotifBadge();
-      fetchRings();
+      if (sessionStorage.getItem("darknode_access")) { renderNotifList(); updateNotifBadge(); fetchRings(); }
     });
   </script>
 </body>
