@@ -6468,6 +6468,21 @@ html_template = """<!DOCTYPE html>
     });
   </script>
 </body>
+<script>
+  (function () {
+    document.documentElement.classList.add("darknode-demo");
+    document.body.classList.add("authenticated");
+    function unlock() {
+      document.body.classList.add("authenticated");
+      var gate = document.getElementById("auth-gate");
+      if (gate) { gate.style.display = "none"; gate.hidden = true; }
+      var app = document.getElementById("app-viewport-wrapper");
+      if (app) { app.style.display = "flex"; app.hidden = false; }
+    }
+    unlock();
+    document.addEventListener("DOMContentLoaded", unlock);
+  })();
+</script>
 </html>
 """
 
