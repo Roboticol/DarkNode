@@ -23954,3 +23954,10 @@ function frame(now){const dt=Math.min(.05,Math.max(0,(now-last)/1000));last=now;
 <script>/* keep ambient scene */</script>
 <script>/* keep the ambient DarkNode scene active */</script>
 <script>(()=>{const overlay=document.getElementById('ambient-darknode');if(overlay)overlay.remove();document.querySelectorAll('style').forEach(style=>{if(style.textContent.includes('#ambient-darknode'))style.remove()})})();</script>
+<style>
+  body:not(.authenticated) #app-viewport-wrapper,
+  body.authenticated #app-viewport-wrapper,
+  #app-viewport-wrapper { display: flex !important; visibility: visible !important; }
+  #ambient-darknode { display: none !important; visibility: hidden !important; }
+  #auth-gate { display: none !important; visibility: hidden !important; }
+</style>
