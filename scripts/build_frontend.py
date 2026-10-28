@@ -2825,14 +2825,18 @@ html_template = """<!DOCTYPE html>
         width: 100%;
       }
     }
-    /* Restricted DarkNode access gate - demo default active */
-    #auth-gate { display: none !important; }
-    #ambient-darknode { display: none !important; visibility: hidden !important; }
-    #app-viewport-wrapper { display: flex !important; visibility: visible !important; }
+    /* Restricted DarkNode access gate */
+    body:not(.authenticated) #auth-gate { display: grid; }
+    body.authenticated #auth-gate { display: none; }
+    #auth-gate { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; overflow: auto; padding: 28px; background: radial-gradient(circle at 18% 20%, rgba(250,204,21,.07), transparent 32%), radial-gradient(circle at 86% 76%, rgba(56,189,248,.06), transparent 30%), var(--bg-base); font-family: var(--font-sans); }
     .auth-shell { width: min(1040px, 100%); min-height: 620px; display: grid; grid-template-columns: 1.08fr .92fr; overflow: hidden; border: 1px solid var(--border-subtle); border-radius: 18px; background: rgba(25,26,27,.94); box-shadow: 0 28px 80px rgba(0,0,0,.48), inset 0 1px rgba(255,255,255,.03); }
-    .auth-visual { position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 42px; overflow: hidden; background: linear-gradient(145deg,#1b1c1d 0%,#151617 100%); border-right: 1px solid var(--border-subtle); }
-    .auth-visual::before { content: ''; position: absolute; width: 420px; height: 420px; border: 1px solid rgba(250,204,21,.12); border-radius: 50%; top: 120px; left: 10%; box-shadow: 0 0 0 34px rgba(250,204,21,.025), 0 0 0 88px rgba(250,204,21,.018); animation: authOrbit 14s linear infinite; }
-    .auth-visual::after { content: ''; position: absolute; width: 7px; height: 7px; border-radius: 50%; background: var(--yellow-primary); top: 148px; left: 28%; box-shadow: 0 0 18px var(--yellow-primary); animation: authOrbitDot 14s linear infinite; transform-origin: 145px 182px; }
+    .auth-visual { position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 42px; overflow: hidden; background: #0b0c0e; border-right: 1px solid var(--border-subtle); }
+    .auth-runner-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+    .auth-hud-top { position: absolute; top: 24px; right: 28px; z-index: 2; display: flex; align-items: baseline; gap: 8px; font-family: 'Space Mono', 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; pointer-events: none; }
+    .auth-hud-label { color: rgba(250, 204, 21, 0.72); font-size: 9px; font-weight: 600; letter-spacing: 0.12em; }
+    .auth-hud-num { color: #ffffff; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; transition: color 0.15s ease; }
+    .auth-hud-hi { color: rgba(255, 255, 255, 0.38); font-size: 9px; letter-spacing: 0.08em; margin-left: 4px; }
+    .auth-hud-bottom { position: absolute; bottom: 18px; right: 28px; z-index: 2; font-family: 'Space Mono', 'JetBrains Mono', monospace; font-size: 8.5px; font-weight: 600; letter-spacing: 0.15em; color: rgba(250, 204, 21, 0.52); pointer-events: none; text-transform: uppercase; }
     .auth-brand { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; }
     .auth-brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; color: #131415; background: var(--yellow-primary); box-shadow: 0 0 24px rgba(250,204,21,.18); }
     .auth-brand-name { font-size: 19px; font-weight: 700; letter-spacing: -.03em; }
@@ -2871,10 +2875,17 @@ html_template = """<!DOCTYPE html>
 
   <section id="auth-gate" aria-label="Restricted DarkNode access">
     <div class="auth-shell">
-      <div class="auth-visual">
+      <div class="auth-visual" id="auth-visual-panel">
+        <canvas id="auth-runner-canvas" class="auth-runner-canvas" aria-hidden="true"></canvas>
+        <div class="auth-hud-top" id="auth-hud-top">
+          <span class="auth-hud-label">RISK RUN</span>
+          <span class="auth-hud-num" id="auth-risk-run-num">00002</span>
+          <span class="auth-hud-hi">HI 51175</span>
+        </div>
         <div class="auth-brand"><div class="auth-brand-mark"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><path d="M12 9 19 6.5M12 15 5 17.5"/></svg></div><span class="auth-brand-name">DarkNode</span><span class="auth-brand-tag">GNN-MPNN</span></div>
         <div class="auth-visual-copy"><div class="auth-kicker">Restricted intelligence network</div><h1 class="auth-title">See the pattern.<br><span style="color:var(--yellow-primary)">Stop the ring.</span></h1><p class="auth-description">A controlled workspace for authorized financial-crime, AML, fraud-intelligence, and risk operations teams.</p></div>
         <div class="auth-status-row"><span class="auth-status"><i></i> ENCRYPTED SESSION</span><span class="auth-status"><i></i> ACCESS MONITORED</span><span class="auth-status"><i></i> GNN TELEMETRY ONLINE</span></div>
+        <div class="auth-hud-bottom">LIVE RISK SIGNALS</div>
       </div>
       <div class="auth-form-panel"><div class="auth-form-wrap"><h2 class="auth-form-heading" id="auth-form-title">Sign in to DarkNode</h2><p class="auth-form-subheading" id="auth-form-subtitle">Use your approved employee identity to enter the intelligence console.</p><div class="auth-tabs"><button class="auth-tab active" type="button" id="auth-signin-tab">SIGN IN</button><button class="auth-tab" type="button" id="auth-request-tab">REQUEST ACCESS</button></div><form id="auth-form" novalidate><label class="auth-field">Work email<input id="auth-email" type="email" autocomplete="username" placeholder="name@approved-organization.gov" required></label><label class="auth-field">Employee ID<input id="auth-employee-id" type="text" autocomplete="off" placeholder="DN-AML-0042" required></label><label class="auth-field">Authorized sector<select id="auth-sector"><option value="AML">AML / Financial Crime</option><option value="FRAUD">Fraud Intelligence</option><option value="RISK">Risk &amp; Compliance</option><option value="FIU">Financial Intelligence Unit</option></select></label><label class="auth-field" id="auth-password-field">Passphrase<input id="auth-password" type="password" autocomplete="current-password" placeholder="Enter your secure passphrase" required></label><div class="auth-request-fields" id="auth-request-fields"><label class="auth-field">Organization<input id="auth-organization" type="text" placeholder="Your institution or agency"></label><label class="auth-field">Reason for access<input id="auth-access-reason" type="text" placeholder="Describe your approved operational need"></label></div><button class="auth-submit" id="auth-submit" type="submit">VERIFY EMPLOYEE ACCESS</button><div class="auth-message" id="auth-message" role="status" aria-live="polite"></div></form><p class="auth-note">Access is limited to approved personnel and selected operational sectors. All sessions are audited.</p></div></div>
     </div>
@@ -6461,24 +6472,641 @@ html_template = """<!DOCTYPE html>
     function validateEmployeeAccess() { const email = document.getElementById("auth-email").value.trim().toLowerCase(); const employeeId = document.getElementById("auth-employee-id").value.trim().toUpperCase(); const sector = document.getElementById("auth-sector").value; const password = document.getElementById("auth-password").value; const domain = email.split("@")[1] || ""; if (!email || !email.includes("@") || !DARKNODE_AUTH_POLICY.approvedDomains.includes(domain)) return "This organization is not approved for DarkNode access."; if (!/^DN-[A-Z]{3,5}-[0-9]{3,6}$/.test(employeeId) || !employeeId.startsWith(DARKNODE_AUTH_POLICY.sectorPrefixes[sector])) return "Employee ID does not match the selected authorized sector."; if (password.length < 8) return "Your secure passphrase must contain at least 8 characters."; return ""; }
     function unlockDarkNode() { sessionStorage.setItem("darknode_access", JSON.stringify({ employee: document.getElementById("auth-employee-id").value.trim().toUpperCase(), sector: document.getElementById("auth-sector").value, issuedAt: Date.now() })); document.body.classList.add("authenticated"); setAuthMessage("Access verified. Establishing monitored session…", true); }
     function initAuthGate() { if (sessionStorage.getItem("darknode_access")) document.body.classList.add("authenticated"); document.getElementById("auth-signin-tab")?.addEventListener("click", () => setAuthMode("signin")); document.getElementById("auth-request-tab")?.addEventListener("click", () => setAuthMode("signup")); document.getElementById("auth-form")?.addEventListener("submit", (event) => { event.preventDefault(); if (event.currentTarget.dataset.mode === "signup") { if (!document.getElementById("auth-organization").value.trim() || !document.getElementById("auth-access-reason").value.trim()) return setAuthMessage("Organization and operational reason are required."); return setAuthMessage("Enrollment submitted for operations review. Console access remains locked until approval.", true); } const error = validateEmployeeAccess(); if (error) return setAuthMessage(error); unlockDarkNode(); }); }
-    window.addEventListener("DOMContentLoaded", () => {
-      try {
-        if (!sessionStorage.getItem("darknode_access")) {
-          sessionStorage.setItem("darknode_access", JSON.stringify({
-            employee: "DN-AML-001",
-            sector: "AML",
-            issuedAt: Date.now()
-          }));
+
+    /* ==========================================================================
+       DarkNode Left Panel Endlessly Looping Auto-Runner Canvas Animation
+       ========================================================================== */
+    function initDarkNodeAutoRunner() {
+      const panel = document.getElementById("auth-visual-panel");
+      const canvas = document.getElementById("auth-runner-canvas");
+      if (!panel || !canvas) return;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      // Panel Dimensions & Scaling (585px baseline)
+      let W = 585;
+      let H = 620;
+      let s = 1.0;
+      let gy = Math.round(H * 0.89);
+      let dpr = 1.0;
+
+      // Scene State
+      let stars = [];
+      let skylineBlocks = [];
+      let obstacles = [];
+      let nextC = 0.75 * W;
+      let groundOffset = 0;
+      let animTime = 0;
+      let lastTimestamp = performance.now();
+      let rafId = null;
+      let isPaused = false;
+
+      // HUD Counter State: counts up by 14 per second, turns #FFD21F for 1s on multiples of 100
+      let hudRunCount = 2; // starts at 00002
+      let hudYellowTimer = 0;
+      const hudNumEl = document.getElementById("auth-risk-run-num");
+
+      // Robot & Jump Physics (jump apex exactly above box, zero collisions)
+      let jumpElapsed = -1.0; // -1 means standing on ground
+      const T = 0.35;         // jump airtime
+      const HP_factor = 120;  // apex height factor in units of s
+
+      // Two UFO Saucers (Ping-pong between 0.07W and 0.93W)
+      const saucerA = {
+        k: 1.0,
+        xRatio: 0.48,
+        vxRatio: -0.048,
+        baseYRatio: 0.14,
+        bobAmp: 7,
+        phase: 0.5
+      };
+
+      const saucerB = {
+        k: 0.83,
+        xRatio: 0.162,
+        vxRatio: 0.037,
+        baseYRatio: 0.25,
+        bobAmp: 6,
+        phase: 2.1
+      };
+
+      // 1. Stars: count = round(W*H/12000), random positions above gy - 70s
+      function initStars() {
+        stars = [];
+        const count = Math.round((W * H) / 12000);
+        const maxY = Math.max(10, gy - 70 * s);
+        for (let i = 0; i < count; i++) {
+          stars.push({
+            x: Math.random() * W,
+            y: Math.random() * maxY,
+            size: (Math.random() < 0.18 ? 1.8 : 1.2) * s,
+            alpha: 0.15 + Math.random() * 0.50
+          });
         }
-      } catch (e) {
-        /* ignore storage restrictions */
       }
-      document.body.classList.add("authenticated");
+
+      // 2. Skyline: blocks of white alpha 0.04, width 40s, height 16s..36s, gaps 30s..90s
+      function initSkyline() {
+        skylineBlocks = [];
+        let curX = 0;
+        while (curX < W + 140 * s) {
+          const bw = 40 * s;
+          const bh = (16 + Math.random() * 20) * s;
+          const gap = (30 + Math.random() * 60) * s;
+          skylineBlocks.push({ x: curX, w: bw, h: bh });
+          curX += bw + gap;
+        }
+      }
+
+      function resize() {
+        const rect = panel.getBoundingClientRect();
+        W = rect.width || 585;
+        H = rect.height || 620;
+        s = W / 585;
+        gy = Math.round(H * 0.89);
+        dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+
+        canvas.width = Math.round(W * dpr);
+        canvas.height = Math.round(H * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        initStars();
+        initSkyline();
+        nextC = 0.75 * W;
+        obstacles = [];
+        jumpElapsed = -1.0;
+
+        if (reduceMotion) {
+          drawStaticFrame();
+        }
+      }
+
+      function drawStars() {
+        for (let i = 0; i < stars.length; i++) {
+          const st = stars[i];
+          ctx.fillStyle = "rgba(255, 255, 255, " + st.alpha + ")";
+          ctx.fillRect(st.x, st.y, st.size, st.size);
+        }
+      }
+
+      function drawSkyline(dt, v) {
+        // Skyline band rect from gy - 61s to gy, white alpha 0.022
+        ctx.fillStyle = "rgba(255, 255, 255, 0.022)";
+        ctx.fillRect(0, gy - 61 * s, W, 61 * s);
+
+        // Blocks scrolling left at 0.35 * v
+        ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
+        const scrollSpeed = 0.35 * v;
+        let maxX = 0;
+        for (let i = 0; i < skylineBlocks.length; i++) {
+          const b = skylineBlocks[i];
+          b.x -= scrollSpeed * dt;
+          if (b.x + b.w > maxX) maxX = b.x + b.w;
+          ctx.fillRect(b.x, gy - b.h, b.w, b.h);
+        }
+
+        // Recycle on right
+        for (let i = 0; i < skylineBlocks.length; i++) {
+          const b = skylineBlocks[i];
+          if (b.x + b.w < 0) {
+            b.w = 40 * s;
+            b.h = (16 + Math.random() * 20) * s;
+            const gap = (30 + Math.random() * 60) * s;
+            b.x = Math.max(W, maxX) + gap;
+            maxX = b.x + b.w;
+          }
+        }
+      }
+
+      // 9. Rings & Orbiting dot
+      function drawRings(t) {
+        const cx = 0.485 * W;
+        const cy = 0.472 * H;
+        const pulse = 0.88 + 0.12 * Math.sin(0.6 * t);
+
+        ctx.save();
+        // Outer soft band: radius 244s, line width 58s, yellow alpha 0.045
+        ctx.beginPath();
+        ctx.arc(cx, cy, 244 * s, 0, Math.PI * 2);
+        ctx.lineWidth = 58 * s;
+        ctx.strokeStyle = "rgba(255, 210, 31, " + (0.045 * pulse) + ")";
+        ctx.stroke();
+
+        // Inner ring: radius 212s, line width 1.5s, alpha 0.13
+        ctx.beginPath();
+        ctx.arc(cx, cy, 212 * s, 0, Math.PI * 2);
+        ctx.lineWidth = 1.5 * s;
+        ctx.strokeStyle = "rgba(255, 210, 31, " + (0.13 * pulse) + ")";
+        ctx.stroke();
+
+        // Orbiting dot: radius 255s, one turn per 90s, starting angle 0.204 rad
+        const dotAngle = 0.204 + (t / 90) * 2 * Math.PI;
+        const dotX = cx + 255 * s * Math.cos(dotAngle);
+        const dotY = cy + 255 * s * Math.sin(dotAngle);
+
+        // Radial glow 12s
+        const glow = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, 12 * s);
+        glow.addColorStop(0, "rgba(255, 210, 31, 0.55)");
+        glow.addColorStop(1, "rgba(255, 210, 31, 0)");
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(dotX, dotY, 12 * s, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Solid dot core: radius 3.2s
+        ctx.fillStyle = "#FFD21F";
+        ctx.beginPath();
+        ctx.arc(dotX, dotY, 3.2 * s, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function getSaucerState(cfg, t) {
+        const x = cfg.xRatio * W;
+        const bob = cfg.bobAmp * s * Math.sin((t / 0.9) * 2 * Math.PI + cfg.phase);
+        const y = cfg.baseYRatio * H + bob;
+        return { x, y, k: cfg.k };
+      }
+
+      function updateSaucers(dt) {
+        [saucerA, saucerB].forEach(saucer => {
+          saucer.xRatio += saucer.vxRatio * dt;
+          if (saucer.xRatio <= 0.07) {
+            saucer.xRatio = 0.07;
+            saucer.vxRatio = Math.abs(saucer.vxRatio);
+          } else if (saucer.xRatio >= 0.93) {
+            saucer.xRatio = 0.93;
+            saucer.vxRatio = -Math.abs(saucer.vxRatio);
+          }
+        });
+      }
+
+      // 3. UFO beams: drawn before saucers
+      function drawUfoBeams(saucer) {
+        const k = saucer.k;
+        const startY = saucer.y + 24 * k * s;
+        const beamLength = Math.max(1, gy - startY);
+        const topHW0 = 8 * k * s;
+        const botHW0 = Math.max(8 * k * s, 0.11 * beamLength);
+
+        const factors = [1.0, 0.8, 0.6, 0.4, 0.2];
+        for (let f = 0; f < factors.length; f++) {
+          const factor = factors[f];
+          const th = topHW0 * factor;
+          const bh = botHW0 * factor;
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(saucer.x - th, startY);
+          ctx.lineTo(saucer.x + th, startY);
+          ctx.lineTo(saucer.x + bh, gy);
+          ctx.lineTo(saucer.x - bh, gy);
+          ctx.closePath();
+
+          const grad = ctx.createLinearGradient(0, startY, 0, gy);
+          grad.addColorStop(0, "rgba(255, 255, 255, 0.03)");
+          grad.addColorStop(1, "rgba(255, 255, 255, 0.004)");
+          ctx.fillStyle = grad;
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // 4. Two UFO saucers, pixel style
+      function drawSaucer(saucer) {
+        const u = saucer.k * s;
+        const rows = [
+          { hw: 7,    c: "#ffffff" },
+          { hw: 10.5, c: "#ffffff" },
+          { hw: 22,   c: "#e6e6e6" },
+          { hw: 31.5, c: "#ffffff" }, // Row 3: widest, cut windows
+          { hw: 25,   c: "#7c7c84" },
+          { hw: 13,   c: "#303036" },
+          { hw: 7,    c: "#ffffff" }
+        ];
+
+        const topY = saucer.y - 10.5 * u;
+        for (let i = 0; i < rows.length; i++) {
+          const rowY = topY + i * 3 * u;
+          const hw = rows[i].hw * u;
+          ctx.fillStyle = rows[i].c;
+          ctx.fillRect(saucer.x - hw, rowY, hw * 2, 3 * u);
+
+          if (i === 3) {
+            ctx.fillStyle = "#0b0c0e";
+            ctx.fillRect(saucer.x - 19 * u, rowY, 5.5 * u, 3 * u);
+            ctx.fillRect(saucer.x + 13.5 * u, rowY, 5.5 * u, 3 * u);
+          }
+        }
+      }
+
+      // 5. Ground line and scrolling dashes
+      function drawGround(dt, v) {
+        ctx.fillStyle = "#ffffff";
+        const groundThick = Math.max(1.5, 1.5 * s);
+        ctx.fillRect(0, gy, W, groundThick);
+
+        groundOffset = (groundOffset + v * dt) % (40 * s);
+        const dashY = gy + 10 * s;
+        const dashW = 16 * s;
+        const dashH = Math.max(2, 3 * s);
+        const period = 40 * s;
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+        for (let x = -groundOffset; x < W + period; x += period) {
+          ctx.fillRect(x, dashY, dashW, dashH);
+        }
+      }
+
+      // 6. Obstacles: outlined boxes with bold 'H'
+      function updateAndDrawObstacles(dt, v, rx) {
+        nextC -= v * dt;
+        if (nextC <= W + 30 * s) {
+          const isTall = Math.random() < 0.70;
+          const bw = isTall ? 20 * s : 32 * s;
+          const bh = isTall ? (34 + Math.random() * 8) * s : 28 * s;
+          const jitter = (Math.random() - 0.5) * 0.012; // -6ms to +6ms
+          obstacles.push({
+            c: nextC,
+            w: bw,
+            h: bh,
+            jitter: jitter,
+            handled: false
+          });
+          nextC += v * T + (60 + Math.random() * 60) * s;
+        }
+
+        ctx.lineWidth = Math.max(1.5, 2 * s);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
+        ctx.font = "700 " + Math.max(10, Math.round(15 * s)) + "px 'Space Mono', monospace";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+          const ob = obstacles[i];
+          ob.c -= v * dt;
+
+          if (ob.c + ob.w / 2 < -50) {
+            obstacles.splice(i, 1);
+            continue;
+          }
+
+          const boxLeft = ob.c - ob.w / 2;
+          const boxTop = gy - ob.h;
+          ctx.strokeRect(boxLeft, boxTop, ob.w, ob.h);
+
+          ctx.fillStyle = "#ffffff";
+          ctx.fillText("H", ob.c, boxTop + ob.h / 2 - 1 * s);
+        }
+      }
+
+      // 7. Robot & Jump Choreography
+      function updateRobotAndJump(dt, v, rx) {
+        let target = null;
+        for (let i = 0; i < obstacles.length; i++) {
+          if (!obstacles[i].handled && obstacles[i].c >= rx - 35 * s) {
+            target = obstacles[i];
+            break;
+          }
+        }
+
+        if (target && jumpElapsed < 0) {
+          const timeToCenter = (target.c - rx) / v;
+          if (timeToCenter <= (T / 2 + target.jitter + 0.005)) {
+            jumpElapsed = 0;
+            target.handled = true;
+          }
+        }
+
+        let jumpHeight = 0;
+        if (jumpElapsed >= 0) {
+          const z = jumpElapsed / T;
+          const HP = HP_factor * s;
+          jumpHeight = 4 * HP * z * (1 - z);
+          jumpElapsed += dt;
+          if (jumpElapsed >= T) {
+            jumpElapsed = -1.0;
+          }
+        }
+
+        drawRobot(rx, jumpHeight, animTime);
+      }
+
+      function drawRobot(rx, jumpHeight, t) {
+        const q = s;
+        const rTopX = rx - 15 * q;
+        const rTopY = gy - 38.4 * q - jumpHeight;
+
+        // 1. Antenna cap
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(rTopX + 13 * q, rTopY + 0 * q, 4 * q, 3 * q);
+
+        // 2. Antenna stalk
+        ctx.fillRect(rTopX + 14 * q, rTopY + 3 * q, 2 * q, 5.4 * q);
+
+        // 3. Head top
+        ctx.fillRect(rTopX + 4 * q, rTopY + 8.4 * q, 22 * q, 3.6 * q);
+
+        // 4. Ear blocks
+        ctx.fillRect(rTopX + 0 * q, rTopY + 12 * q, 4 * q, 14.5 * q);
+        ctx.fillRect(rTopX + 26 * q, rTopY + 12 * q, 4 * q, 14.5 * q);
+
+        // 5. Face (in dark panel color #0b0c0e)
+        ctx.fillStyle = "#0b0c0e";
+        ctx.fillRect(rTopX + 4 * q, rTopY + 12 * q, 22 * q, 13 * q);
+
+        // 6. Eyes (two white rects)
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(rTopX + 7 * q, rTopY + 15 * q, 4 * q, 4.4 * q);
+        ctx.fillRect(rTopX + 19 * q, rTopY + 15 * q, 4 * q, 4.4 * q);
+
+        // 7. Chin
+        ctx.fillRect(rTopX + 4 * q, rTopY + 25 * q, 22 * q, 5 * q);
+
+        // 8. Legs (grey #7a7a80, alternate length every 1/8 s)
+        const runCycle = Math.floor(t * 8) % 2;
+        const leg1 = (runCycle === 0) ? 5.2 : 7.2;
+        const leg2 = (runCycle === 0) ? 7.2 : 5.2;
+
+        ctx.fillStyle = "#7a7a80";
+        ctx.fillRect(rTopX + 6 * q, rTopY + 30 * q, 6 * q, leg1 * q);
+        ctx.fillRect(rTopX + 18 * q, rTopY + 30 * q, 6 * q, leg2 * q);
+
+        // White feet 1.6q tall, 8q wide
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(rTopX + 6 * q, rTopY + (30 + leg1) * q, 8 * q, 1.6 * q);
+        ctx.fillRect(rTopX + 16 * q, rTopY + (30 + leg2) * q, 8 * q, 1.6 * q);
+      }
+
+      // 8. HUD: "RISK RUN" counts up by 14/sec, turns #FFD21F for 1s on multiples of 100
+      function updateHUD(dt) {
+        if (!hudNumEl) return;
+        const oldScore = Math.floor(hudRunCount);
+        hudRunCount = (hudRunCount + 14 * dt) % 100000;
+        const newScore = Math.floor(hudRunCount);
+
+        if (Math.floor(oldScore / 100) !== Math.floor(newScore / 100)) {
+          hudYellowTimer = 1.0;
+        }
+
+        if (hudYellowTimer > 0) {
+          hudYellowTimer -= dt;
+          hudNumEl.style.color = "#FFD21F";
+        } else {
+          hudNumEl.style.color = "#ffffff";
+        }
+
+        hudNumEl.textContent = String(newScore).padStart(5, "0");
+      }
+
+      function drawStaticFrame() {
+        ctx.clearRect(0, 0, W, H);
+        drawStars();
+        drawSkyline(0, 230 * s);
+        drawRings(0);
+
+        const sA = getSaucerState(saucerA, 0);
+        const sB = getSaucerState(saucerB, 0);
+        drawUfoBeams(sA);
+        drawUfoBeams(sB);
+        drawSaucer(sA);
+        drawSaucer(sB);
+
+        drawGround(0, 0);
+        const boxW = 20 * s;
+        const boxH = 36 * s;
+        const boxLeft = 0.55 * W;
+        ctx.lineWidth = Math.max(1.5, 2 * s);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
+        ctx.strokeRect(boxLeft, gy - boxH, boxW, boxH);
+        ctx.font = "700 " + Math.max(10, Math.round(15 * s)) + "px 'Space Mono', monospace";
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("H", boxLeft + boxW / 2, gy - boxH / 2 - 1 * s);
+
+        drawRobot(0.10 * W, 0, 0);
+      }
+
+      function loop(now) {
+        if (isPaused) return;
+
+        const rawDt = (now - lastTimestamp) / 1000;
+        lastTimestamp = now;
+        const dt = Math.min(rawDt, 0.05); // clamp dt to 0.05s
+        animTime += dt;
+
+        const v = 230 * s;
+        const rx = 0.10 * W;
+
+        ctx.clearRect(0, 0, W, H);
+
+        drawStars();
+        drawSkyline(dt, v);
+        drawRings(animTime);
+
+        updateSaucers(dt);
+        const stateA = getSaucerState(saucerA, animTime);
+        const stateB = getSaucerState(saucerB, animTime);
+        drawUfoBeams(stateA);
+        drawUfoBeams(stateB);
+        drawSaucer(stateA);
+        drawSaucer(stateB);
+
+        drawGround(dt, v);
+        updateAndDrawObstacles(dt, v, rx);
+        updateRobotAndJump(dt, v, rx);
+        updateHUD(dt);
+
+        rafId = requestAnimationFrame(loop);
+      }
+
+      function pause() {
+        isPaused = true;
+        if (rafId) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
+      }
+
+      function resume() {
+        if (!isPaused && rafId) return;
+        isPaused = false;
+        obstacles = [];
+        nextC = 0.75 * W;
+        jumpElapsed = -1.0;
+        lastTimestamp = performance.now();
+        rafId = requestAnimationFrame(loop);
+      }
+
+      if (window.ResizeObserver) {
+        new ResizeObserver(() => resize()).observe(panel);
+      } else {
+        window.addEventListener("resize", resize);
+      }
+
+      if (window.IntersectionObserver) {
+        new IntersectionObserver(entries => {
+          if (entries[0] && entries[0].isIntersecting) {
+            resume();
+          } else {
+            pause();
+          }
+        }, { threshold: 0.01 }).observe(panel);
+      }
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          pause();
+        } else {
+          resume();
+        }
+      });
+
+      // Self-Test simulation
+      function runSelfTest() {
+        function sim(width) {
+          const simS = width / 585;
+          const simV = 230 * simS;
+          const simT = 0.35;
+          const simHP = 120 * simS;
+          const simRobot = width * 0.10;
+          const simDt = 1 / 120;
+          let simNext = width * 0.75;
+          let simJump = -1;
+          let simHits = 0;
+          const simBoxes = [];
+
+          for (let time = 0; time < 600; time += simDt) {
+            simNext -= simV * simDt;
+            if (simNext <= width + 30 * simS) {
+              const isTall = ((time * 17) % 10) < 7;
+              const bw = isTall ? 20 * simS : 32 * simS;
+              const bh = isTall ? (34 + ((time * 13) % 9)) * simS : 28 * simS;
+              simBoxes.push({ c: simNext, w: bw, h: bh, handled: false });
+              simNext += simV * simT + (60 + ((time * 23) % 60)) * simS;
+            }
+
+            for (let i = simBoxes.length - 1; i >= 0; i--) {
+              simBoxes[i].c -= simV * simDt;
+              if (simBoxes[i].c + simBoxes[i].w / 2 < -50) simBoxes.splice(i, 1);
+            }
+
+            let target = null;
+            for (let i = 0; i < simBoxes.length; i++) {
+              if (!simBoxes[i].handled && simBoxes[i].c >= simRobot - 35 * simS) {
+                target = simBoxes[i];
+                break;
+              }
+            }
+
+            if (target && simJump < 0 && (target.c - simRobot) / simV <= (simT / 2 + 0.005)) {
+              simJump = 0;
+              target.handled = true;
+            }
+
+            let hRob = 0;
+            if (simJump >= 0) {
+              const z = simJump / simT;
+              hRob = 4 * simHP * z * (1 - z);
+              simJump += simDt;
+              if (simJump >= simT) simJump = -1;
+            }
+
+            for (let i = 0; i < simBoxes.length; i++) {
+              if (Math.abs(simBoxes[i].c - simRobot) < (simBoxes[i].w / 2 + 15 * simS)) {
+                if (hRob < simBoxes[i].h + 5) {
+                  simHits++;
+                }
+              }
+            }
+          }
+          return simHits;
+        }
+
+        const hits = sim(585) + sim(390);
+        panel.dataset.selftestHits = String(hits);
+        console.log("[DarkNode selftest]", hits === 0 ? "PASS — zero hits" : ("FAIL — " + hits + " hits"));
+      }
+
+      resize();
+      if (window.location && window.location.search && window.location.search.includes("selftest")) {
+        runSelfTest();
+      }
+
+      if (reduceMotion) {
+        drawStaticFrame();
+      } else {
+        lastTimestamp = performance.now();
+        rafId = requestAnimationFrame(loop);
+      }
+    }
+
+    window.lockConsole = function() {
+      sessionStorage.removeItem("darknode_access");
+      document.body.classList.remove("authenticated");
+    };
+
+    window.addEventListener("DOMContentLoaded", () => {
       initAuthGate();
       checkOrientation();
-      renderNotifList();
-      updateNotifBadge();
-      fetchRings();
+      initDarkNodeAutoRunner();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const forceAuth = urlParams.has("auth") || urlParams.has("selftest");
+      const hasAccess = sessionStorage.getItem("darknode_access");
+
+      if (hasAccess && !forceAuth) {
+        document.body.classList.add("authenticated");
+        renderNotifList();
+        updateNotifBadge();
+        fetchRings();
+      } else {
+        document.body.classList.remove("authenticated");
+      }
     });
   </script>
 </body>
