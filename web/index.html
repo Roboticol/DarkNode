@@ -23588,7 +23588,116 @@
         }
       }
 
-      // 6. Obstacles: outlined boxes with bold 'H'
+      // 6. Obstacles: DarkNode AML Threat Nodes (MULE, RING, AML, SHELL, LAYER)
+      const THREAT_LABELS_TALL = ["AML", "MULE", "RING", "SHL", "RISK"];
+      const THREAT_LABELS_WIDE = ["MULE", "RING", "AML", "SHELL", "LAYER"];
+
+      function drawThreatBarrier(ob) {
+        const boxLeft = ob.c - ob.w / 2;
+        const boxTop = gy - ob.h;
+
+        ctx.save();
+
+        // 1. Cyber Ground Anchor Footpads
+        ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+        ctx.fillRect(boxLeft - 1.5 * s, gy - 2.5 * s, ob.w + 3 * s, 2.5 * s);
+
+        // 2. Translucent Hazard Glass / Cyber Shield Background
+        ctx.fillStyle = "rgba(11, 12, 14, 0.78)";
+        ctx.fillRect(boxLeft, boxTop, ob.w, ob.h);
+
+        // 3. Cyber Scanlines / Micro Hatching
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+        ctx.lineWidth = 1 * s;
+        for (let yLine = boxTop + 4 * s; yLine < gy - 3 * s; yLine += 4 * s) {
+          ctx.beginPath();
+          ctx.moveTo(boxLeft + 2 * s, yLine);
+          ctx.lineTo(boxLeft + ob.w - 2 * s, yLine);
+          ctx.stroke();
+        }
+
+        // 4. Main Outlined Frame
+        ctx.lineWidth = Math.max(1.5, 1.8 * s);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.65)";
+        ctx.strokeRect(boxLeft, boxTop, ob.w, ob.h);
+
+        // 5. Tech Corner Brackets in Cyber Yellow (#ffd21f)
+        const cornerLen = Math.min(5 * s, ob.w * 0.25);
+        ctx.lineWidth = Math.max(2, 2.2 * s);
+        ctx.strokeStyle = "#ffd21f";
+
+        // Top-left
+        ctx.beginPath();
+        ctx.moveTo(boxLeft, boxTop + cornerLen);
+        ctx.lineTo(boxLeft, boxTop);
+        ctx.lineTo(boxLeft + cornerLen, boxTop);
+        ctx.stroke();
+
+        // Top-right
+        ctx.beginPath();
+        ctx.moveTo(boxLeft + ob.w - cornerLen, boxTop);
+        ctx.lineTo(boxLeft + ob.w, boxTop);
+        ctx.lineTo(boxLeft + ob.w, boxTop + cornerLen);
+        ctx.stroke();
+
+        // Bottom-left
+        ctx.beginPath();
+        ctx.moveTo(boxLeft, gy - cornerLen);
+        ctx.lineTo(boxLeft, gy);
+        ctx.lineTo(boxLeft + cornerLen, gy);
+        ctx.stroke();
+
+        // Bottom-right
+        ctx.beginPath();
+        ctx.moveTo(boxLeft + ob.w - cornerLen, gy);
+        ctx.lineTo(boxLeft + ob.w, gy);
+        ctx.lineTo(boxLeft + ob.w, gy - cornerLen);
+        ctx.stroke();
+
+        // 6. Top Threat Sensor Diode (Blinking Coral-Red Alert Beacon)
+        const blink = 0.5 + 0.5 * Math.sin(animTime * 10 + ob.c);
+        ctx.fillStyle = blink > 0.35 ? "#ff6b6b" : "rgba(255, 107, 107, 0.25)";
+        ctx.fillRect(ob.c - 2 * s, boxTop - 3 * s, 4 * s, 2.5 * s);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+        ctx.fillRect(ob.c - 0.7 * s, boxTop - 1.2 * s, 1.4 * s, 1.2 * s);
+
+        // 7. Actual AML Threat Hurdle Typology Text Badge
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        const label = ob.label || (ob.isTall ? "AML" : "MULE");
+
+        if (ob.isTall) {
+          // Mini warning exclamation top badge
+          ctx.fillStyle = "rgba(250, 204, 21, 0.9)";
+          ctx.font = "700 " + Math.max(6, Math.round(7 * s)) + "px 'JetBrains Mono', monospace";
+          ctx.fillText("!", ob.c, boxTop + 7 * s);
+
+          // Center AML Threat Code (e.g. AML, MULE, RING, SHL, RISK)
+          ctx.fillStyle = "#ffffff";
+          const fontSize = label.length >= 4 ? Math.max(6, Math.round(7.2 * s)) : Math.max(7, Math.round(8.5 * s));
+          ctx.font = "700 " + fontSize + "px 'Space Mono', monospace";
+          ctx.fillText(label, ob.c, boxTop + ob.h / 2 + 1 * s);
+
+          // Bottom tech slot
+          ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+          ctx.fillRect(boxLeft + 3 * s, gy - 5 * s, ob.w - 6 * s, 1.2 * s);
+        } else {
+          // Wide Barrier: full cyber badge pill
+          ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
+          ctx.fillRect(boxLeft + 3 * s, boxTop + ob.h / 2 - 6 * s, ob.w - 6 * s, 12 * s);
+          ctx.strokeStyle = "rgba(250, 204, 21, 0.45)";
+          ctx.lineWidth = 1 * s;
+          ctx.strokeRect(boxLeft + 3 * s, boxTop + ob.h / 2 - 6 * s, ob.w - 6 * s, 12 * s);
+
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "700 " + Math.max(7, Math.round(8.5 * s)) + "px 'Space Mono', monospace";
+          ctx.fillText(label, ob.c, boxTop + ob.h / 2);
+        }
+
+        ctx.restore();
+      }
+
       function updateAndDrawObstacles(dt, v, rx) {
         nextC -= v * dt;
         if (nextC <= W + 30 * s) {
@@ -23596,21 +23705,21 @@
           const bw = isTall ? 20 * s : 32 * s;
           const bh = isTall ? (34 + Math.random() * 8) * s : 28 * s;
           const jitter = (Math.random() - 0.5) * 0.012; // -6ms to +6ms
+          const label = isTall
+            ? THREAT_LABELS_TALL[Math.floor(Math.random() * THREAT_LABELS_TALL.length)]
+            : THREAT_LABELS_WIDE[Math.floor(Math.random() * THREAT_LABELS_WIDE.length)];
+
           obstacles.push({
             c: nextC,
             w: bw,
             h: bh,
             jitter: jitter,
-            handled: false
+            handled: false,
+            isTall: isTall,
+            label: label
           });
           nextC += v * T + (60 + Math.random() * 60) * s;
         }
-
-        ctx.lineWidth = Math.max(1.5, 2 * s);
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
-        ctx.font = "700 " + Math.max(10, Math.round(15 * s)) + "px 'Space Mono', monospace";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
 
         for (let i = obstacles.length - 1; i >= 0; i--) {
           const ob = obstacles[i];
@@ -23621,12 +23730,7 @@
             continue;
           }
 
-          const boxLeft = ob.c - ob.w / 2;
-          const boxTop = gy - ob.h;
-          ctx.strokeRect(boxLeft, boxTop, ob.w, ob.h);
-
-          ctx.fillStyle = "#ffffff";
-          ctx.fillText("H", ob.c, boxTop + ob.h / 2 - 1 * s);
+          drawThreatBarrier(ob);
         }
       }
 
@@ -23743,17 +23847,13 @@
         drawSaucer(sB);
 
         drawGround(0, 0);
-        const boxW = 20 * s;
-        const boxH = 36 * s;
-        const boxLeft = 0.55 * W;
-        ctx.lineWidth = Math.max(1.5, 2 * s);
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
-        ctx.strokeRect(boxLeft, gy - boxH, boxW, boxH);
-        ctx.font = "700 " + Math.max(10, Math.round(15 * s)) + "px 'Space Mono', monospace";
-        ctx.fillStyle = "#ffffff";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("H", boxLeft + boxW / 2, gy - boxH / 2 - 1 * s);
+        drawThreatBarrier({
+          c: 0.55 * W + 10 * s,
+          w: 20 * s,
+          h: 36 * s,
+          isTall: true,
+          label: "AML"
+        });
 
         drawRobot(0.10 * W, 0, 0);
       }
